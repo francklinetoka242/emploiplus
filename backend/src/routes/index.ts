@@ -1,22 +1,26 @@
 /**
- * Main API Routes - Central routing hub
+ * Main API Routes - Minimal version (focus on core functionality)
  * 
- * Mounts all domain-specific routes:
- * - /publications - newsfeed and publications
- * - /auth - authentication (mounted in server.ts)
- * - Additional routes to be added as needed
+ * Temporarily disabled:
+ * - Publications/Newsfeed routes
+ * - Jobs routes
+ * - Advanced features
+ * 
+ * Enabled:
+ * - Health checks
+ * - Authentication (via server.ts)
  */
 
 import express, { Router, Request, Response } from 'express';
 import { pool } from '../config/database.js';
-import publicationsRoutes from './publications.js';
 
 const router: Router = express.Router();
 
 /**
- * Mount sub-routers
+ * DISABLED: Publications routes
+ * import publicationsRoutes from './publications.js';
+ * router.use('/publications', publicationsRoutes);
  */
-router.use('/publications', publicationsRoutes);
 
 /**
  * Health check endpoint
