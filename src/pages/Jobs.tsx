@@ -52,6 +52,7 @@ const Jobs = () => {
   const [expandedJobId, setExpandedJobId] = useState<string | null>(null);
   const [expandFilters, setExpandFilters] = useState(false);
   const loaderRef = useRef<HTMLDivElement>(null);
+  const initialJobsLoadedRef = useRef(false);
   const [mobileView, setMobileView] = useState<"left" | "center" | "right">("center");
 
   // Extract search query from URL parameters on mount
@@ -86,6 +87,25 @@ const Jobs = () => {
       fetchCandidates();
     }
   }, [user]);
+
+  // Ensure initial jobs are loaded on mount (show all by default)
+  useEffect(() => {
+    if (initialJobsLoadedRef.current) return;
+    initialJobsLoadedRef.current = true;
+    (async () => {
+      try {
+        const res = await api.getJobs({ page: 1 });
+        const newJobs = Array.isArray(res) ? res : (res?.data || []);
+        if (newJobs.length > 0) {
+          setAllJobs(newJobs);
+          const pagination = res?.pagination || {};
+          setHasMore(pagination.hasNextPage || false);
+        }
+      } catch (e) {
+        console.error('Initial jobs load failed:', e);
+      }
+    })();
+  }, []);
 
   const fetchFormations = async () => {
     try {
@@ -207,15 +227,141 @@ const Jobs = () => {
         {/* Main Content with Two Columns */}
         <div className="container py-6 px-4">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-            {/* LEFT COLUMN - HIDDEN FOR NON-AUTHENTICATED USERS */}
+            {/* LEFT COLUMN - INVITE NON-AUTHENTICATED USERS TO CREATE ACCOUNT (desktop only) */}
             <div className="lg:col-span-3 hidden lg:block">
               <div className="space-y-6 sticky top-24">
+                <Card className="p-6 border-0 shadow-md text-center">
+                  <h3 className="text-lg font-bold mb-2">Créez un compte pour voir plus d'offres</h3>
+                  <p className="text-sm text-muted-foreground mb-4">Inscrivez-vous pour sauvegarder des offres, postuler et accéder à des recommandations personnalisées.</p>
+                  <div className="flex flex-col gap-2">
+                    <Button asChild className="w-full" size="sm">
+                      <Link to="/connexion">Se connecter</Link>
+                    </Button>
+                    <Button asChild variant="outline" className="w-full" size="sm">
+                      <Link to="/inscription">Créer un compte</Link>
+                    </Button>
+                  </div>
+                </Card>
               </div>
             </div>
 
             {/* CENTER & RIGHT COLUMN - JOBS LIST (Main Content) */}
             <div className="lg:col-span-9">
-              {/* Compact Search Bar Already at Top - No additional search bar here */}
+              {/* Search and Filters (visible on desktop) - keep same UI as authenticated view */}
+              <Card className="p-4 border-0 shadow-md mb-6">
+                <div className="flex flex-col gap-3">
+                  <div className="flex gap-3 items-end">
+                    <div className="flex-1 min-w-[200px]">
+                      <label className="block text-xs font-semibold text-gray-700 mb-1">Poste</label>
+                      <input
+                        type="text"
+                        placeholder="Ex: Développeur..."
+                        value={filters.search}
+                        onChange={(e) => setFilters({ ...filters, search: e.target.value })}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all text-sm"
+                      />
+                    </div>
+
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setExpandFilters(!expandFilters)}
+                      className="whitespace-nowrap h-10"
+                    >
+                      {expandFilters ? (
+                        <>
+                          <ChevronUp className="w-4 h-4 mr-1" />
+                          Moins
+                        </>
+                      ) : (
+                        <>
+                          <ChevronDown className="w-4 h-4 mr-1" />
+                          Plus
+                        </>
+                      )}
+                    </Button>
+                  </div>
+
+                  {expandFilters && (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 pt-3 border-t border-gray-200">
+                      <div>
+                        <label className="block text-xs font-semibold text-gray-700 mb-1">Lieu</label>
+                        <input
+                          type="text"
+                          placeholder="Ville..."
+                          value={filters.location}
+                          onChange={(e) => setFilters({ ...filters, location: e.target.value })}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all text-sm"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-semibold text-gray-700 mb-1">Entreprise</label>
+                        <input
+                          type="text"
+                          placeholder="Nom..."
+                          value={filters.company}
+                          onChange={(e) => setFilters({ ...filters, company: e.target.value })}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all text-sm"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-semibold text-gray-700 mb-1">Type</label>
+                        <select
+                          value={filters.type}
+                          onChange={(e) => setFilters({ ...filters, type: e.target.value })}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all text-sm"
+                        >
+                          <option value="all">Tous</option>
+                          <option value="cdi">CDI</option>
+                          <option value="cdd">CDD</option>
+                          <option value="stage">Stage</option>
+                          <option value="freelance">Freelance</option>
+                          <option value="apprenticeship">Apprentissage</option>
+                        </select>
+                      </div>
+
+                      <div>
+                        <label className="block text-xs font-semibold text-gray-700 mb-1">Secteur</label>
+                        <select
+                          value={filters.sector}
+                          onChange={(e) => setFilters({ ...filters, sector: e.target.value })}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all text-sm"
+                        >
+                          <option value="">Tous</option>
+                          <option value="tech">Technologie</option>
+                          <option value="finance">Finance</option>
+                          <option value="healthcare">Santé</option>
+                          <option value="education">Éducation</option>
+                          <option value="retail">Commerce</option>
+                          <option value="manufacturing">Industrie</option>
+                          <option value="other">Autres</option>
+                        </select>
+                      </div>
+
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="whitespace-nowrap h-10 sm:col-span-2 lg:col-span-1"
+                        onClick={() =>
+                          setFilters({
+                            search: "",
+                            location: "",
+                            country: "",
+                            company: "",
+                            sector: "",
+                            competence: "",
+                            type: "all",
+                          })
+                        }
+                      >
+                        Réinitialiser
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              </Card>
 
               {isLoading && page === 1 ? (
                 <div className="space-y-4 pb-24 md:pb-0">

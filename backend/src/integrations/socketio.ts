@@ -18,7 +18,9 @@
 import { Server as HTTPServer } from 'http';
 import { Server as SocketIOServer, Socket } from 'socket.io';
 import { createClient } from '@supabase/supabase-js';
+import { createClient as createRedisClient } from 'redis';
 import { verifySocketToken } from '../middleware/auth.js';
+import { redisConfig } from '../config/redis.js';
 
 // ============================================================================
 // MODULE AUGMENTATION: Ajouter la propriété user à l'interface Socket
@@ -35,9 +37,19 @@ declare module 'socket.io' {
 // ============================================================================
 
 // Supabase client pour persistence des messages
+const SUPABASE_URL = process.env.SUPABASE_URL;
+const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+if (!SUPABASE_URL) {
+  console.warn('[socketio] Warning: SUPABASE_URL is not configured');
+}
+if (!SUPABASE_SERVICE_ROLE_KEY) {
+  console.warn('[socketio] Warning: SUPABASE_SERVICE_ROLE_KEY is not configured');
+}
+
 const supabase = createClient(
-  process.env.SUPABASE_URL || '',
-  process.env.SUPABASE_SERVICE_ROLE_KEY || ''
+  SUPABASE_URL || '',
+  SUPABASE_SERVICE_ROLE_KEY || ''
 );
 
 // ============================================================================
@@ -87,18 +99,14 @@ export function setupSocketIO(httpServer: HTTPServer): SocketIOServer {
     transports: ['websocket', 'polling'],
     
     // Redis adapter pour scale multi-serveurs
-    adapter: process.env.REDIS_HOST ? require('@socket.io/redis-adapter') : undefined,
+    adapter: redisConfig.url || process.env.REDIS_HOST ? require('@socket.io/redis-adapter') : undefined,
   });
 
   // Si Redis configuré, l'utiliser comme adapter
-  if (process.env.REDIS_HOST) {
+  if (redisConfig.url || process.env.REDIS_HOST) {
     const { createAdapter } = require('@socket.io/redis-adapter');
-    const redis = require('redis');
     
-    const pubClient = redis.createClient({
-      host: process.env.REDIS_HOST,
-      port: process.env.REDIS_PORT,
-    });
+    const pubClient = createRedisClient(redisConfig as any);
     const subClient = pubClient.duplicate();
 
     io.adapter(createAdapter(pubClient, subClient));

@@ -23,9 +23,20 @@ import { notificationQueue } from '../services/notificationQueue.js';
 
 const router = Router();
 
+// Initialize Supabase client with explicit env var validation
+const SUPABASE_URL = process.env.SUPABASE_URL;
+const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+if (!SUPABASE_URL) {
+  console.warn('[webhooks] Warning: SUPABASE_URL is not configured');
+}
+if (!SUPABASE_SERVICE_ROLE_KEY) {
+  console.warn('[webhooks] Warning: SUPABASE_SERVICE_ROLE_KEY is not configured');
+}
+
 const supabase = createClient(
-  process.env.SUPABASE_URL || '',
-  process.env.SUPABASE_SERVICE_ROLE_KEY || ''
+  SUPABASE_URL || '',
+  SUPABASE_SERVICE_ROLE_KEY || ''
 );
 
 // ============================================================================

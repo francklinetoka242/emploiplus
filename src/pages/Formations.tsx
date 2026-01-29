@@ -51,6 +51,7 @@ export default function Formations() {
   const [expandedFormationId, setExpandedFormationId] = useState<number | null>(null);
   const loaderRef = useRef<HTMLDivElement>(null);
   const [mobileView, setMobileView] = useState<"left" | "center" | "right">("center");
+  const initialFormationsLoadedRef = useRef(false);
   const [filters, setFilters] = useState({
     search: "",
     category: "",
@@ -107,6 +108,24 @@ export default function Formations() {
     // Check if there are more formations to load
     setHasMore(newFormations.length >= 10);
   }, [formationsData, isLoading, page]);
+
+  // Ensure initial formations are loaded on mount (show all by default)
+  useEffect(() => {
+    if (initialFormationsLoadedRef.current) return;
+    initialFormationsLoadedRef.current = true;
+    (async () => {
+      try {
+        const res = await api.getFormations({ limit: 10, offset: 0 });
+        const newFormations = Array.isArray(res) ? res : (res?.formations || []);
+        if (newFormations.length > 0) {
+          setAllFormations(newFormations);
+          setHasMore(newFormations.length >= 10);
+        }
+      } catch (e) {
+        console.error('Initial formations load failed:', e);
+      }
+    })();
+  }, []);
 
   // Infinite scroll handler
   const loadMore = useCallback(() => {
@@ -209,12 +228,25 @@ export default function Formations() {
       <div className="container mx-auto px-4 py-6 pb-24 md:pb-0">
         {/* Main Content with Sidebar */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-          {/* LEFT COLUMN - SIDEBAR (only visible for authenticated users) */}
-          {user && (
-            <div className="lg:col-span-3">
+          {/* LEFT COLUMN - SIDEBAR: profile for authenticated users, invite for guests (desktop only) */}
+          <div className="lg:col-span-3 hidden lg:block">
+            {user ? (
               <ProfileSidebar />
-            </div>
-          )}
+            ) : (
+              <Card className="p-6 border-0 shadow-md text-center">
+                <h3 className="text-lg font-bold mb-2">Créez un compte pour voir plus de formations</h3>
+                <p className="text-sm text-muted-foreground mb-4">Inscrivez-vous pour accéder à toutes les formations, sauvegarder et suivre votre progression.</p>
+                <div className="flex flex-col gap-2">
+                  <Button asChild className="w-full" size="sm">
+                    <Link to="/connexion">Se connecter</Link>
+                  </Button>
+                  <Button asChild variant="outline" className="w-full" size="sm">
+                    <Link to="/inscription">Créer un compte</Link>
+                  </Button>
+                </div>
+              </Card>
+            )}
+          </div>
 
           {/* Center Content - Formations */}
           <div className={`${user ? "lg:col-span-6" : "lg:col-span-9"} lg:block`}>

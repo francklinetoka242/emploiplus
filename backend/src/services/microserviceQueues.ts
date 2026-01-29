@@ -13,25 +13,29 @@
 
 import { Queue, Worker } from 'bullmq';
 import { createClient } from '@supabase/supabase-js';
-import * as Redis from 'redis';
+import { redisConfig } from '../config/redis.js';
 
 // ============================================================================
 // REDIS CONNECTION
 // ============================================================================
 
-const redis = {
-  host: process.env.REDIS_HOST || 'localhost',
-  port: parseInt(process.env.REDIS_PORT || '6379'),
-  password: process.env.REDIS_PASSWORD,
-} as any;
-
 // ============================================================================
 // SUPABASE CLIENT
 // ============================================================================
 
+const SUPABASE_URL = process.env.SUPABASE_URL;
+const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+if (!SUPABASE_URL) {
+  console.warn('[microserviceQueues] Warning: SUPABASE_URL is not configured');
+}
+if (!SUPABASE_SERVICE_ROLE_KEY) {
+  console.warn('[microserviceQueues] Warning: SUPABASE_SERVICE_ROLE_KEY is not configured');
+}
+
 const supabase = createClient(
-  process.env.SUPABASE_URL || '',
-  process.env.SUPABASE_SERVICE_ROLE_KEY || ''
+  SUPABASE_URL || '',
+  SUPABASE_SERVICE_ROLE_KEY || ''
 );
 
 // ============================================================================
@@ -43,7 +47,7 @@ const supabase = createClient(
  * Analyser les nouvelles offres d'emploi
  */
 export const jobAnalysisQueue = new Queue('job-analysis', {
-  connection: redis as any,
+  connection: redisConfig as any,
   defaultJobOptions: {
     attempts: 3,
     backoff: {
@@ -58,7 +62,7 @@ export const jobAnalysisQueue = new Queue('job-analysis', {
  * Modérer les posts du newsfeed
  */
 export const postModerationQueue = new Queue('post-moderation', {
-  connection: redis as any,
+  connection: redisConfig as any,
   defaultJobOptions: {
     attempts: 3,
     backoff: {
@@ -73,7 +77,7 @@ export const postModerationQueue = new Queue('post-moderation', {
  * Calculer les scores d'engagement
  */
 export const activityScoringQueue = new Queue('activity-scoring', {
-  connection: redis as any,
+  connection: redisConfig as any,
   defaultJobOptions: {
     attempts: 3,
     backoff: {
@@ -88,7 +92,7 @@ export const activityScoringQueue = new Queue('activity-scoring', {
  * Envoyer les notifications aux candidats
  */
 export const jobNotificationQueue = new Queue('job-notifications', {
-  connection: redis as any,
+  connection: redisConfig as any,
   defaultJobOptions: {
     attempts: 3,
     backoff: {
@@ -174,7 +178,7 @@ export const jobAnalysisWorker = new Worker(
     }
   },
   {
-    connection: redis as any,
+    connection: redisConfig as any,
     concurrency: 5, // Traiter 5 jobs en parallèle
   }
 );
@@ -246,7 +250,7 @@ export const postModerationWorker = new Worker(
     }
   },
   {
-    connection: redis as any,
+    connection: redisConfig as any,
     concurrency: 10, // Plus rapide que job analysis
   }
 );
@@ -305,7 +309,7 @@ export const jobNotificationWorker = new Worker(
     }
   },
   {
-    connection: redis as any,
+    connection: redisConfig as any,
     concurrency: 15, // Notifications = très rapides
   }
 );
@@ -384,7 +388,7 @@ export const activityScoringWorker = new Worker(
     }
   },
   {
-    connection: redis as any,
+    connection: redisConfig as any,
     concurrency: 20, // Très rapide, haute concurrence
   }
 );

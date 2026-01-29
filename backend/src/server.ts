@@ -4106,8 +4106,12 @@ const startServer = async () => {
         }
     });
 
-    app.listen(5000, '0.0.0.0', () => {
-        console.log("Backend prêt → http://localhost:5000 ou http://192.168.0.14:5000");
+    // Use PORT from environment (Render sets this), fallback to 5000 for local dev
+    const PORT = parseInt(process.env.PORT || '5000', 10);
+    const HOST = process.env.HOST || '0.0.0.0';
+    
+    app.listen(PORT, HOST, () => {
+        console.log(`Backend prêt → http://localhost:${PORT} (HOST: ${HOST})`);
     });
 };
 startServer();

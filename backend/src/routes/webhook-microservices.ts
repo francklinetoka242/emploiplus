@@ -22,10 +22,25 @@ import { detectSpam, validatePost, getModerationAction } from '../services/moder
 
 const router = Router();
 
+// Initialize Supabase client with explicit env var validation
+const SUPABASE_URL = process.env.SUPABASE_URL;
+const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+if (!SUPABASE_URL) {
+  console.warn('[Webhook] Warning: SUPABASE_URL is not configured in environment variables');
+}
+if (!SUPABASE_SERVICE_ROLE_KEY) {
+  console.warn('[Webhook] Warning: SUPABASE_SERVICE_ROLE_KEY is not configured in environment variables');
+}
+
 const supabase = createClient(
-  process.env.SUPABASE_URL || '',
-  process.env.SUPABASE_SERVICE_ROLE_KEY || ''
+  SUPABASE_URL || '',
+  SUPABASE_SERVICE_ROLE_KEY || ''
 );
+
+if (SUPABASE_URL && SUPABASE_SERVICE_ROLE_KEY) {
+  console.log('[Webhook] ✓ Supabase client initialized successfully');
+}
 
 // ============================================================================
 // MIDDLEWARE: Webhook Secret Verification

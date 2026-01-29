@@ -22,22 +22,26 @@
 import { Queue, Worker } from 'bullmq';
 import { createClient } from '@supabase/supabase-js';
 import axios from 'axios';
+import { redisConfig } from '../config/redis.js';
 
 // ============================================================================
 // CONFIGURATION
 // ============================================================================
 
-// Redis connection (BullMQ utilise Redis pour la persistance)
-const redisConfig = {
-  host: process.env.REDIS_HOST || 'localhost',
-  port: parseInt(process.env.REDIS_PORT || '6379'),
-  maxRetriesPerRequest: null, // Important pour BullMQ
-};
-
 // Initialize Supabase admin client (pour récupérer les utilisateurs)
+const SUPABASE_URL = process.env.SUPABASE_URL;
+const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+if (!SUPABASE_URL) {
+  console.warn('[notificationQueue] Warning: SUPABASE_URL is not configured');
+}
+if (!SUPABASE_SERVICE_ROLE_KEY) {
+  console.warn('[notificationQueue] Warning: SUPABASE_SERVICE_ROLE_KEY is not configured');
+}
+
 const supabase = createClient(
-  process.env.SUPABASE_URL || '',
-  process.env.SUPABASE_SERVICE_ROLE_KEY || ''
+  SUPABASE_URL || '',
+  SUPABASE_SERVICE_ROLE_KEY || ''
 );
 
 // OneSignal configuration
