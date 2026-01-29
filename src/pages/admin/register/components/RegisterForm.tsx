@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { toast } from "sonner";
-import { authHeaders } from '@/lib/headers';
+import { authHeaders, buildApiUrl } from '@/lib/headers';
 
 type Props = {
   role: "super_admin" | "admin_offres" | "admin_users" | "admin";
@@ -25,7 +25,7 @@ export default function RegisterForm({ role, title, color }: Props) {
     try {
       // PREMIER SUPER ADMIN → pas besoin de token
       if (role === "super_admin") {
-        const res = await fetch("/api/admin/register", {
+        const res = await fetch(buildApiUrl("/api/admin/register"), {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ ...form, role: "super_admin" }),
@@ -49,7 +49,7 @@ export default function RegisterForm({ role, title, color }: Props) {
           return;
         }
 
-        const res = await fetch("/api/admin/create", {
+        const res = await fetch(buildApiUrl("/api/admin/create"), {
           method: "POST",
           headers: authHeaders('application/json', 'adminToken'),
           body: JSON.stringify({ ...form, role }),

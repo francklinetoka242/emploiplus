@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { toast } from "sonner";
 import { Shield, ArrowLeft, CheckCircle } from "lucide-react";
+import { buildApiUrl } from "@/lib/headers";
 
 export default function AdminRegister() {
   const [form, setForm] = useState({
@@ -32,7 +33,7 @@ export default function AdminRegister() {
     setLoading(true);
 
     try {
-      const res = await fetch("/api/admin/register", {
+      const res = await fetch(buildApiUrl("/api/admin/register"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

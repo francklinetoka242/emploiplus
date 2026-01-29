@@ -65,13 +65,18 @@ app.use(helmet());
 // Include common dev ports (Vite default 5173 and alternate 5174) and local network
 const rawOrigins = process.env.CORS_ORIGINS || 'http://localhost:5173,http://localhost:5174,http://192.168.0.14:5173,http://192.168.0.14:5174';
 const allowedOrigins = rawOrigins.split(',').map((s) => s.trim());
-app.use(cors({ origin: (origin, cb) => {
+app.use(cors({ 
+    origin: (origin, cb) => {
         if (!origin)
             return cb(null, true); // allow non-browser requests like curl/postman
         if (allowedOrigins.includes(origin))
             return cb(null, true);
         return cb(new Error('Origin not allowed'));
-    } }));
+    },
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'x-webhook-secret']
+}));
 // Limit JSON body size to mitigate large payload attacks
 // Increased to 10mb to allow base64 image uploads from the frontend
 app.use(express.json({ limit: '10mb' }));
@@ -1637,6 +1642,9 @@ app.post("/api/users", async (req, res) => {
         res.status(500).json({ success: false });
     }
 });
+// Handle CORS preflight for register endpoint
+app.options("/api/register", cors());
+
 // Public registration endpoint for candidates and companies
 app.post("/api/register", async (req, res) => {
     try {
@@ -1748,6 +1756,9 @@ app.post("/api/register", async (req, res) => {
         res.status(500).json({ success: false, message: 'Erreur serveur' });
     }
 });
+// Handle CORS preflight for login endpoint
+app.options("/api/login", cors());
+
 // Public login for users
 app.post('/api/login', async (req, res) => {
     try {
