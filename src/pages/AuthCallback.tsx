@@ -28,7 +28,7 @@ export const AuthCallback = () => {
           console.log('✅ Authentifié:', user.email, 'Rôle souhaité:', roleParam);
 
           // 2. Tentative de synchronisation avec le Backend Render
-          const apiUrl = import.meta.env.VITE_API_BASE_URL || 'https://ton-backend-render.com';
+          const apiUrl = import.meta.env.VITE_API_BASE_URL || 'https://emploiplus-backend.onrender.com';
           
           setSyncInProgress(true);
           try {
