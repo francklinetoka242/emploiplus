@@ -16,46 +16,93 @@ export const AuthCallback = () => {
     const handleAuth = async () => {
       try {
         // 1. Récupérer la session via Supabase (échange auto du code/hash)
-        const { data: { session }, error: authError } = await supabase.auth.getSession();
+        let {
+          data: { session },
+          error: authError,
+        } = await supabase.auth.getSession();
 
         if (authError) throw authError;
+
+        // If no session (provider used hash-based response), try to extract from URL
+        if (!session) {
+          try {
+            const { data: urlData, error: urlError } = await supabase.auth.getSessionFromUrl();
+            if (urlError) {
+              console.warn('[Auth/Callback] getSessionFromUrl error:', urlError);
+            } else if (urlData?.session) {
+              session = urlData.session;
+            }
+          } catch (e) {
+            console.warn('[Auth/Callback] getSessionFromUrl failed:', e);
+          }
+        }
 
         if (session && session.user) {
           processed.current = true;
           const user = session.user;
-          const roleParam = searchParams.get('role') || 'candidate';
+          // Role can come from query param OR localStorage (set before redirect)
+          let roleParam = searchParams.get('role');
+          if (!roleParam) {
+            try {
+              const stored = localStorage.getItem('auth_role');
+              if (stored) {
+                roleParam = stored;
+                localStorage.removeItem('auth_role');
+              }
+            } catch (e) {
+              // ignore
+            }
+          }
 
-          console.log('✅ Authentifié:', user.email, 'Rôle souhaité:', roleParam);
+          console.log('✅ Authentifié:', user.email, 'roleParam:', roleParam);
 
-          // 2. Tentative de synchronisation avec le Backend Render
-          const apiUrl = import.meta.env.VITE_API_BASE_URL || 'https://emploiplus-backend.onrender.com';
-          
+          // Check if profile exists in Supabase
           setSyncInProgress(true);
           try {
-            const syncResponse = await fetch(`${apiUrl}/api/auth/sync-google`, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
+            const { data: profile, error: profileError } = await supabase
+              .from('profiles')
+              .select('user_type')
+              .eq('id', user.id)
+              .single();
+
+            if (profile && profile.user_type) {
+              // Existing user -> redirect to their dashboard
+              const dashboard = profile.user_type === 'company' ? '/company/dashboard' : '/fil-actualite';
+              toast.success('Connexion réussie !');
+              navigate(dashboard, { replace: true });
+              return;
+            }
+
+            // No profile found: create based on roleParam if provided
+            if (roleParam === 'candidate' || roleParam === 'company') {
+              await supabase.from('profiles').upsert({
                 id: user.id,
                 email: user.email,
                 full_name: user.user_metadata?.full_name || user.email?.split('@')[0],
-                profile_image_url: user.user_metadata?.avatar_url,
-                user_type: roleParam,
-              }),
-            });
+                avatar_url: user.user_metadata?.avatar_url,
+                user_type: roleParam === 'company' ? 'company' : 'candidate',
+                created_at: new Date().toISOString(),
+                updated_at: new Date().toISOString(),
+              });
 
-            if (!syncResponse.ok) console.warn("⚠️ Synchro backend incomplète, mais session Supabase active.");
-          } catch (syncErr) {
-            console.error("❌ Impossible de joindre le backend Render:", syncErr);
-            // On ne bloque pas l'utilisateur ici, la session Supabase suffit pour naviguer
-          } finally {
+              const dashboard = roleParam === 'company' ? '/company/dashboard' : '/fil-actualite';
+              toast.success('Compte créé et connexion réussie !');
+              navigate(dashboard, { replace: true });
+              return;
+            }
+
+            // No role provided: ask user to choose (render choice UI)
             setSyncInProgress(false);
+            // fallthrough to render choice buttons below
+          } catch (syncErr) {
+            console.error('❌ Erreur lors de la vérification du profil :', syncErr);
+            setSyncInProgress(false);
+            toast.error('Erreur lors de la synchronisation du profil');
+            navigate('/connexion', { replace: true });
+            return;
           }
 
-          // 3. Redirection finale - va vers le newsfeed
-          toast.success('Connexion réussie !');
-          navigate('/fil-actualite', { replace: true });
-
+          // If we reach here, there's no profile and no role param: show role choice to user
         } else {
           // Si après quelques secondes on n'a toujours pas de session
           console.warn("⏳ Aucune session détectée.");
@@ -78,6 +125,34 @@ export const AuthCallback = () => {
     handleAuth();
   }, [navigate, searchParams]);
 
+  // Role choice UI rendered when no profile exists and no role param provided
+  const handleCreateRole = async (chosen: 'candidate' | 'company') => {
+    setSyncInProgress(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const user = session?.user;
+      if (!user) throw new Error('Session manquante');
+
+      await supabase.from('profiles').upsert({
+        id: user.id,
+        email: user.email,
+        full_name: user.user_metadata?.full_name || user.email?.split('@')[0],
+        avatar_url: user.user_metadata?.avatar_url,
+        user_type: chosen === 'company' ? 'company' : 'candidate',
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      });
+
+      const dashboard = chosen === 'company' ? '/company/dashboard' : '/fil-actualite';
+      toast.success('Compte créé ! Redirection en cours...');
+      navigate(dashboard, { replace: true });
+    } catch (err) {
+      console.error('❌ Impossible de créer le profil:', err);
+      toast.error('Erreur lors de la création du compte');
+      setSyncInProgress(false);
+    }
+  };
+
   return (
     <div className="flex h-screen items-center justify-center bg-gradient-to-br from-primary/5 to-secondary/5">
       <div className="text-center space-y-6 p-8 bg-white rounded-2xl shadow-xl border border-white/20">
@@ -85,15 +160,30 @@ export const AuthCallback = () => {
           <div className="absolute inset-0 animate-spin rounded-full border-4 border-primary/20 border-t-primary"></div>
           <div className="absolute inset-2 animate-pulse rounded-full bg-primary/10"></div>
         </div>
-        
+
         <div className="space-y-2">
           <h2 className="text-xl font-bold tracking-tight">Finalisation de la connexion</h2>
           <p className="text-muted-foreground text-sm">
-            {syncInProgress 
-              ? "Synchronisation avec votre profil..." 
-              : "Vérification de vos identifiants..."}
+            {syncInProgress ? 'Synchronisation avec votre profil...' : 'Choisissez le type de compte à créer'}
           </p>
         </div>
+
+        {!syncInProgress && (
+          <div className="mt-4 flex gap-4">
+            <button
+              className="px-4 py-2 rounded-md bg-gradient-primary text-white"
+              onClick={() => handleCreateRole('candidate')}
+            >
+              Créer un compte Candidat
+            </button>
+            <button
+              className="px-4 py-2 rounded-md bg-gradient-secondary text-white"
+              onClick={() => handleCreateRole('company')}
+            >
+              Créer un compte Entreprise
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );

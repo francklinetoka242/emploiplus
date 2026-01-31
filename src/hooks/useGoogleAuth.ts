@@ -22,14 +22,18 @@ export const useGoogleAuth = () => {
       // Production: Vercel deployment
       // Development: Local + network debugging
       
-      const isProduction = window.location.hostname.includes('vercel.app') || 
-                          window.location.hostname.includes('emploiplus');
-      
-      const baseUrl = isProduction 
-        ? 'https://emploiplus.vercel.app'
-        : window.location.origin;
-      
-      const redirectTo = `${baseUrl}/auth/callback?role=${userRole}`;
+      // Prefer explicit site URL from environment when available (Vite)
+      const envSite = import.meta.env.VITE_SITE_URL as string | undefined;
+      const baseUrl = envSite && envSite.length > 0 ? envSite : window.location.origin;
+      // Persist desired role in localStorage so callback can recover it (avoid passing role in redirectTo)
+      try { localStorage.setItem('auth_role', userRole); } catch (e) { /* ignore */ }
+      const redirectTo = `${baseUrl.replace(/\/$/, '')}/auth/callback`;
+
+      console.log('🔐 Google OAuth redirectTo:', redirectTo);
+
+      const isProduction = (envSite && envSite.includes('vercel.app')) ||
+        window.location.hostname.includes('vercel.app') ||
+        window.location.hostname.includes('emploiplus');
 
       console.log('🔐 Google OAuth configuration', {
         environment: isProduction ? 'production' : 'development',

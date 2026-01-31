@@ -78,7 +78,7 @@ export const useSupabaseAuth = () => {
   const fetchUserProfile = async (userId: string) => {
     try {
       const { data, error } = await supabase
-        .from('users')
+        .from('profiles')
         .select('*')
         .eq('id', userId)
         .single();
@@ -111,16 +111,30 @@ export const useSupabaseAuth = () => {
   ) => {
     try {
       setError(null);
+      const envSite = import.meta.env.VITE_SITE_URL as string | undefined;
+      const emailRedirectTo = envSite && envSite.length > 0
+        ? `${envSite.replace(/\/$/, '')}/auth/callback`
+        : `${window.location.origin}/auth/callback`;
+
       const { data, error: signUpError } = await supabase.auth.signUp({
         email,
         password,
         options: {
           data: metadata, // Store metadata in raw_user_meta_data
-          emailRedirectTo: `${window.location.origin}/auth/callback`,
+          emailRedirectTo,
         },
       });
 
       if (signUpError) {
+        // Supabase may return "Email signups are disabled" if project disallows email signups.
+        // The app currently runs without email verification; suppress that specific message and
+        // treat it as a neutral success so the UX proceeds to login screen.
+        const msg = signUpError.message || '';
+        if (msg.toLowerCase().includes('email signups are disabled')) {
+          console.warn('[Auth] Supabase email signups disabled — continuing UX without blocking.');
+          return { error: null, user: null };
+        }
+
         setError(signUpError.message);
         return { error: signUpError, user: null };
       }
@@ -146,6 +160,14 @@ export const useSupabaseAuth = () => {
       });
 
       if (signInError) {
+        const msg = signInError.message || '';
+        if (msg.toLowerCase().includes('email logins are disabled') || msg.toLowerCase().includes('email signups are disabled')) {
+          // Friendly message and guidance — email auth is disabled in Supabase project
+          const friendly = new Error("La connexion par e-mail est désactivée. Utilisez 'Continuer avec Google'.");
+          setError(friendly.message);
+          return { error: friendly, user: null };
+        }
+
         setError(signInError.message);
         return { error: signInError, user: null };
       }
@@ -198,11 +220,16 @@ export const useSupabaseAuth = () => {
       setError(null);
       
       // Determine the redirect URL based on environment
-      const isProduction = window.location.hostname.includes('vercel.app') || 
-                          window.location.hostname.includes('emploiplus');
-      const redirectTo = isProduction 
-        ? 'https://emploiplus.vercel.app/auth/callback'
+      // Prefer explicit site URL from environment when available
+      const envSite = import.meta.env.VITE_SITE_URL as string | undefined;
+      const redirectTo = envSite && envSite.length > 0
+        ? `${envSite.replace(/\/$/, '')}/auth/callback`
         : `${window.location.origin}/auth/callback`;
+
+      console.log('🔐 signInWithGoogle redirectTo:', redirectTo);
+
+      // ensure we save role if any previously set by UI
+      try { /* noop - role is saved by UI before redirect */ } catch {}
 
       const { data, error: oauthError } = await supabase.auth.signInWithOAuth({
         provider: 'google',

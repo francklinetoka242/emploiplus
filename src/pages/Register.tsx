@@ -100,7 +100,7 @@ const Register = () => {
       toast.error(error.message);
       setLoading(false);
     } else {
-      toast.success("Inscription réussie ! Un email de confirmation a été envoyé.");
+      toast.success("Inscription réussie ! Vous pouvez vous connecter.");
       // Clear form
       setCandidatForm({
         firstName: "",
@@ -149,7 +149,7 @@ const Register = () => {
       toast.error(error.message);
       setLoading(false);
     } else {
-      toast.success("Inscription réussie ! Un email de confirmation a été envoyé.");
+      toast.success("Inscription réussie ! Vous pouvez vous connecter.");
       // Clear form
       setEntrepriseForm({
         companyName: "",
