@@ -45,7 +45,7 @@
 - ✅ 1 appel `fetch()` mis à jour
 
 #### 8. **.env.production** (Déjà configuré)
-- ✅ `VITE_API_BASE_URL=https://emploiplus-backend.onrender.com`
+- ✅ `VITE_API_BASE_URL=https://your-production-api.example.com`
 
 ### 📊 Statistiques
 
@@ -82,7 +82,7 @@
 ### 📋 Checklist de Vérification
 
 - [ ] Variables d'environnement Vercel configurées (VITE_API_BASE_URL)
-- [ ] Backend Render est en cours d'exécution (Service Live)
+- [ ] Backend (si applicable) est en cours d'exécution (Service Live)
 - [ ] CORS configuré correctement sur le backend
 - [ ] Token d'authentification valide
 - [ ] Console navigateur (F12) pour vérifier les erreurs
@@ -103,8 +103,8 @@ Si les problèmes persistent:
 
 3. **Tester directement**
    ```bash
-   curl -H "Authorization: Bearer TOKEN" \
-        https://emploiplus-backend.onrender.com/api/publications | jq
+      curl -H "Authorization: Bearer TOKEN" \
+         https://your-production-api.example.com/api/publications | jq
    ```
 
 ### 📌 Notes Importantes

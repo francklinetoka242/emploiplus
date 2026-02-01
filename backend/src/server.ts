@@ -2913,25 +2913,45 @@ app.delete("/api/faqs/:id", async (req, res) => {
 // PUBLICATIONS / NEWSFEED
 // ──────────────────────────────────────────────────
 // OPTIMIZED WITH HYBRID SORTING, PROFANITY FILTERING, DISCREET MODE, ACCOUNT STATUS CHECKS
-app.get('/api/publications', userAuth, async (req, res) => {
+app.get('/api/publications', async (req, res) => {
     try {
-        const viewerId = req.userId;
+        // Allow public access: if an Authorization Bearer token is present, decode it
+        // to identify the viewer; otherwise treat the request as anonymous.
+        let viewerId: number | null = null;
+        let viewerCompanyId: number | null = null;
+        try {
+            const authHeader = (req.headers.authorization || '') as string;
+            if (authHeader) {
+                const token = (authHeader.split(' ')[1] || '');
+                if (token) {
+                    const decoded: any = jwt.verify(token, JWT_SECRET);
+                    viewerId = decoded?.id ?? null;
+                }
+            }
+        } catch (e) {
+            console.warn('Optional publications auth decode failed:', e?.message || e);
+            viewerId = null;
+        }
+
         const limit = Math.min(parseInt(req.query.limit as string) || 10, 50); // Max 50 per request
         const offset = parseInt(req.query.offset as string) || 0;
         const sortBy = (req.query.sort as string) || 'relevant'; // 'relevant' or 'recent'
-        
-        // Récupérer les infos de l'utilisateur qui consulte
-        const { rows: viewerRows } = await pool.query(
-            `SELECT id, company_id FROM users WHERE id = $1`,
-            [viewerId]
-        );
-        const viewerCompanyId = viewerRows?.[0]?.company_id;
-        
+
+        // Récupérer les infos de l'utilisateur qui consulte (if available)
+        if (viewerId) {
+            const { rows: viewerRows } = await pool.query(
+                `SELECT id, company_id FROM users WHERE id = $1`,
+                [viewerId]
+            );
+            viewerCompanyId = viewerRows?.[0]?.company_id;
+        }
+
         // Utiliser le service de newsfeed pour appliquer tous les filtres et tri
         const newsfeedService = new NewsfeedService(pool);
         const result = await newsfeedService.getNewsfeedPublications({
-            viewerId,
-            viewerCompanyId,
+            // If no viewerId present we pass 0 so the service handles anonymous viewer
+            viewerId: (viewerId as any) ?? 0,
+            viewerCompanyId: viewerCompanyId ?? undefined,
             limit,
             offset,
             sortBy: sortBy as any,
@@ -4117,7 +4137,7 @@ const startServer = async () => {
         }
     });
 
-    // Use PORT from environment (Render sets this), fallback to 5000 for local dev
+    // Use PORT from environment, fallback to 5000 for local dev
     const PORT = parseInt(process.env.PORT || '5000', 10);
     const HOST = process.env.HOST || '0.0.0.0';
     

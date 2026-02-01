@@ -72,7 +72,8 @@ echo "1️⃣  CONFIGURATION FILES"
 echo "─────────────────────────────────────────────────────────────────────────────────"
 
 check_file "vercel.json" "Vercel configuration (frontend)"
-check_file "render.yaml" "Render configuration (backend)"
+# Render removed: ensure production deployment config handled elsewhere
+echo "Note: Render deployment config removed; verify production host settings manually"
 check_file ".env.production" "Production environment variables"
 check_file "backend/.env.example" "Backend environment template"
 check_file "backend/tsconfig.json" "Backend TypeScript config"
@@ -147,11 +148,11 @@ else
     ((CHECKS_FAILED++))
 fi
 
-if grep -q "emploiplus-backend.onrender.com" "$PROJECT_ROOT/.env.production"; then
-    echo -e "${GREEN}✓${NC} Production API points to emploiplus Render backend"
+if grep -q "your-production-api.example.com" "$PROJECT_ROOT/.env.production"; then
+    echo -e "${GREEN}✓${NC} .env.production points to production API placeholder"
     ((CHECKS_PASSED++))
 else
-    echo -e "${RED}✗${NC} Production API doesn't point to emploiplus backend"
+    echo -e "${YELLOW}⚠️${NC} .env.production does not contain production API placeholder; verify manually"
     ((CHECKS_FAILED++))
 fi
 
@@ -177,7 +178,7 @@ if [ $CHECKS_FAILED -eq 0 ]; then
     echo "  2. Verify .env.production has correct API_BASE_URL"
     echo "  3. Push to GitHub: git push origin main"
     echo "  4. Vercel will auto-deploy frontend"
-    echo "  5. Render will auto-deploy backend"
+    echo "  5. Your production host will auto-deploy backend (if configured)"
     echo ""
     exit 0
 else

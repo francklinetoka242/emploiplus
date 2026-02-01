@@ -33,8 +33,8 @@ VÉRIFICATION:
 ✓ Variable VITE_API_BASE_URL configurée dans .env.production
 
 INSTRUCTION VERCEL:
-Assurez-vous que VITE_API_BASE_URL=https://emploiplus-backend.onrender.com
-est configurée dans les variables d'environnement Vercel.
+Assurez-vous que `VITE_API_BASE_URL=https://your-production-api.example.com`
+est configurée dans les variables d'environnement Vercel (ou utilisez Supabase directement).
 
 TESTS:
 npm run build    # ✓ Réussi

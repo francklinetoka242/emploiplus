@@ -166,21 +166,17 @@ chmod +x *.sh
 ```
 → Dit à Vercel comment builder votre app
 
-### render.yaml
+### Backend deployment (production host)
 ```yaml
-services:
-  - type: web
-    name: emploiplus-backend
-    buildCommand: cd backend && npm install && npm run build
-    startCommand: npm start
+# Render deployment removed. Use your production host or CI to deploy backend if needed.
 ```
-→ Dit à Render comment déployer le backend
+→ Backend deployment instructions removed (was Render-specific)
 
 ### .env.production
 ```
-VITE_API_BASE_URL=https://emploiplus-backend.onrender.com
+VITE_API_BASE_URL=https://your-production-api.example.com
 ```
-→ Points le frontend vers le backend Render en production
+→ Points le frontend vers votre API de production (ou Supabase direct si possible)
 
 ### backend/.env.example
 ```

@@ -51,8 +51,8 @@ npm run dev
 # Test l'API locale
 ./test-endpoints.sh http://localhost:5000
 
-# Test l'API Render en production
-./test-endpoints.sh https://emploiplus-backend.onrender.com
+# Test l'API production (placeholder)
+./test-endpoints.sh https://your-production-api.example.com
 
 # Test endpoint spécifique
 curl -X GET http://localhost:5000/api/stats | jq .
@@ -125,8 +125,8 @@ du -sh node_modules backend/node_modules
 # Logs locaux backend
 # Terminal affiche les logs du serveur
 
-# Logs Render (depuis Render dashboard)
-# Settings → Logs
+# Logs: check your production host dashboard for logs
+# e.g. Settings → Logs
 
 # Logs Vercel (depuis Vercel dashboard)
 # Deployments → Logs
@@ -144,14 +144,14 @@ psql "postgresql://postgres:password@localhost/emploi_connect"
 # Push vers GitHub (déclenche auto-deploy)
 git push origin main
 
-# Render: Redeploy manuel
-# Aller dans Render Dashboard → Deployments → Trigger deploy
+# Production host: Redeploy manuel (consultez votre hébergeur)
+# e.g. Dashboard → Deployments → Trigger deploy
 
 # Vercel: Redeploy manuel
 # Aller dans Vercel Dashboard → Deployments → Redeploy
 
 # Vérifier le statut du deployment
-# Render: Settings → Deployment logs
+# Production host: Settings → Deployment logs (ou équivalent)
 # Vercel: Analytics → Deployments
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━

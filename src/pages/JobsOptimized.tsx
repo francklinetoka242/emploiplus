@@ -74,15 +74,7 @@ const JobsOptimized = () => {
     })
     .slice(0, 4);
 
-  if (!user) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <p className="text-lg text-gray-600">Veuillez vous connecter pour voir les offres d'emploi</p>
-        </div>
-      </div>
-    );
-  }
+  // Allow public access to job listings (no login required)
 
   if (isLoading && currentPage === 1) {
     return (

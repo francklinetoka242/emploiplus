@@ -133,7 +133,7 @@
 → Sélectionnez emploiplus
 → Import
 → Ajoutez env var:
-  - VITE_API_BASE_URL = https://emploiplus-backend.onrender.com
+   - VITE_API_BASE_URL = https://your-production-api.example.com
 → Deploy!
 
 Étape 4: Tester (5 min)

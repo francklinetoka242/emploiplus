@@ -3,7 +3,7 @@
 ## Overview
 Your application uses JWT-based authentication with email/password. The system is deployed across three services:
 - **Frontend**: https://emploiplus.vercel.app (Vercel)
-- **Backend**: https://emploiplus-backend.onrender.com (Render)
+- **Backend**: https://your-production-api.example.com (production host) or Supabase for direct DB/auth
 - **Database**: Supabase PostgreSQL
 
 ## What Was Fixed
@@ -28,12 +28,14 @@ Your application uses JWT-based authentication with email/password. The system i
 ### 1. Vercel (Frontend)
 **Set these in Vercel Project Settings → Environment Variables:**
 
+If using a backend:
 ```
-VITE_API_BASE_URL=https://emploiplus-backend.onrender.com
+VITE_API_BASE_URL=https://your-production-api.example.com
 ```
+If using only Supabase for auth/DB: ensure `SUPABASE_URL` and `SUPABASE_ANON_KEY` are set and omit `VITE_API_BASE_URL`.
 
-### 2. Render (Backend)
-**Set these in Render Dashboard → Environment Variables:**
+### 2. Backend (Production host)
+**Set these in your production host's environment variables (or CI):**
 
 ```
 # Database
@@ -50,13 +52,13 @@ NODE_ENV=production
 ```
 
 ### 3. Supabase (Database)
-Database connection string is already configured in Render's `DATABASE_URL`.
+Database connection string should point to Supabase's PostgreSQL in `DATABASE_URL`.
 
 ## How Authentication Works
 
 ### Registration Flow
 1. User fills form at `/inscription`
-2. Frontend calls `POST https://emploiplus-backend.onrender.com/api/register`
+2. Frontend calls `POST https://your-production-api.example.com/api/register` (if using backend)
 3. Backend validates:
    - Email format
    - Password length (>= 8 characters)
@@ -70,7 +72,7 @@ Database connection string is already configured in Render's `DATABASE_URL`.
 
 ### Login Flow
 1. User fills form at `/connexion`
-2. Frontend calls `POST https://emploiplus-backend.onrender.com/api/login`
+2. Frontend calls `POST https://your-production-api.example.com/api/login` (if using backend)
 3. Backend:
    - Queries user by email
    - Verifies password with bcrypt

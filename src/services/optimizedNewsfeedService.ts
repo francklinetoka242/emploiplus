@@ -21,7 +21,8 @@
  * - Render = notifications + PDF + matching uniquement
  */
 
-import { createClient, SupabaseClient } from '@supabase/supabase-js';
+import { SupabaseClient } from '@supabase/supabase-js';
+import { supabase as defaultSupabase, createSupabaseClient } from '@/lib/supabase';
 
 /**
  * TYPES & INTERFACES
@@ -84,8 +85,13 @@ export interface NewsfeedResult {
 export class OptimizedNewsfeedService {
   private supabase: SupabaseClient;
 
-  constructor(supabaseUrl: string, supabaseKey: string) {
-    this.supabase = createClient(supabaseUrl, supabaseKey);
+  constructor(supabaseUrl?: string, supabaseKey?: string) {
+    // If explicit credentials are provided, create a dedicated client, otherwise use the centralized client
+    if (supabaseUrl && supabaseKey) {
+      this.supabase = createSupabaseClient(supabaseUrl, supabaseKey);
+    } else {
+      this.supabase = defaultSupabase as SupabaseClient;
+    }
   }
 
   /**

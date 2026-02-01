@@ -92,7 +92,7 @@ export const useGoogleAuth = () => {
 **POST /api/auth/sync-google**
 
 ```bash
-curl -X POST https://emploiplus-backend.onrender.com/api/auth/sync-google \
+curl -X POST https://your-production-api.example.com/api/auth/sync-google \
   -H "Content-Type: application/json" \
   -d '{
     "id": "user-id-from-google",
@@ -252,7 +252,7 @@ https://emploiplus.vercel.app/auth/callback?role=company
 ```env
 VITE_SUPABASE_URL=https://gcwqiplhiwbicnisnaay.supabase.co
 VITE_SUPABASE_ANON_KEY=sb_publishable_AqMJveGi4bHyQE3Y6jlHDw_hUhWR9RW
-VITE_API_BASE_URL=http://localhost:5000  # ou https://emploiplus-backend.onrender.com
+VITE_API_BASE_URL=http://localhost:5000  # ou https://your-production-api.example.com
 ```
 
 ### Backend (.env)

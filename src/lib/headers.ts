@@ -1,4 +1,4 @@
-import { createClient } from '@supabase/supabase-js';
+import { supabase } from '@/lib/supabase';
 
 // Get API base URL from environment variable - use for all API calls on Vercel
 export function getApiBaseUrl() {
@@ -32,16 +32,13 @@ export async function supabaseAuthHeaders(contentType?: string): Promise<Record<
 
   // Try to get Supabase session token
   try {
-    const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL || '';
-    const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
-    
-    if (SUPABASE_URL && SUPABASE_ANON_KEY) {
-      const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    try {
       const { data: { session }, error } = await supabase.auth.getSession();
-      
       if (session && !error) {
         headers['Authorization'] = `Bearer ${session.access_token}`;
       }
+    } catch (e) {
+      console.error('Error getting Supabase session:', e);
     }
   } catch (e) {
     console.error('Error getting Supabase session:', e);

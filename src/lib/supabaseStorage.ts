@@ -3,17 +3,7 @@
  * Centralise la validation et l'upload vers les différents buckets Supabase
  */
 
-import { createClient } from '@supabase/supabase-js';
-
-// Initialiser le client Supabase
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
-
-if (!supabaseUrl || !supabaseAnonKey) {
-  throw new Error('Missing Supabase credentials in environment variables');
-}
-
-const supabase = createClient(supabaseUrl, supabaseAnonKey);
+import { supabase } from '@/lib/supabase';
 
 /**
  * Configuration des buckets avec leurs règles de validation
