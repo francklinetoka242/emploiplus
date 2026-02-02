@@ -13,7 +13,7 @@ import { PWALayout } from "@/components/layout/PWALayout";
 
 const LoginUser = () => {
   const navigate = useNavigate();
-  const { user, signIn } = useSupabaseAuth();
+  const { user, session, signIn } = useSupabaseAuth();
   const location = useLocation();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -30,7 +30,9 @@ const LoginUser = () => {
   }, [location.search]);
 
   useEffect(() => {
-    if (user) {
+    // Redirect when either a full profile `user` is available OR when a session exists
+    // (session may be set before profile is loaded)
+    if (user || session) {
       // If there's a redirect param, go there
       const params = new URLSearchParams(location.search);
       const redirect = params.get('redirect');
@@ -42,7 +44,7 @@ const LoginUser = () => {
         navigate('/fil-actualite');
       }
     }
-  }, [user, navigate, location.search]);
+  }, [user, session, navigate, location.search]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -62,7 +64,7 @@ const LoginUser = () => {
         navigate(redirect);
       } else {
         // Redirect all users to newsfeed
-        navigate('/');
+        navigate('/fil-actualite');
       }
     }
 
