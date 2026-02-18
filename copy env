@@ -1,13 +1,1 @@
-
-# URL de ton site (pour les redirections)
-VITE_SITE_URL=http://localhost:5173
-
-DATABASE_URL=postgresql://postgres.gcwqiplhiwbicnisnaay:G9yGu6bLRYBQtUQK@aws-1-eu-central-1.pooler.supabase.com:6543/postgres
-
-# Configuration Supabase (à trouver dans Supabase > Settings > API)
-SUPABASE_URL=https://gcwqiplhiwbicnisnaay.supabase.co
-SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imdjd3FpcGxoaXdiaWNuaXNuYWF5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njg5Mjc3OTEsImV4cCI6MjA4NDUwMzc5MX0.ecHj1n3HPiyKglDtm7tvv7IGP0Tz6fJgO4PFCS32dPc
-CORS_ORIGINS=https://emploiplus.vercel.app
-
-# L'URL de ton Backend Render (SANS le /api final si ton code l'ajoute déjà)
-VITE_API_BASE_URL=http://localhost:5000
+__________
