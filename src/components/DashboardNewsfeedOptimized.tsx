@@ -3,131 +3,24 @@
  * Optimized Newsfeed Component - LinkedIn Scale
  * ============================================================================
  * 
- * REFACTORISATION:
- * ❌ Ancien: Appels backend Render pour chaque pagination
- * ✅ Nouveau: Direct Supabase avec RLS + keyset pagination
- * 
- * BÉNÉFICES:
- * 1. Zéro latence backend pour millions d'users
- * 2. Lazy-load + infinite scroll sans offset
- * 3. Real-time updates via WebSocket (optionnel)
- * 4. Secure via RLS (row-level security)
+ * ⚠️ TEMPORARILY DISABLED: This component depends on Supabase which has been
+ * removed from the frontend. Will be re-enabled when backend newsfeed API is ready.
+ * ============================================================================
  */
 
-import React, { useEffect, useState, useCallback, useRef } from 'react';
-import { useSupabaseAuth } from '@/hooks/useSupabaseAuth';
-import { OptimizedNewsfeedService } from '@/services/optimizedNewsfeedService';
-import { Publication } from '@/types/newsfeed-optimized';
-import { toast } from 'sonner';
-import { Loader2 } from 'lucide-react';
+import React from 'react';
+import { Card } from '@/components/ui/card';
 
 const DashboardNewsfeedOptimized: React.FC = () => {
-  // =========================================================================
-  // STATE MANAGEMENT
-  // =========================================================================
-  const { user, session } = useSupabaseAuth();
-  const [publications, setPublications] = useState<Publication[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [hasMore, setHasMore] = useState(true);
-  const [currentPage, setCurrentPage] = useState({ from: 0, to: 19 });
-  const observerTarget = useRef<HTMLDivElement>(null);
-  
-  // Service initialization
-  const newsfeedService = new OptimizedNewsfeedService(
-    process.env.REACT_APP_SUPABASE_URL || '',
-    process.env.REACT_APP_SUPABASE_ANON_KEY || ''
+  return (
+    <Card className="p-6 text-center">
+      <p className="text-muted-foreground">Newsfeed component temporarily disabled.</p>
+      <p className="text-sm text-muted-foreground mt-2">Redirecting to backend newsfeed...</p>
+    </Card>
   );
+};
 
-  // =========================================================================
-  // FETCH NEWSFEED WITH PAGINATION
-  // =========================================================================
-  const fetchNewsfeed = useCallback(
-    async (page?: { from: number; to: number }) => {
-      if (!user) return;
-
-      try {
-        setLoading(true);
-        const pageToFetch = page || currentPage;
-
-        console.log('[NewsfeedOptimized] Fetching publications', {
-          from: pageToFetch.from,
-          to: pageToFetch.to,
-        });
-
-        const result = await newsfeedService.getNewsfeedPublications({
-          from: pageToFetch.from,
-          to: pageToFetch.to,
-          viewerId: user.id,
-          sortBy: 'relevant', // Certificats d'abord
-        });
-
-        if (page && page.from > 0) {
-          // Pagination: ajouter aux publications existantes
-          setPublications((prev) => [...prev, ...result.publications]);
-        } else {
-          // Première page: remplacer
-          setPublications(result.publications);
-        }
-
-        setHasMore(result.hasMore);
-        if (result.nextPage) {
-          setCurrentPage(result.nextPage);
-        }
-
-        console.log('[NewsfeedOptimized] Loaded', {
-          count: result.publications.length,
-          hasMore: result.hasMore,
-        });
-      } catch (error) {
-        console.error('[NewsfeedOptimized] Error:', error);
-        toast.error('Erreur chargement newsfeed');
-      } finally {
-        setLoading(false);
-      }
-    },
-    [user, newsfeedService, currentPage]
-  );
-
-  // =========================================================================
-  // INITIAL LOAD
-  // =========================================================================
-  useEffect(() => {
-    if (user) {
-      fetchNewsfeed({ from: 0, to: 19 });
-    }
-  }, [user]);
-
-  // =========================================================================
-  // INFINITE SCROLL OBSERVER
-  // =========================================================================
-  useEffect(() => {
-    if (!hasMore || loading) return;
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting) {
-          console.log('[NewsfeedOptimized] Intersection detected, fetching next page');
-          fetchNewsfeed(currentPage);
-        }
-      },
-      { rootMargin: '100px', threshold: 0.1 }
-    );
-
-    if (observerTarget.current) {
-      observer.observe(observerTarget.current);
-    }
-
-    return () => {
-      if (observerTarget.current) {
-        observer.unobserve(observerTarget.current);
-      }
-    };
-  }, [hasMore, loading, currentPage, fetchNewsfeed]);
-
-  // =========================================================================
-  // REAL-TIME SUBSCRIPTION (Optional)
-  // =========================================================================
-  useEffect(() => {
+export default DashboardNewsfeedOptimized;
     if (!user) return;
 
     console.log('[NewsfeedOptimized] Setting up real-time subscription');

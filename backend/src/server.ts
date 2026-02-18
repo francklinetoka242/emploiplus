@@ -1,6 +1,8 @@
 // backend/src/server.ts
-import express, { Request, Response, NextFunction } from "express";
 import dotenv from 'dotenv';
+dotenv.config();
+
+import express, { Request, Response, NextFunction } from "express";
 import cors from "cors";
 import helmet from "helmet";
 import rateLimit from "express-rate-limit";
@@ -43,14 +45,18 @@ import {
   hasConversation,
   getUnreadConversationsCount,
 } from "./services/messagingService.js";
-import webhookMicroservices from "./routes/webhook-microservices.js";
-import { jobAnalysisQueue, postModerationQueue, activityScoringQueue, initializeQueues } from "./services/microserviceQueues.js";
+// ⚠️ DISABLED: Webhook and microservice imports commented out to allow server startup without Supabase
+// import webhookMicroservices from "./routes/webhook-microservices.js";
+// import { jobAnalysisQueue, postModerationQueue, activityScoringQueue, initializeQueues } from "./services/microserviceQueues.js";
 const app = express();
 // Mount modular auth routes if present
 import authRoutes from './routes/auth.js';
 import adminAuthRoutes from './routes/admin-auth.js';
-// Load environment variables from backend/.env when running locally
-dotenv.config();
+
+//
+
+
+
 
 // Extend Express Request type
 declare global {
@@ -90,8 +96,9 @@ app.use('/api/auth', authRoutes as any);
 // Admin authentication routes (routes/admin-auth.ts)
 app.use('/api/admin', adminAuthRoutes as any);
 
-// Mount webhook microservices routes
-app.use('/api', webhookMicroservices as any);
+// ⚠️ DISABLED: Webhook microservices routes commented out to allow server startup without Supabase
+// Uncomment when ready to enable webhooks
+// app.use('/api', webhookMicroservices as any);
 // JWT secret must come from env in production
 const JWT_SECRET = process.env.JWT_SECRET || 'change_this_in_production';
 const userAuth = (req: Request, res: Response, next: NextFunction) => {
@@ -235,33 +242,30 @@ else {
     created_at TIMESTAMP DEFAULT NOW(),
     updated_at TIMESTAMP DEFAULT NOW()
   )`).catch((err) => console.error("Could not ensure testimonials table exists:", err));
-        // Ensure `admins` table exists with extended schema (safe to run)
-        pool.query(`CREATE TABLE IF NOT EXISTS admins (
+        // Ensure `admins` table exists with English column names (per migrated schema)
+        pool.query(`CREATE TABLE IF NOT EXISTS public.admins (
         id SERIAL PRIMARY KEY,
-        nom VARCHAR(100) NOT NULL,
-        prenom VARCHAR(100) NOT NULL,
+        first_name VARCHAR(100) NOT NULL,
+        last_name VARCHAR(100) NOT NULL,
         email VARCHAR(255) UNIQUE NOT NULL,
         password TEXT NOT NULL,
-        telephone VARCHAR(20),
-        pays VARCHAR(100),
-        ville VARCHAR(100),
-        date_naissance DATE,
+        phone VARCHAR(20),
+        country VARCHAR(100),
+        city VARCHAR(100),
+        birth_date DATE,
         avatar_url TEXT DEFAULT 'https://ui-avatars.com/api/?name=Admin',
         role VARCHAR(50) NOT NULL DEFAULT 'content_admin',
         is_verified BOOLEAN DEFAULT FALSE,
         verification_token TEXT,
         created_at TIMESTAMP DEFAULT NOW()
     )`).catch((err) => console.error("Could not ensure admins table exists:", err));
-        // Add missing columns if migrating from older schema
-        pool.query(`ALTER TABLE admins ADD COLUMN IF NOT EXISTS nom VARCHAR(100)`).catch(() => { });
-        pool.query(`ALTER TABLE admins ADD COLUMN IF NOT EXISTS prenom VARCHAR(100)`).catch(() => { });
-        pool.query(`ALTER TABLE admins ADD COLUMN IF NOT EXISTS telephone VARCHAR(20)`).catch(() => { });
-        pool.query(`ALTER TABLE admins ADD COLUMN IF NOT EXISTS pays VARCHAR(100)`).catch(() => { });
-        pool.query(`ALTER TABLE admins ADD COLUMN IF NOT EXISTS ville VARCHAR(100)`).catch(() => { });
-        pool.query(`ALTER TABLE admins ADD COLUMN IF NOT EXISTS date_naissance DATE`).catch(() => { });
-        pool.query(`ALTER TABLE admins ADD COLUMN IF NOT EXISTS avatar_url TEXT`).catch(() => { });
-        pool.query(`ALTER TABLE admins ADD COLUMN IF NOT EXISTS is_verified BOOLEAN DEFAULT FALSE`).catch(() => { });
-        pool.query(`ALTER TABLE admins ADD COLUMN IF NOT EXISTS verification_token TEXT`).catch(() => { });
+        // Ensure English column names for admins table
+        pool.query(`ALTER TABLE admins ADD COLUMN IF NOT EXISTS first_name VARCHAR(100)`).catch(() => { });
+        pool.query(`ALTER TABLE admins ADD COLUMN IF NOT EXISTS last_name VARCHAR(100)`).catch(() => { });
+        pool.query(`ALTER TABLE admins ADD COLUMN IF NOT EXISTS phone VARCHAR(20)`).catch(() => { });
+        pool.query(`ALTER TABLE admins ADD COLUMN IF NOT EXISTS country VARCHAR(100)`).catch(() => { });
+        pool.query(`ALTER TABLE admins ADD COLUMN IF NOT EXISTS city VARCHAR(100)`).catch(() => { });
+        pool.query(`ALTER TABLE admins ADD COLUMN IF NOT EXISTS birth_date DATE`).catch(() => { });
     // Ensure `users` table exists with proper structure
     pool.query(`CREATE TABLE IF NOT EXISTS users (
     id SERIAL PRIMARY KEY,
@@ -1496,16 +1500,16 @@ app.post("/api/admin/create", async (req, res) => {
         if (decoded.role !== "super_admin") {
             return res.status(403).json({ success: false, message: "Accès refusé" });
         }
-        const { email, password, nom, prenom, telephone = null, pays = null, ville = null, date_naissance = null, avatar_url = null, role = "content_admin" } = req.body;
+        const { email, password, firstName, lastName, phone = null, country = null, city = null, birth_date = null, avatar_url = null, role = "content_admin" } = req.body;
         const check = await pool.query("SELECT id FROM admins WHERE email = $1", [email.toLowerCase()]);
         if (check.rows.length > 0) {
             return res.status(400).json({ success: false, message: "Email déjà utilisé" });
         }
         const hashed = bcrypt.hashSync(password, 10);
-        const { rows } = await pool.query(`INSERT INTO admins (email, password, nom, prenom, telephone, pays, ville, date_naissance, avatar_url, role, is_verified, created_at)
+        const { rows } = await pool.query(`INSERT INTO admins (email, password, first_name, last_name, phone, country, city, birth_date, avatar_url, role, is_verified, created_at)
        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, true, NOW())
-       RETURNING id, email, nom, prenom, role, created_at`, [
-            email.toLowerCase(), hashed, nom || '', prenom || '', telephone, pays, ville, date_naissance || null, avatar_url || null, role
+       RETURNING id, email, first_name, last_name, role, created_at`, [
+            email.toLowerCase(), hashed, firstName || '', lastName || '', phone, country, city, birth_date || null, avatar_url || null, role
         ]);
         res.json({ success: true, admin: rows[0] });
     }
@@ -3827,6 +3831,8 @@ const startServer = async () => {
         await connectedPromise;
         if (!isConnected) {
             console.warn('DB not connected after attempts — server starting in degraded mode');
+        } else {
+            console.log('✅ Connecté à la DB via : DATABASE_URL (SSH tunnel via port 5433)');
         }
     }
     catch (e) {
@@ -4183,7 +4189,12 @@ const startServer = async () => {
     const HOST = process.env.HOST || '0.0.0.0';
     
     app.listen(PORT, HOST, () => {
-        console.log(`Backend prêt → http://localhost:${PORT} (HOST: ${HOST})`);
+        console.log(`\n🚀 Backend prêt → http://localhost:${PORT} (HOST: ${HOST})`);
+        console.log(`✅ Server running on port ${PORT}`);
+        console.log('\n📊 Database Connection Status:');
+        console.log(`Tentative de connexion au port: ${process.env.DATABASE_URL || 'Aucune DATABASE_URL définie'}`);
+        const dbPort = process.env.DATABASE_URL?.includes(':5444') ? 'VPS via Tunnel (Port 5444)' : process.env.DATABASE_URL?.includes(':5433') ? 'VPS via Tunnel (Port 5433)' : 'Local (Port 5432)';
+        console.log(`✅ DB Connection: ${dbPort}\n`);
     });
 };
 startServer();
@@ -5013,19 +5024,21 @@ app.get('/api/health/queues', async (req, res) => {
     }
 });
 
-// Initialize queues and start workers on server startup
-initializeQueues().catch((err) => {
-    console.error('Failed to initialize microservice queues:', err);
-    process.exit(1);
-});
+// ✅ DISABLED: Queue initialization commented out to allow server startup without microservices
+// Uncomment when ready to enable queue workers
+// initializeQueues().catch((err) => {
+//     console.error('Failed to initialize microservice queues:', err);
+//     process.exit(1);
+// });
 
 // Graceful shutdown
 process.on('SIGTERM', async () => {
     console.log('SIGTERM received, shutting down gracefully...');
     try {
-        await jobAnalysisQueue.close();
-        await postModerationQueue.close();
-        await activityScoringQueue.close();
+        // ⚠️ DISABLED: Queue closure commented out (queues not initialized)
+        // await jobAnalysisQueue.close();
+        // await postModerationQueue.close();
+        // await activityScoringQueue.close();
         process.exit(0);
     } catch (err) {
         console.error('Error during shutdown:', err);

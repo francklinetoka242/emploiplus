@@ -1,11 +1,9 @@
 // src/App.tsx
-import { useEffect } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
 
 import Layout from "./components/Layout";
 
@@ -115,31 +113,6 @@ import { Messages } from "./pages/Messages";
 const queryClient = new QueryClient();
 
 const App = () => {
-  // Initialize Supabase auth state listener at app level
-  const { user, session, loading } = useSupabaseAuth();
-
-  useEffect(() => {
-    // Log auth state changes for debugging
-    console.log('Auth state changed:', {
-      user: user?.email,
-      userType: user?.user_type,
-      session: !!session,
-      loading
-    });
-
-    // When user logs in (session exists)
-    if (session && user && !loading) {
-      console.log('✅ User logged in:', user.email);
-      // The routing logic in Newsfeed.tsx will handle redirects
-    }
-
-    // When user logs out (session is null and not loading)
-    if (!session && !loading) {
-      console.log('❌ User logged out');
-      // The router will show login page
-    }
-  }, [session, user, loading]);
-
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>

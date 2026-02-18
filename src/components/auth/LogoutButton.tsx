@@ -1,5 +1,4 @@
 import { useNavigate } from 'react-router-dom';
-import { useSupabaseAuth } from '@/hooks/useSupabaseAuth';
 import { Button, ButtonProps } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { LogOut } from 'lucide-react';
@@ -15,15 +14,17 @@ export function LogoutButton({
   ...buttonProps
 }: LogoutButtonProps) {
   const navigate = useNavigate();
-  const { signOut } = useSupabaseAuth();
 
   const handleLogout = async () => {
-    const { error } = await signOut();
-    if (error) {
-      toast.error('Erreur de déconnexion');
-    } else {
+    try {
+      // Clear localStorage
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
       toast.success('Vous avez été déconnecté');
       navigate('/connexion');
+    } catch (error) {
+      console.error('Logout error:', error);
+      toast.error('Erreur de déconnexion');
     }
   };
 

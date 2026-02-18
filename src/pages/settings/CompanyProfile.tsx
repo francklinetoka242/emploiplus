@@ -10,7 +10,7 @@ import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from "@
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { toast } from "sonner";
 import { Loader2, Upload } from "lucide-react";
-import { authHeaders } from '@/lib/headers';
+import { authHeaders, buildApiUrl } from '@/lib/headers';
 import { uploadFile } from '@/lib/upload';
 import CompanyDocumentsUpload from '@/components/CompanyDocumentsUpload';
 
@@ -66,7 +66,7 @@ export default function CompanyProfile() {
     setLoading(true);
     try {
       const headers: Record<string, string> = authHeaders('application/json');
-      const res = await fetch("/api/users/me", { headers });
+      const res = await fetch(buildApiUrl("/api/users/me"), { headers });
       if (!res.ok) throw new Error('Erreur chargement profil');
       const data = await res.json();
       setProfileData(data);

@@ -26,18 +26,20 @@ const generateVerificationToken = (): string => {
 export interface AdminRegistrationData {
   email: string;
   password: string;
-  nom: string;
-  prenom: string;
-  telephone?: string;
-  pays?: string;
-  ville?: string;
-  date_naissance?: string;
+  nom: string;           // Frontend sends as "nom" → maps to last_name
+  prenom: string;        // Frontend sends as "prenom" → maps to first_name
+  phone?: string;
+  country?: string;
+  city?: string;
+  birth_date?: string;
   avatar_url?: string;
   role: "super_admin" | "content_admin" | "admin_offres" | "admin_users" | "admin";
 }
 
 /**
  * Register a new admin with email verification
+ * Maps: nom→last_name, prenom→first_name
+ * PostgreSQL auto-increments id, doesn't require UUID
  */
 export const registerAdmin = async (data: AdminRegistrationData) => {
   try {
@@ -67,31 +69,27 @@ export const registerAdmin = async (data: AdminRegistrationData) => {
 
     // Generate verification token
     const verificationToken = generateVerificationToken();
-    const tokenExpiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24h validity
 
-    // Insert admin
+    // Prepare data for database insertion
+    const last_name = data.nom;
+    const first_name = data.prenom;
+    const email = data.email;
+    const password = hashedPassword;
+    const role = data.role;
+
+    // Debug log before database insert
+    console.log('   📝 Données envoyées à la DB:', { last_name, first_name, email, role });
+
+    // Minimal INSERT: only essential columns
+    // PostgreSQL will auto-generate id (SERIAL)
     const { rows } = await pool.query(
-      `INSERT INTO admins (
-        email, password, nom, prenom, telephone, pays, ville, 
-        date_naissance, avatar_url, role, verification_token, 
-        verification_token_expires_at, is_verified, created_at
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, false, NOW())
-      RETURNING id, email, nom, prenom, role, created_at`,
-      [
-        data.email,
-        hashedPassword,
-        data.nom,
-        data.prenom,
-        data.telephone || null,
-        data.pays || null,
-        data.ville || null,
-        data.date_naissance || null,
-        data.avatar_url || null,
-        data.role,
-        verificationToken,
-        tokenExpiresAt,
-      ]
+      `INSERT INTO public.admins (last_name, first_name, email, password, role)
+       VALUES ($1, $2, $3, $4, $5)
+       RETURNING *`,
+      [last_name, first_name, email, password, role]
     );
+
+    console.log('   ✅ INSERT successful, returned admin:', rows[0]);
 
     const admin = rows[0];
 
@@ -122,13 +120,21 @@ export const registerAdmin = async (data: AdminRegistrationData) => {
       admin: {
         id: admin.id,
         email: admin.email,
-        nom: admin.nom,
-        prenom: admin.prenom,
+        last_name: admin.last_name,
+        first_name: admin.first_name,
         role: admin.role,
       },
     };
   } catch (error) {
-    console.error("Admin registration error:", error);
+    console.error("❌ Admin registration error:", error);
+    if (error instanceof Error) {
+      console.error("   SQL Error Message:", error.message);
+      console.error("   Error Details:", {
+        code: (error as any).code,
+        detail: (error as any).detail,
+        message: error.message
+      });
+    }
     return {
       success: false,
       message: "Erreur lors de la création de l'admin",
@@ -165,8 +171,7 @@ export const verifyEmailToken = async (token: string) => {
     await pool.query(
       `UPDATE admins 
        SET is_verified = true, 
-           verification_token = NULL,
-           verification_token_expires_at = NULL
+           verification_token = NULL
        WHERE id = $1`,
       [admin.id]
     );
@@ -177,7 +182,10 @@ export const verifyEmailToken = async (token: string) => {
       admin: { id: admin.id, email: admin.email },
     };
   } catch (error) {
-    console.error("Email verification error:", error);
+    console.error("❌ Email verification error:", error);
+    if (error instanceof Error) {
+      console.error("   SQL Error Message:", error.message);
+    }
     return {
       success: false,
       message: "Erreur lors de la vérification",
@@ -241,6 +249,8 @@ export const loginAdmin = async (email: string, password: string) => {
 
 /**
  * Create admin by super admin
+ * Maps: nom→last_name, prenom→first_name
+ * Forces role to 'content_admin' or 'super_admin' as specified
  */
 export const createAdminBySuperAdmin = async (
   data: AdminRegistrationData,
@@ -273,31 +283,27 @@ export const createAdminBySuperAdmin = async (
 
     // Generate verification token
     const verificationToken = generateVerificationToken();
-    const tokenExpiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
 
-    // Insert admin
+    // Prepare data for database insertion
+    const last_name = data.nom;
+    const first_name = data.prenom;
+    const email = data.email;
+    const password = hashedPassword;
+    const role = data.role;
+
+    // Debug log before database insert
+    console.log('   📝 Données envoyées à la DB:', { last_name, first_name, email, role });
+
+    // Minimal INSERT: only essential columns
+    // PostgreSQL will auto-generate id (SERIAL)
     const { rows } = await pool.query(
-      `INSERT INTO admins (
-        email, password, nom, prenom, telephone, pays, ville, 
-        date_naissance, avatar_url, role, verification_token, 
-        verification_token_expires_at, is_verified, created_at
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, false, NOW())
-      RETURNING id, email, nom, prenom, role, created_at`,
-      [
-        data.email,
-        hashedPassword,
-        data.nom,
-        data.prenom,
-        data.telephone || null,
-        data.pays || null,
-        data.ville || null,
-        data.date_naissance || null,
-        data.avatar_url || null,
-        data.role,
-        verificationToken,
-        tokenExpiresAt,
-      ]
+      `INSERT INTO public.admins (last_name, first_name, email, password, role)
+       VALUES ($1, $2, $3, $4, $5)
+       RETURNING *`,
+      [last_name, first_name, email, password, role]
     );
+
+    console.log('   ✅ INSERT successful, returned admin:', rows[0]);
 
     const admin = rows[0];
 
@@ -326,13 +332,17 @@ export const createAdminBySuperAdmin = async (
       admin: {
         id: admin.id,
         email: admin.email,
-        nom: admin.nom,
-        prenom: admin.prenom,
+        last_name: admin.last_name,
+        first_name: admin.first_name,
         role: admin.role,
       },
     };
   } catch (error) {
-    console.error("Create admin error:", error);
+    console.error("❌ Create admin error:", error);
+    if (error instanceof Error) {
+      console.error("   SQL Error Message:", error.message);
+      console.error("   Error Details:", error);
+    }
     return {
       success: false,
       message: "Erreur lors de la création de l'admin",

@@ -1,15 +1,13 @@
-import { useSupabaseUser } from '@/hooks/useSupabaseUser';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
+import { useAuth } from '@/hooks/useAuth';
 
 export const GoogleProfile = () => {
-  const { user, loading } = useSupabaseUser();
-
-  if (loading) return null;
+  const { user } = useAuth();
 
   if (!user) return null;
 
-  const avatarUrl = user.user_metadata?.avatar_url;
-  const fullName = user.user_metadata?.full_name || user.email;
+  const avatarUrl = user.avatar_url || user.profile_image_url;
+  const fullName = user.full_name || user.email;
   const initials = fullName
     ?.split(' ')
     .map((n: string) => n[0])

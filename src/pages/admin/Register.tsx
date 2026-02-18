@@ -37,7 +37,8 @@ export default function AdminRegister() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          full_name: form.fullName || null,
+          firstName: form.fullName || "",
+          lastName: "",
           email: form.email,
           password: form.password,
         }),

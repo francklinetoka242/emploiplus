@@ -7,13 +7,11 @@ import { Card } from "@/components/ui/card";
 import { Briefcase, Mail, Lock } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
-import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
 import { GoogleLoginButton } from "@/components/auth/GoogleLoginButton";
 import { PWALayout } from "@/components/layout/PWALayout";
 
 const LoginUser = () => {
   const navigate = useNavigate();
-  const { user, session, signIn, getToken } = useSupabaseAuth();
   const location = useLocation();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -29,60 +27,40 @@ const LoginUser = () => {
     }
   }, [location.search]);
 
-  useEffect(() => {
-    // Redirect when either a full profile `user` is available OR when a session exists
-    // (session may be set before profile is loaded)
-    if (user || session) {
-      // If there's a redirect param, go there
-      const params = new URLSearchParams(location.search);
-      const redirect = params.get('redirect');
-      
-      if (redirect) {
-        navigate(redirect);
-      } else {
-        // Redirect all users to newsfeed
-        navigate('/fil-actualite');
-      }
-    }
-  }, [user, session, navigate, location.search]);
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    const { error, user: signedUser } = await signIn(email, password);
-
-    if (error) {
-      toast.error(error.message);
-    } else {
-      toast.success("Connexion réussie !");
-      // Ensure backend auth token is stored so `useAuth` (backend) recognizes login
-      try {
-        const token = await getToken();
-        if (token) {
-          localStorage.setItem('token', token);
+    
+    try {
+      const response = await fetch('http://localhost:5000/api/auth/admin/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password })
+      });
+      
+      const data = await response.json();
+      
+      if (data.success) {
+        toast.success("Connexion réussie !");
+        if (data.token) {
+          localStorage.setItem('token', data.token);
         }
-      } catch (e) {
-        console.warn('Could not retrieve auth token after sign in', e);
-      }
-
-      // Persist profile for instant UI (useAuth also reads this)
-      const currentUser = signedUser || JSON.parse(localStorage.getItem('user') || 'null');
-      if (currentUser) {
-        try { localStorage.setItem('user', JSON.stringify(currentUser)); } catch (e) { /* noop */ }
-      }
-
-      const params = new URLSearchParams(location.search);
-      const redirect = params.get('redirect');
-
-      if (redirect) {
-        navigate(redirect);
+        if (data.admin) {
+          localStorage.setItem('user', JSON.stringify(data.admin));
+        }
+        
+        const params = new URLSearchParams(location.search);
+        const redirect = params.get('redirect');
+        navigate(redirect || '/fil-actualite');
       } else {
-        // Redirect all users to newsfeed
-        navigate('/fil-actualite');
+        toast.error(data.message || "Erreur de connexion");
       }
+    } catch (error) {
+      console.error('Login error:', error);
+      toast.error("Erreur de connexion");
+    } finally {
+      setLoading(false);
     }
-
-    setLoading(false);
   };
 
   return (

@@ -15,6 +15,7 @@ import { Router, Request, Response } from 'express';
 import { pool } from '../config/database.js';
 import { hashPassword, comparePassword, isValidEmail } from '../utils/helpers.js';
 import { generateToken } from '../middleware/auth.js';
+import { registerAdmin } from '../services/adminAuthService.js';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 
@@ -26,6 +27,7 @@ const JWT_SECRET = process.env.JWT_SECRET || 'change_this_in_production';
  * POST /api/auth/admin/register
  */
 router.post('/admin/register', async (req: Request, res: Response) => {
+  console.log('👉 Requête reçue sur la route d\'inscription admin (auth.ts /admin/register)');
   try {
     const { email, password, full_name, role = 'admin' } = req.body;
 
@@ -97,6 +99,76 @@ router.post('/admin/register', async (req: Request, res: Response) => {
 });
 
 /**
+ * Super Admin Registration
+ * POST /api/auth/super-admin/register
+ * Accepts { nom, prenom, email, password }
+ * Maps: nom→last_name, prenom→first_name in database
+ */
+router.post('/super-admin/register', async (req: Request, res: Response) => {
+  console.log('👉 Requête reçue sur la route d\'inscription Super Admin (auth.ts /super-admin/register)');
+  console.log('📥 Données reçues pour inscription:', JSON.stringify(req.body, null, 2));
+  
+  // SECURITY: Role is determined by the route, NOT by user input
+  const role = 'super_admin';
+  console.log('✅ Role forced by route:', role);
+  
+  try {
+    const { email, password } = req.body;
+    // Flexible extraction: accept both lastName/firstName and nom/prenom formats
+    const lastName = req.body.lastName || req.body.nom;
+    const firstName = req.body.firstName || req.body.prenom;
+
+    console.log('🔍 Champs extraits:');
+    console.log('   firstName:', firstName);
+    console.log('   lastName:', lastName);
+    console.log('   email:', email);
+    console.log('   password:', password ? '***' : 'MANQUANT');
+
+    if (!lastName || !firstName || !email || !password) {
+      console.log('❌ Validation échouée - champs manquants');
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Tous les champs sont requis (firstName/nom, lastName/prenom, email, password)',
+        received: { firstName, lastName, email, password: password ? 'defined' : 'missing' }
+      });
+    }
+
+    console.log('📤 Appel au service registerAdmin avec:');
+    console.log('   email:', email);
+    console.log('   nom:', lastName);
+    console.log('   prenom:', firstName);
+    console.log('   role:', role);
+
+    const result = await registerAdmin({
+      email,
+      password,
+      nom: lastName,
+      prenom: firstName,
+      role, // Force role from route, not from user input
+    } as any);
+
+    console.log('📋 Résultat du service:', { success: result.success, message: result.message });
+
+    if (result.success) {
+      console.log('✅ Inscription super admin réussie!');
+      return res.json(result);
+    }
+
+    console.log('⚠️ Inscription super admin échouée:', result.message);
+    return res.status(400).json(result);
+  } catch (err) {
+    console.error('❌ Super admin registration error:', err);
+    if (err instanceof Error) {
+      console.error('   SQL Error:', err.message);
+      console.error('   Error code:', (err as any).code);
+      console.error('   Error detail:', (err as any).detail);
+      console.error('   Stack:', err.stack);
+    }
+    return res.status(500).json({ success: false, message: 'Erreur serveur', error: process.env.NODE_ENV === 'development' ? String(err) : undefined });
+  }
+});
+
+/**
  * Admin Login
  * POST /api/auth/admin/login
  */
@@ -112,9 +184,9 @@ router.post('/admin/login', async (req: Request, res: Response) => {
       });
     }
 
-    // Get admin
+    // Get admin from public.admins table
     const { rows } = await pool.query(
-      'SELECT * FROM admins WHERE email = $1',
+      'SELECT * FROM public.admins WHERE email = $1',
       [email]
     );
 
@@ -144,7 +216,10 @@ router.post('/admin/login', async (req: Request, res: Response) => {
       admin: safeAdmin,
     });
   } catch (err) {
-    console.error('Admin login error:', err);
+    console.error('❌ Admin login error:', err);
+    if (err instanceof Error) {
+      console.error('   SQL Error:', err.message);
+    }
     res.status(500).json({
       success: false,
       message: 'Erreur lors de la connexion',

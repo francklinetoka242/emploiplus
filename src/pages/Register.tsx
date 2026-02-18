@@ -14,7 +14,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useSupabaseAuth } from "@/hooks/useSupabaseAuth";
+// Replaced Supabase auth with direct API calls
 import { toast } from "sonner";
 import { COUNTRIES, CONGO_CITIES } from '@/lib/options';
 import { GoogleLoginButton } from "@/components/auth/GoogleLoginButton";
@@ -22,7 +22,6 @@ import { PWALayout } from "@/components/layout/PWALayout";
 
 const Register = () => {
   const navigate = useNavigate();
-  const { signUp, user } = useSupabaseAuth();
   const [accountType, setAccountType] = useState<"candidat" | "entreprise">("candidat");
   const [acceptTerms, setAcceptTerms] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -53,14 +52,7 @@ const Register = () => {
     confirmPassword: "",
   });
 
-  useEffect(() => {
-    if (user) {
-      // respect optional redirect param after registration
-      const params = new URLSearchParams(window.location.search);
-      const redirect = params.get('redirect');
-      navigate(redirect || '/');
-    }
-  }, [user, navigate]);
+  // No Supabase: we call the backend registration endpoint directly
 
   const handleCandidatSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -94,13 +86,30 @@ const Register = () => {
       ...(candidatForm.birthdate && { birthdate: candidatForm.birthdate }),
     };
 
-    const { error } = await signUp(candidatForm.email, candidatForm.password, metadata);
+    try {
+      const resp = await fetch('http://localhost:5000/api/admin/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: candidatForm.email,
+          password: candidatForm.password,
+          full_name: `${candidatForm.firstName} ${candidatForm.lastName}`.trim(),
+          country: candidatForm.country,
+          city: candidatForm.city,
+          phone: candidatForm.phone,
+          metadata,
+          role: 'admin'
+        })
+      });
 
-    if (error) {
-      toast.error(error.message);
-      setLoading(false);
-    } else {
-      toast.success("Inscription réussie ! Vous pouvez vous connecter.");
+      const data = await resp.json().catch(() => ({}));
+      if (!resp.ok) {
+        alert(data?.message || 'Erreur lors de l\'inscription');
+        setLoading(false);
+        return;
+      }
+
+      alert('Inscription réussie ! Vous pouvez vous connecter.');
       // Clear form
       setCandidatForm({
         firstName: "",
@@ -117,6 +126,11 @@ const Register = () => {
       setAcceptTerms(false);
       setLoading(false);
       navigate('/connexion?from=register');
+    }
+    catch (err) {
+      console.error('Registration fetch error:', err);
+      alert('Erreur réseau lors de l\'inscription');
+      setLoading(false);
     }
   };
 
@@ -143,13 +157,30 @@ const Register = () => {
       country: 'congo'
     };
 
-    const { error } = await signUp(entrepriseForm.email, entrepriseForm.password, metadata);
+    try {
+      const resp = await fetch('http://localhost:5000/api/admin/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: entrepriseForm.email,
+          password: entrepriseForm.password,
+          full_name: entrepriseForm.representative || entrepriseForm.companyName,
+          country: 'congo',
+          company_name: entrepriseForm.companyName,
+          company_address: entrepriseForm.address,
+          role: 'admin',
+          metadata,
+        })
+      });
 
-    if (error) {
-      toast.error(error.message);
-      setLoading(false);
-    } else {
-      toast.success("Inscription réussie ! Vous pouvez vous connecter.");
+      const data = await resp.json().catch(() => ({}));
+      if (!resp.ok) {
+        alert(data?.message || 'Erreur lors de l\'inscription');
+        setLoading(false);
+        return;
+      }
+
+      alert('Inscription réussie ! Vous pouvez vous connecter.');
       // Clear form
       setEntrepriseForm({
         companyName: "",
@@ -162,6 +193,11 @@ const Register = () => {
       setAcceptTerms(false);
       setLoading(false);
       navigate('/connexion?from=register');
+    }
+    catch (err) {
+      console.error('Registration fetch error:', err);
+      alert('Erreur réseau lors de l\'inscription');
+      setLoading(false);
     }
   };
 

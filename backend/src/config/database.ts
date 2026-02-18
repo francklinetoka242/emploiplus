@@ -6,6 +6,14 @@ const { Pool } = pg;
 
 const connectionString = process.env.DATABASE_URL || null;
 
+// Log connection info at startup
+if (connectionString) {
+  console.log('📡 Connecté à la DB via : DATABASE_URL (SSH tunnel via port 5444)');
+  console.log('🔌 Connection URL:', connectionString);
+} else {
+  console.log('⚠️  DATABASE_URL non défini, utilisation des variables DB_HOST/DB_PORT/DB_NAME');
+}
+
 export const pool: PgPool = connectionString
   ? new Pool({ connectionString, connectionTimeoutMillis: 2000 })
   : new Pool({

@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
-import { Briefcase, Mail, Lock } from "lucide-react";
+import { Mail, Lock, LockKeyhole } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
 import { AuthHeader } from "@/components/auth/AuthHeader";
@@ -23,7 +23,7 @@ const Login = () => {
     setLoading(true);
 
     try {
-      const res = await fetch("/api/admin/login", {
+      const res = await fetch("http://localhost:5000/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
@@ -31,13 +31,19 @@ const Login = () => {
 
       const data = await res.json();
 
-      if (data.success) {
-        localStorage.setItem("adminToken", data.token);
-        localStorage.setItem("admin", JSON.stringify(data.admin));
+      if (res.ok) {
+        const token = data.token || data.accessToken || data.jwt;
+        if (token) {
+          localStorage.setItem("jwt", token);
+        }
+        // store user info if provided
+        if (data.user || data.admin) {
+          localStorage.setItem("user", JSON.stringify(data.user || data.admin));
+        }
         toast.success("Connexion réussie !");
         navigate("/admin");
       } else {
-        toast.error("Email ou mot de passe incorrect");
+        toast.error(data?.message || "Email ou mot de passe incorrect");
       }
     } catch (err) {
       toast.error("Erreur serveur – vérifiez que le backend tourne");
@@ -54,13 +60,9 @@ const Login = () => {
         <Card className="w-full max-w-md p-8 space-y-6">
         {/* Logo & Title */}
         <div className="text-center space-y-2">
-          <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-primary/80 mx-auto">
-            <Briefcase className="h-7 w-7 text-primary-foreground" />
-          </div>
+          <LockKeyhole className="h-14 w-14 text-primary mx-auto mb-4" />
           <h1 className="text-2xl font-bold">Connexion Admin</h1>
-          <p className="text-sm text-muted-foreground">
-            Accédez à votre espace administrateur
-          </p>
+          <p className="text-sm text-muted-foreground">Accédez à votre espace administrateur</p>
         </div>
 
         {/* Login Form */}
@@ -135,13 +137,7 @@ const Login = () => {
           </div>
         </div>
 
-        {/* Admin Links */}
-        <div className="text-center text-sm space-y-2">
-         
-          <Button variant="link" asChild className="p-0 h-auto text-primary">
-            <Link to="/admin/register/super-admin">Créer un Super Admin</Link>
-          </Button>
-        </div>
+        {/* Removed create-account links to keep page strictly for login */}
       </Card>
       </div>
       
