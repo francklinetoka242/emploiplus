@@ -30,6 +30,7 @@ export default function DashboardPage() {
   const [stats, setStats] = useState<Stats>({ jobs: 0, formations: 0, admins: 0, users: 0 });
   const [loading, setLoading] = useState(true);
   const admin = JSON.parse(localStorage.getItem("admin") || "{}");
+  const displayName = admin?.prenom && admin?.nom ? `${admin.prenom} ${admin.nom}` : (admin?.full_name || admin?.email || 'Admin');
   const [showFullDashboard, setShowFullDashboard] = useState(true);
 
   // Analytics realtime modal
@@ -160,8 +161,11 @@ export default function DashboardPage() {
               </div>
               Tableau de bord Administrateur
             </h1>
-            <p className="text-muted-foreground mt-1">
-              Bienvenue {admin.full_name || admin.email} • {admin.role?.replace(/_/g, " ").toUpperCase()}
+            <p className="text-muted-foreground mt-1 flex items-center gap-3">
+              <span>Bienvenue {displayName} • {admin.role?.replace(/_/g, " ").toUpperCase()}</span>
+              {admin?.avatar_url ? (
+                <img src={admin.avatar_url} alt={displayName} className="h-8 w-8 rounded-full object-cover" />
+              ) : null}
             </p>
           </div>
 

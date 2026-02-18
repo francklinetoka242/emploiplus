@@ -37,7 +37,7 @@ export default defineConfig({
     },
   },
   optimizeDeps: {
-    include: ["@supabase/supabase-js"],
+    include: [],
   },
   plugins: [react()],
 });

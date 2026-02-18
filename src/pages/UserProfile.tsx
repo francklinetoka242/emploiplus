@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
+import { buildApiUrl, authHeaders } from "@/lib/headers";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsTrigger, TabsList } from "@/components/ui/tabs";
@@ -81,7 +82,7 @@ const UserProfile = () => {
   const fetchUserProfile = async () => {
     setLoading(true);
     try {
-      const res = await fetch(`/api/users/${userId}`);
+      const res = await fetch(buildApiUrl(`/api/users/${userId}`), { headers: authHeaders() });
       if (!res.ok) {
         if (res.status === 404) {
           toast.error("Utilisateur non trouvé");
@@ -94,17 +95,16 @@ const UserProfile = () => {
       setUserProfile(data);
 
       // Fetch publications from this user
-      const pubRes = await fetch("/api/publications");
+      const pubRes = await fetch(buildApiUrl("/api/publications"), { headers: authHeaders() });
       if (pubRes.ok) {
         const pubData = await pubRes.json();
-        const userPubs = Array.isArray(pubData)
-          ? pubData.filter((p: Publication) => p.author_id === Number(userId))
-          : [];
+        const pubsArray = Array.isArray(pubData) ? pubData : pubData.publications || [];
+        const userPubs = pubsArray.filter((p: Publication) => p.author_id === Number(userId));
         setPublications(userPubs);
       }
 
       // Fetch other users for sidebar
-      const usersRes = await fetch("/api/users/candidates?limit=10");
+      const usersRes = await fetch(buildApiUrl("/api/users/candidates?limit=10"), { headers: authHeaders() });
       if (usersRes.ok) {
         const usersData = await usersRes.json();
         const filteredUsers = (Array.isArray(usersData) ? usersData : [])

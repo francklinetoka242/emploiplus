@@ -12,7 +12,6 @@
  */
 
 import express, { Router, Request, Response } from 'express';
-import { createClient } from '@supabase/supabase-js';
 import crypto from 'crypto';
 import { verifyWebhookSecret } from '../middleware/auth.js';
 import { notificationQueue } from '../services/notificationQueue.js';

@@ -5,24 +5,8 @@
  * 
  * REFACTORISATION POUR ÉCHELLE LINKEDIN:
  * 
- * ❌ ANCIEN: Requête PostgreSQL sur backend Render
- * ✅ NOUVEAU: Supabase RLS + Vues SQL optimisées + Pagination .range()
- * 
- * BÉNÉFICES:
- * 1. Zero latency backend calls - Supabase edge functions
- * 2. Row-Level Security (RLS) pour millions d'utilisateurs
- * 3. Vues matérialisées et indexes pour scaling
- * 4. Pagination lazy-load avec .range() sans offset
- * 5. Connection pooling natif Supabase
- * 
- * IMPLEMENTATION: 
- * - Frontend utilise supabase-js directement (pas d'appels backend)
- * - Backend Render ne gère plus le newsfeed
- * - Render = notifications + PDF + matching uniquement
+ * This service is being deprecated and replaced with backend-based newsfeed
  */
-
-import { SupabaseClient } from '@supabase/supabase-js';
-import { supabase as defaultSupabase, createSupabaseClient } from '@/lib/supabase';
 
 /**
  * TYPES & INTERFACES

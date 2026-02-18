@@ -8,13 +8,23 @@ import { toast } from "sonner";
 import { authHeaders, buildApiUrl } from '@/lib/headers';
 
 type Props = {
-  role: "super_admin" | "admin_offres" | "admin_users" | "admin";
+  role: "super_admin" | "content_admin" | "admin_offres" | "admin_users" | "admin";
   title: string;
   color: string;
 };
 
 export default function RegisterForm({ role, title, color }: Props) {
-  const [form, setForm] = useState({ email: "", password: "", fullName: "" });
+  const [form, setForm] = useState({
+    email: "",
+    password: "",
+    nom: "",
+    prenom: "",
+    telephone: "",
+    pays: "",
+    ville: "",
+    date_naissance: "",
+    avatar_url: "",
+  });
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
@@ -28,13 +38,13 @@ export default function RegisterForm({ role, title, color }: Props) {
         const res = await fetch(buildApiUrl("/api/admin/register"), {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ ...form, role: "super_admin" }),
+          body: JSON.stringify({ ...form, nom: form.nom, prenom: form.prenom, role: "super_admin" }),
         });
 
         const data = await res.json();
 
         if (data.success) {
-          toast.success("Super Admin créé ! Vous pouvez maintenant vous connecter.");
+          toast.success("Super Admin créé ! Un email de validation a été envoyé.");
           navigate("/admin/login");
         } else {
           toast.error(data.message || "Erreur");
@@ -52,7 +62,17 @@ export default function RegisterForm({ role, title, color }: Props) {
         const res = await fetch(buildApiUrl("/api/admin/create"), {
           method: "POST",
           headers: authHeaders('application/json', 'adminToken'),
-          body: JSON.stringify({ ...form, role }),
+          body: JSON.stringify({
+            ...form,
+            nom: form.nom,
+            prenom: form.prenom,
+            telephone: form.telephone,
+            pays: form.pays,
+            ville: form.ville,
+            date_naissance: form.date_naissance,
+            avatar_url: form.avatar_url,
+            role,
+          }),
         });
 
         const data = await res.json();
@@ -77,12 +97,52 @@ export default function RegisterForm({ role, title, color }: Props) {
         Créer un {title}
       </h2>
       <form onSubmit={handleSubmit} className="space-y-6">
-        <Input
-          type="text"
-          placeholder="Nom complet (facultatif)"
-          value={form.fullName}
-          onChange={(e) => setForm({ ...form, fullName: e.target.value })}
-        />
+          <div className="grid grid-cols-2 gap-2">
+            <Input
+              type="text"
+              placeholder="Nom"
+              value={form.nom}
+              onChange={(e) => setForm({ ...form, nom: e.target.value })}
+            />
+            <Input
+              type="text"
+              placeholder="Prénom"
+              value={form.prenom}
+              onChange={(e) => setForm({ ...form, prenom: e.target.value })}
+            />
+          </div>
+          <Input
+            type="text"
+            placeholder="Téléphone"
+            value={form.telephone}
+            onChange={(e) => setForm({ ...form, telephone: e.target.value })}
+          />
+          <div className="grid grid-cols-2 gap-2">
+            <Input
+              type="text"
+              placeholder="Pays"
+              value={form.pays}
+              onChange={(e) => setForm({ ...form, pays: e.target.value })}
+            />
+            <Input
+              type="text"
+              placeholder="Ville"
+              value={form.ville}
+              onChange={(e) => setForm({ ...form, ville: e.target.value })}
+            />
+          </div>
+          <Input
+            type="date"
+            placeholder="Date de naissance"
+            value={form.date_naissance}
+            onChange={(e) => setForm({ ...form, date_naissance: e.target.value })}
+          />
+          <Input
+            type="url"
+            placeholder="URL avatar (facultatif)"
+            value={form.avatar_url}
+            onChange={(e) => setForm({ ...form, avatar_url: e.target.value })}
+          />
         <Input
           type="email"
           placeholder="Email"

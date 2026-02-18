@@ -1,6 +1,3 @@
-import type { SupabaseClient } from '@supabase/supabase-js';
-import { supabase } from './supabase';
-
 type Bucket = 'candidats-docs' | 'avatars' | 'entreprises-docs';
 
 export interface UploadResult {
@@ -10,17 +7,13 @@ export interface UploadResult {
 }
 
 /**
- * Upload a file to Supabase Storage and update public.profiles with the resulting URL.
+ * Upload a file to backend storage
  * - Checks file size and type on client-side before upload
- * - For avatar bucket, renames file to userId.ext and upserts (replace existing)
- * - After upload, stores public or signed URL in `profiles.avatar_url` or `profiles.cv_url`
+ * - Sends to backend API for storage
  *
- * Migration note: when moving to Infomaniak S3, replace the upload/getPublicUrl
- * calls by your S3 client upload and URL generation. Prefer storing the object key
- * and generating signed URLs server-side for better security.
+ * TODO: Implement backend file upload endpoint
  */
 export async function uploadProfileFile(
-  client: SupabaseClient = supabase,
   userId: string,
   file: File,
   bucket: Bucket,
@@ -48,6 +41,15 @@ export async function uploadProfileFile(
       return { url: null, error: 'Avatar must be an image' };
     }
   }
+
+  // TODO: Implement backend file upload
+  console.warn('[uploadProfileFile] File upload not yet implemented. Please upload via backend API');
+  
+  return {
+    url: null,
+    error: 'File upload endpoint not implemented. Contact support.',
+  };
+}
 
   const filename = bucket === 'avatars' ? `${userId}.${ext || 'png'}` : `${userId}_${Date.now()}.${ext || 'bin'}`;
 

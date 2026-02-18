@@ -16,7 +16,7 @@ import {
   AlertTriangle,
   ArrowRight,
 } from 'lucide-react';
-import { authHeaders } from '@/lib/headers';
+import { authHeaders, buildApiUrl } from '@/lib/headers';
 import { toast } from 'sonner';
 import DashboardNewsfeed from '@/components/DashboardNewsfeed';
 
@@ -45,11 +45,12 @@ export default function CompanyDashboard() {
       const headers = authHeaders('application/json');
       
       // Fetch company profile stats
-      const res = await fetch('/api/users/me/profile-stats', { headers });
-      if (res.ok) {
-        const data = await res.json();
-        setCompanyStats(data);
+      const res = await fetch(buildApiUrl('/api/users/me/profile-stats'), { headers });
+      if (!res.ok) {
+        throw new Error(`HTTP ${res.status}: ${res.statusText}`);
       }
+      const data = await res.json();
+      setCompanyStats(data);
     } catch (error) {
       console.error('Error fetching stats:', error);
       toast.error('Erreur chargement des statistiques');

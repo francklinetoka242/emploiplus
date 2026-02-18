@@ -9,7 +9,7 @@ import { Trash2, Edit2, X, Check } from 'lucide-react';
 import Icon from '@/components/Icon';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
-import { authHeaders } from '@/lib/headers';
+import { authHeaders, buildApiUrl } from '@/lib/headers';
 import { formatDistanceToNow } from 'date-fns';
 import { fr } from 'date-fns/locale';
 
@@ -50,19 +50,26 @@ const MyPublications = () => {
   const fetchMyPublications = async () => {
     try {
       setLoading(true);
-      const res = await fetch('/api/publications', {
+      const apiUrl = buildApiUrl('/api/publications');
+      const res = await fetch(apiUrl, {
         headers: authHeaders(),
       });
       
-      if (!res.ok) throw new Error('Erreur chargement publications');
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(errorData.message || `HTTP ${res.status}: Erreur serveur`);
+      }
       
       const data = await res.json();
+      // Handle both direct array and wrapped response
+      const publicationsArray = Array.isArray(data) ? data : data.publications || [];
       // Filter to show only current user's publications
-      const userPublications = data.filter((p: Publication) => p.author_id === user?.id);
+      const userPublications = publicationsArray.filter((p: Publication) => p.author_id === user?.id);
       setPublications(userPublications);
     } catch (error) {
-      console.error("Erreur chargement publications:", error);
-      toast.error("Erreur lors du chargement des publications");
+      const err = error as Error;
+      console.error("Erreur chargement publications:", err);
+      toast.error(err.message || "Erreur lors du chargement des publications");
     } finally {
       setLoading(false);
     }
@@ -84,7 +91,8 @@ const MyPublications = () => {
     }
 
     try {
-      const res = await fetch(`/api/publications/${publicationId}`, {
+      const apiUrl = buildApiUrl(`/api/publications/${publicationId}`);
+      const res = await fetch(apiUrl, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -114,7 +122,8 @@ const MyPublications = () => {
     }
 
     try {
-      const res = await fetch(`/api/publications/${publicationId}`, {
+      const apiUrl = buildApiUrl(`/api/publications/${publicationId}`);
+      const res = await fetch(apiUrl, {
         method: 'DELETE',
         headers: authHeaders(),
       });

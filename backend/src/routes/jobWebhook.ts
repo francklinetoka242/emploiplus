@@ -17,7 +17,6 @@
  */
 
 import express, { Request, Response } from 'express';
-import { createClient } from '@supabase/supabase-js';
 import { notifyJobOffers } from '../services/pushNotificationService.js';
 
 const router = express.Router();

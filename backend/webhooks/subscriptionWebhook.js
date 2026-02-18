@@ -1,6 +1,5 @@
 const express = require('express');
 const bodyParser = require('body-parser');
-const { createClient } = require('@supabase/supabase-js');
 
 // Expect these env vars to be set in your webhook host environment
 const SUPABASE_URL = process.env.SUPABASE_URL;

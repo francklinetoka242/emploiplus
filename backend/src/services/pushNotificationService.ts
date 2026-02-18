@@ -13,7 +13,6 @@
  */
 
 import admin from 'firebase-admin';
-import { createClient } from '@supabase/supabase-js';
 
 // Initialize Firebase Admin
 let firebaseApp: admin.app.App | null = null;

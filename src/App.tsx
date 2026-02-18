@@ -94,6 +94,8 @@ import AdminLogin from "./pages/admin/login/page";
 import SuperAdminRegister from "./pages/admin/register/super-admin/page";
 import ContentAdminRegister from "./pages/admin/register/content-admin/page";
 import UserAdminRegister from "./pages/admin/register/user-admin/page";
+import VerifySuccessPage from "./pages/admin/verify-success/page";
+import VerifyEmailPage from "./pages/admin/verify-email/page";
 
 import AdminLayout from "./pages/admin/layout";
 import DashboardPage from "./pages/admin/dashboard/page";
@@ -249,6 +251,8 @@ const App = () => {
 
           {/* Pages spéciales */}
           <Route path="/admin/login" element={<AdminLogin />} />
+          <Route path="/admin/verify-success" element={<VerifySuccessPage />} />
+          <Route path="/admin/verify-email" element={<VerifyEmailPage />} />
           <Route path="/admin/register/super-admin" element={<SuperAdminRegister />} />
           <Route path="/admin/register/content-admin" element={<ContentAdminRegister />} />
           <Route path="/admin/register/user-admin" element={<UserAdminRegister />} />

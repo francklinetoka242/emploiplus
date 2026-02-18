@@ -17,7 +17,6 @@
 
 import { Server as HTTPServer } from 'http';
 import { Server as SocketIOServer, Socket } from 'socket.io';
-import { createClient } from '@supabase/supabase-js';
 import { createClient as createRedisClient } from 'redis';
 import { verifySocketToken } from '../middleware/auth.js';
 import { redisConfig } from '../config/redis.js';

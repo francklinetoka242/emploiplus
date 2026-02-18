@@ -257,3 +257,53 @@ export const verifySocketToken = (socket: any, next: any) => {
     next(new Error('Authentication error: Invalid token'));
   }
 };
+
+// ============================================================================
+// ADMIN AUTHENTICATION MIDDLEWARES
+// ============================================================================
+
+/**
+ * Authenticate admin token from localStorage
+ * Expects header: Authorization: Bearer <token>
+ */
+export const authenticateToken = (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const authHeader = req.headers.authorization;
+    const token = authHeader?.split(' ')[1];
+
+    if (!token) {
+      return res.status(401).json({ success: false, message: 'Token manquant' });
+    }
+
+    const decoded = jwt.verify(token, JWT_SECRET) as any;
+    req.body.userId = decoded.id;
+    next();
+  } catch (error) {
+    return res.status(401).json({ success: false, message: 'Token invalide' });
+  }
+};
+
+/**
+ * Verify that authenticated admin is super_admin
+ */
+export const isSuperAdmin = (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const authHeader = req.headers.authorization;
+    const token = authHeader?.split(' ')[1];
+
+    if (!token) {
+      return res.status(401).json({ success: false, message: 'Token manquant' });
+    }
+
+    const decoded = jwt.verify(token, JWT_SECRET) as any;
+
+    if (decoded.role !== 'super_admin') {
+      return res.status(403).json({ success: false, message: 'Seul un Super Admin peut effectuer cette action' });
+    }
+
+    req.body.userId = decoded.id;
+    next();
+  } catch (error) {
+    return res.status(401).json({ success: false, message: 'Token invalide' });
+  }
+};

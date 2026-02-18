@@ -21,7 +21,6 @@
 import { Server as SocketIOServer, Socket } from 'socket.io';
 import { Server as HTTPServer } from 'http';
 import jwt from 'jsonwebtoken';
-import { createClient } from '@supabase/supabase-js';
 import { notifyNewMessage } from '../services/pushNotificationService.js';
 
 // Map to track active connections: userId -> socketId

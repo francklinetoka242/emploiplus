@@ -3,28 +3,12 @@
  * API Route: Auth Callback Handler
  * ============================================================================
  * 
- * VERCEL EDGE FUNCTION - Gère le callback OAuth de Supabase
+ * VERCEL EDGE FUNCTION - Gère le callback OAuth  
  * 
- * Flow:
- * 1. Google OAuth redirect → /auth/callback?code=...&state=...&role=...
- * 2. Supabase envoie le code/state
- * 3. Route extrait le code et l'échange contre une session Supabase
- * 4. Synchronise l'utilisateur avec public.profiles
- * 5. Redirige vers dashboard approprié (candidate ou company)
- * 
- * Endpoint: https://emploiplus.vercel.app/api/auth/callback
- * HTTP Method: GET
- * Query params: code, state, role (candidate|company)
+ * TODO: This endpoint needs to be updated to use the new auth service
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
-
-// Initialize Supabase client
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL || '',
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
-);
 
 /**
  * GET /api/auth/callback

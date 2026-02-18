@@ -48,6 +48,7 @@ import { jobAnalysisQueue, postModerationQueue, activityScoringQueue, initialize
 const app = express();
 // Mount modular auth routes if present
 import authRoutes from './routes/auth.js';
+import adminAuthRoutes from './routes/admin-auth.js';
 // Load environment variables from backend/.env when running locally
 dotenv.config();
 
@@ -86,6 +87,8 @@ const apiLimiter = rateLimit({ windowMs: 60 * 1000, max: 120 });
 app.use('/api/', apiLimiter);
 // ensure /api/auth endpoints available (routes/auth.ts)
 app.use('/api/auth', authRoutes as any);
+// Admin authentication routes (routes/admin-auth.ts)
+app.use('/api/admin', adminAuthRoutes as any);
 
 // Mount webhook microservices routes
 app.use('/api', webhookMicroservices as any);
@@ -232,15 +235,33 @@ else {
     created_at TIMESTAMP DEFAULT NOW(),
     updated_at TIMESTAMP DEFAULT NOW()
   )`).catch((err) => console.error("Could not ensure testimonials table exists:", err));
-    // Ensure basic `admins` table exists (safe to run)
-    pool.query(`CREATE TABLE IF NOT EXISTS admins (
-    id SERIAL PRIMARY KEY,
-    email TEXT UNIQUE NOT NULL,
-    password TEXT NOT NULL,
-    full_name TEXT,
-    role TEXT DEFAULT 'admin',
-    created_at TIMESTAMP DEFAULT NOW()
-  )`).catch((err) => console.error("Could not ensure admins table exists:", err));
+        // Ensure `admins` table exists with extended schema (safe to run)
+        pool.query(`CREATE TABLE IF NOT EXISTS admins (
+        id SERIAL PRIMARY KEY,
+        nom VARCHAR(100) NOT NULL,
+        prenom VARCHAR(100) NOT NULL,
+        email VARCHAR(255) UNIQUE NOT NULL,
+        password TEXT NOT NULL,
+        telephone VARCHAR(20),
+        pays VARCHAR(100),
+        ville VARCHAR(100),
+        date_naissance DATE,
+        avatar_url TEXT DEFAULT 'https://ui-avatars.com/api/?name=Admin',
+        role VARCHAR(50) NOT NULL DEFAULT 'content_admin',
+        is_verified BOOLEAN DEFAULT FALSE,
+        verification_token TEXT,
+        created_at TIMESTAMP DEFAULT NOW()
+    )`).catch((err) => console.error("Could not ensure admins table exists:", err));
+        // Add missing columns if migrating from older schema
+        pool.query(`ALTER TABLE admins ADD COLUMN IF NOT EXISTS nom VARCHAR(100)`).catch(() => { });
+        pool.query(`ALTER TABLE admins ADD COLUMN IF NOT EXISTS prenom VARCHAR(100)`).catch(() => { });
+        pool.query(`ALTER TABLE admins ADD COLUMN IF NOT EXISTS telephone VARCHAR(20)`).catch(() => { });
+        pool.query(`ALTER TABLE admins ADD COLUMN IF NOT EXISTS pays VARCHAR(100)`).catch(() => { });
+        pool.query(`ALTER TABLE admins ADD COLUMN IF NOT EXISTS ville VARCHAR(100)`).catch(() => { });
+        pool.query(`ALTER TABLE admins ADD COLUMN IF NOT EXISTS date_naissance DATE`).catch(() => { });
+        pool.query(`ALTER TABLE admins ADD COLUMN IF NOT EXISTS avatar_url TEXT`).catch(() => { });
+        pool.query(`ALTER TABLE admins ADD COLUMN IF NOT EXISTS is_verified BOOLEAN DEFAULT FALSE`).catch(() => { });
+        pool.query(`ALTER TABLE admins ADD COLUMN IF NOT EXISTS verification_token TEXT`).catch(() => { });
     // Ensure `users` table exists with proper structure
     pool.query(`CREATE TABLE IF NOT EXISTS users (
     id SERIAL PRIMARY KEY,
@@ -1475,19 +1496,38 @@ app.post("/api/admin/create", async (req, res) => {
         if (decoded.role !== "super_admin") {
             return res.status(403).json({ success: false, message: "Accès refusé" });
         }
-        const { email, password, full_name, role = "admin" } = req.body;
-        const check = await pool.query("SELECT id FROM admins WHERE email = $1", [email]);
+        const { email, password, nom, prenom, telephone = null, pays = null, ville = null, date_naissance = null, avatar_url = null, role = "content_admin" } = req.body;
+        const check = await pool.query("SELECT id FROM admins WHERE email = $1", [email.toLowerCase()]);
         if (check.rows.length > 0) {
             return res.status(400).json({ success: false, message: "Email déjà utilisé" });
         }
         const hashed = bcrypt.hashSync(password, 10);
-        const { rows } = await pool.query(`INSERT INTO admins (email, password, full_name, role)
-       VALUES ($1, $2, $3, $4)
-       RETURNING id, email, full_name, role`, [email, hashed, full_name || null, role]);
+        const { rows } = await pool.query(`INSERT INTO admins (email, password, nom, prenom, telephone, pays, ville, date_naissance, avatar_url, role, is_verified, created_at)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, true, NOW())
+       RETURNING id, email, nom, prenom, role, created_at`, [
+            email.toLowerCase(), hashed, nom || '', prenom || '', telephone, pays, ville, date_naissance || null, avatar_url || null, role
+        ]);
         res.json({ success: true, admin: rows[0] });
     }
     catch (err) {
         res.status(500).json({ success: false });
+    }
+});
+// Email verification route — token based
+app.get('/api/admin/verify-email', async (req, res) => {
+    try {
+        const token = req.query.token as string;
+        if (!token) return res.status(400).send('Token manquant');
+        const { rows } = await pool.query('SELECT id FROM admins WHERE verification_token = $1', [token]);
+        if (rows.length === 0) return res.status(400).send('Token invalide');
+        const adminId = rows[0].id;
+        await pool.query('UPDATE admins SET is_verified = true, verification_token = NULL WHERE id = $1', [adminId]);
+        // Redirect to frontend success page
+        const frontend = process.env.FRONTEND_URL || 'http://localhost:3000';
+        return res.redirect(`${frontend}/admin/verify-success`);
+    } catch (err) {
+        console.error('Verify email error:', err);
+        return res.status(500).send('Erreur serveur');
     }
 });
 // ──────────────────────────────────────────────────

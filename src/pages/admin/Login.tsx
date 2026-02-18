@@ -29,7 +29,8 @@ export default function AdminLogin() {
       if (data.success) {
         localStorage.setItem("adminToken", data.token);
         localStorage.setItem("admin", JSON.stringify(data.admin));
-        toast.success(`Bienvenue ${data.admin.full_name || "Admin"} !`);
+        const name = data.admin.nom && data.admin.prenom ? `${data.admin.prenom} ${data.admin.nom}` : (data.admin.full_name || "Admin");
+        toast.success(`Bienvenue ${name} !`);
         navigate("/admin");
       } else {
         toast.error("Identifiants incorrects");

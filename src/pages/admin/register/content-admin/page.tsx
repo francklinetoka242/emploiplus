@@ -7,7 +7,7 @@ export default function ContentAdminRegister() {
       <h1 className="text-4xl font-bold text-center mb-8">
         Créer un Admin Contenu / Offres
       </h1>
-      <RegisterForm role="admin_offres" title="Admin Offres" color="text-blue-600" />
+      <RegisterForm role="content_admin" title="Admin Offres" color="text-blue-600" />
     </div>
   );
 }

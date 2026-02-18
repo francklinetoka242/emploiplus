@@ -10,13 +10,26 @@ import { pool } from '../config/database.js';
 import { hashPassword, comparePassword, isValidEmail, getErrorMessage } from '../utils/helpers.js';
 import { generateToken } from '../middleware/auth.js';
 import bcrypt from 'bcryptjs';
+import crypto from 'crypto';
+import nodemailer from 'nodemailer';
 
 /**
  * Register Admin
  */
 export const registerAdmin = async (req: Request, res: Response) => {
   try {
-    const { email, password, full_name, role = 'admin' } = req.body;
+    const {
+      email,
+      password,
+      nom,
+      prenom,
+      telephone = null,
+      pays = null,
+      ville = null,
+      date_naissance = null,
+      avatar_url = null,
+      role = 'content_admin'
+    } = req.body;
 
     // Validation
     if (!email || !password) {
@@ -41,10 +54,7 @@ export const registerAdmin = async (req: Request, res: Response) => {
     }
 
     // Check if admin already exists
-    const { rows: existing } = await pool.query(
-      'SELECT id FROM admins WHERE email = $1',
-      [email.toLowerCase()]
-    );
+    const { rows: existing } = await pool.query('SELECT id FROM admins WHERE email = $1', [email.toLowerCase()]);
 
     if (existing.length > 0) {
       return res.status(400).json({
@@ -56,27 +66,66 @@ export const registerAdmin = async (req: Request, res: Response) => {
     // Hash password
     const hashed = bcrypt.hashSync(password, 10);
 
-    // Create admin
-    const { rows } = await pool.query(
-      `INSERT INTO admins (email, password, full_name, role)
-       VALUES ($1, $2, $3, $4)
-       RETURNING id, email, full_name, role, created_at`,
-      [email.toLowerCase(), hashed, full_name || null, role]
-    );
+    // Generate verification token
+    const verificationToken = crypto.randomBytes(32).toString('hex');
+
+    // Create admin (not verified yet)
+    const { rows } = await pool.query(`INSERT INTO admins (email, password, nom, prenom, telephone, pays, ville, date_naissance, avatar_url, role, verification_token, is_verified, created_at)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,false,NOW())
+       RETURNING id, email, nom, prenom, role, created_at`, [
+      email.toLowerCase(),
+      hashed,
+      nom || '',
+      prenom || '',
+      telephone,
+      pays,
+      ville,
+      date_naissance || null,
+      avatar_url || null,
+      role,
+      verificationToken,
+    ]);
 
     const admin = rows[0];
 
-    // Generate token
-    const token = generateToken(admin.id, admin.role);
+    // Send verification email
+    try {
+      const transporter = (process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS)
+        ? nodemailer.createTransport({
+            host: process.env.SMTP_HOST,
+            port: parseInt(process.env.SMTP_PORT || '587'),
+            secure: process.env.SMTP_SECURE === 'true',
+            auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS }
+          })
+        : null;
+
+      if (transporter) {
+        const backendUrl = process.env.BACKEND_URL || `http://localhost:${process.env.PORT || 4000}`;
+        const verifyLink = `${backendUrl}/api/admin/verify-email?token=${verificationToken}`;
+        await transporter.sendMail({
+          from: process.env.EMAIL_FROM || 'admin@emploiplus-group.com',
+          to: admin.email,
+          subject: 'Confirmez votre adresse email — Emploi Plus',
+          html: `<p>Bonjour ${admin.nom || ''} ${admin.prenom || ''},</p>
+                 <p>Merci de vous être inscrit. Cliquez sur le lien ci-dessous pour vérifier votre adresse email :</p>
+                 <p><a href="${verifyLink}">Valider mon email</a></p>
+                 <p>Si vous n'avez pas demandé cette inscription, ignorez ce message.</p>`
+        });
+      } else {
+        console.warn('No SMTP transporter configured — verification email not sent');
+      }
+    } catch (mailErr) {
+      console.error('Error sending verification email:', mailErr);
+    }
 
     return res.status(201).json({
       success: true,
-      message: 'Admin créé avec succès',
-      token,
+      message: 'Admin créé. Un email de vérification a été envoyé.',
       admin: {
         id: admin.id,
         email: admin.email,
-        full_name: admin.full_name,
+        nom: admin.nom,
+        prenom: admin.prenom,
         role: admin.role,
         created_at: admin.created_at,
       },
