@@ -1,6 +1,7 @@
 // Get API base URL from environment variable - use for all API calls on Vercel
 export function getApiBaseUrl() {
-  return import.meta.env.VITE_API_BASE_URL || '';
+  // Prefer VITE_API_URL (new) but fall back to VITE_API_BASE_URL (legacy)
+  return import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL || '';
 }
 
 // Build full API URL
