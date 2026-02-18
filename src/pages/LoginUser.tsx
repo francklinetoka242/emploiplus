@@ -13,7 +13,7 @@ import { PWALayout } from "@/components/layout/PWALayout";
 
 const LoginUser = () => {
   const navigate = useNavigate();
-  const { user, session, signIn } = useSupabaseAuth();
+  const { user, session, signIn, getToken } = useSupabaseAuth();
   const location = useLocation();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -55,8 +55,22 @@ const LoginUser = () => {
       toast.error(error.message);
     } else {
       toast.success("Connexion réussie !");
-      // Use the user returned by signIn (or stored in localStorage) to decide redirect
+      // Ensure backend auth token is stored so `useAuth` (backend) recognizes login
+      try {
+        const token = await getToken();
+        if (token) {
+          localStorage.setItem('token', token);
+        }
+      } catch (e) {
+        console.warn('Could not retrieve auth token after sign in', e);
+      }
+
+      // Persist profile for instant UI (useAuth also reads this)
       const currentUser = signedUser || JSON.parse(localStorage.getItem('user') || 'null');
+      if (currentUser) {
+        try { localStorage.setItem('user', JSON.stringify(currentUser)); } catch (e) { /* noop */ }
+      }
+
       const params = new URLSearchParams(location.search);
       const redirect = params.get('redirect');
 

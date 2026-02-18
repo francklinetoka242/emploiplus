@@ -66,6 +66,11 @@ export const AuthCallback = () => {
               .single();
 
             if (profile && profile.user_type) {
+              // Persist token and profile for backend auth flow
+              try {
+                if (session?.access_token) localStorage.setItem('token', session.access_token);
+                localStorage.setItem('user', JSON.stringify(profile));
+              } catch (e) { /* noop */ }
               // Existing user -> redirect to their dashboard
               const dashboard = profile.user_type === 'company' ? '/company/dashboard' : '/fil-actualite';
               toast.success('Connexion réussie !');
@@ -84,6 +89,17 @@ export const AuthCallback = () => {
                 created_at: new Date().toISOString(),
                 updated_at: new Date().toISOString(),
               });
+              // Persist token and profile for backend auth flow
+              try {
+                if (session?.access_token) localStorage.setItem('token', session.access_token);
+                const createdProfile = {
+                  id: user.id,
+                  email: user.email,
+                  full_name: user.user_metadata?.full_name || user.email?.split('@')[0],
+                  user_type: roleParam === 'company' ? 'company' : 'candidate',
+                };
+                localStorage.setItem('user', JSON.stringify(createdProfile));
+              } catch (e) { /* noop */ }
 
               const dashboard = roleParam === 'company' ? '/company/dashboard' : '/fil-actualite';
               toast.success('Compte créé et connexion réussie !');
@@ -133,7 +149,7 @@ export const AuthCallback = () => {
       const user = session?.user;
       if (!user) throw new Error('Session manquante');
 
-      await supabase.from('profiles').upsert({
+      const { data: upserted } = await supabase.from('profiles').upsert({
         id: user.id,
         email: user.email,
         full_name: user.user_metadata?.full_name || user.email?.split('@')[0],
@@ -142,6 +158,13 @@ export const AuthCallback = () => {
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
       });
+      // Persist token and profile for backend auth flow
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session?.access_token) localStorage.setItem('token', session.access_token);
+        const profileToStore = upserted && upserted.length ? upserted[0] : { id: user.id, email: user.email, user_type: chosen };
+        localStorage.setItem('user', JSON.stringify(profileToStore));
+      } catch (e) { /* noop */ }
 
       const dashboard = chosen === 'company' ? '/company/dashboard' : '/fil-actualite';
       toast.success('Compte créé ! Redirection en cours...');
