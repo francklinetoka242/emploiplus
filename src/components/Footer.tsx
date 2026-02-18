@@ -89,21 +89,52 @@ const Footer = () => {
           {/* Contact */}
           <div className="space-y-4">
             <h3 className="font-semibold text-white">Contact</h3>
-            <ul className="space-y-3 text-sm">
+            <ul className="space-y-2 text-sm">
               <li className="flex items-start space-x-2">
                 <MapPin className="h-4 w-4 mt-0.5 text-orange-500 flex-shrink-0" />
                 <span className="text-slate-300">Brazzaville, République du Congo</span>
               </li>
               <li className="flex items-center space-x-2">
                 <Mail className="h-4 w-4 text-orange-500 flex-shrink-0" />
-                <a href="mailto:contact@emploiplus.cg" className="text-slate-300 hover:text-white transition-colors">
-                  contact@emploiplus.cg
+                <a href="mailto:contact@emploiplus-group.com" className="text-slate-300 hover:text-white transition-colors">
+                  contact@emploiplus-group.com
+                </a>
+              </li>
+              <li className="flex items-center space-x-2">
+                <Mail className="h-4 w-4 text-orange-500 flex-shrink-0" />
+                <a href="mailto:support@emploiplus-group.com" className="text-slate-300 hover:text-white transition-colors">
+                  support@emploiplus-group.com
                 </a>
               </li>
               <li className="flex items-center space-x-2">
                 <Phone className="h-4 w-4 text-orange-500 flex-shrink-0" />
                 <a href="tel:+242 067311033" className="text-slate-300 hover:text-white transition-colors">
                 +242 06 731 10 33
+                </a>
+              </li>
+            </ul>
+          </div>
+
+          {/* Emails Professionnels */}
+          <div className="space-y-4">
+            <h3 className="font-semibold text-white">Adresses Professionnelles</h3>
+            <ul className="space-y-3 text-sm">
+              <li>
+                <a href="mailto:consulting@emploiplus-group.com" className="text-slate-300 hover:text-white transition-colors flex items-center space-x-2">
+                  <Mail className="h-4 w-4 text-blue-400" />
+                  <span>consulting@emploiplus-group.com</span>
+                </a>
+              </li>
+              <li>
+                <a href="mailto:direction@emploiplus-group.com" className="text-slate-300 hover:text-white transition-colors flex items-center space-x-2">
+                  <Mail className="h-4 w-4 text-green-400" />
+                  <span>direction@emploiplus-group.com</span>
+                </a>
+              </li>
+              <li>
+                <a href="mailto:recrutement@emploiplus-group.com" className="text-slate-300 hover:text-white transition-colors flex items-center space-x-2">
+                  <Mail className="h-4 w-4 text-purple-400" />
+                  <span>recrutement@emploiplus-group.com</span>
                 </a>
               </li>
             </ul>

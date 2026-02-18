@@ -66,8 +66,8 @@ export default function Contact() {
               </div>
               <h3 className="text-lg font-semibold mb-2 text-gray-900">Email</h3>
               <p className="text-gray-600 text-sm mb-4">Contactez-nous par email pour une réponse détaillée</p>
-              <a href="mailto:contact@emploiplus.cg" className="text-blue-600 font-medium hover:text-blue-700 text-sm">
-                contact@emploiplus.cg
+              <a href="mailto:contact@emploiplus-group.com" className="text-blue-600 font-medium hover:text-blue-700 text-sm">
+                contact@emploiplus-group.com
               </a>
             </Card>
 
@@ -83,8 +83,20 @@ export default function Contact() {
               </a>
             </Card>
 
-            {/* Location Card */}
+            {/* Support Card */}
             <Card className="p-6 border-0 shadow-md hover:shadow-lg transition-shadow bg-white">
+              <div className="flex items-center justify-center h-12 w-12 rounded-lg bg-red-100 mb-4">
+                <Mail className="h-6 w-6 text-red-600" />
+              </div>
+              <h3 className="text-lg font-semibold mb-2 text-gray-900">Support Technique</h3>
+              <p className="text-gray-600 text-sm mb-4">Besoin d'aide technique ?</p>
+              <a href="mailto:support@emploiplus-group.com" className="text-red-600 font-medium hover:text-red-700 text-sm">
+                support@emploiplus-group.com
+              </a>
+            </Card>
+
+            {/* Location Card */}
+            <Card className="p-6 border-0 shadow-md hover:shadow-lg transition-shadow bg-white lg:col-start-1">
               <div className="flex items-center justify-center h-12 w-12 rounded-lg bg-purple-100 mb-4">
                 <MapPin className="h-6 w-6 text-purple-600" />
               </div>

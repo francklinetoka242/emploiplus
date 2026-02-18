@@ -6,21 +6,21 @@ const texts: Record<string, any> = {
     content: `Emploi+ — Plateforme d'emploi et formation.
 Société: EmploiPlus SARL
 Siège: Brazzaville, République du Congo
-Contact: contact@emploiplus.cg`
+Contact: contact@emploiplus-group.com`
   },
   en: {
     title: 'Legal Notice',
     content: `Emploi+ — Job and training platform.
 Company: EmploiPlus SARL
 Headquarters: Brazzaville, Republic of Congo
-Contact: contact@emploiplus.cg`
+Contact: contact@emploiplus-group.com`
   },
   ln: {
     title: 'Makambo ya mibeko',
     content: `Emploi+ — Plateforme ya misala.
 Kompani: EmploiPlus SARL
 Ekipi: Brazzaville
-Contact: contact@emploiplus.cg`
+Contact: contact@emploiplus-group.com`
   }
 };
 

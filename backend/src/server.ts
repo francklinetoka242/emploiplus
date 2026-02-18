@@ -4,6 +4,7 @@ import dotenv from 'dotenv';
 import cors from "cors";
 import helmet from "helmet";
 import rateLimit from "express-rate-limit";
+import nodemailer from 'nodemailer';
 import { pool, isConnected, connectedPromise } from "./config/database.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
@@ -4183,34 +4184,103 @@ app.use((err, req, res, next) => {
     }
     res.status(500).json(body);
 });
+
+// Email configuration and helper function
+const createEmailTransporter = () => {
+    // Try to create transporter from environment variables
+    if (process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS) {
+        return nodemailer.createTransport({
+            host: process.env.SMTP_HOST,
+            port: parseInt(process.env.SMTP_PORT || '587'),
+            secure: process.env.SMTP_SECURE === 'true', // true for 465, false for other ports
+            auth: {
+                user: process.env.SMTP_USER,
+                pass: process.env.SMTP_PASS,
+            },
+        });
+    }
+    // Fallback to Gmail if configured
+    if (process.env.GMAIL_USER && process.env.GMAIL_APP_PASSWORD) {
+        return nodemailer.createTransport({
+            service: 'gmail',
+            auth: {
+                user: process.env.GMAIL_USER,
+                pass: process.env.GMAIL_APP_PASSWORD,
+            },
+        });
+    }
+    return null;
+};
+
+// Helper function to send contact form notification
+const sendContactNotification = async (name: string, email: string, category: string, subject: string, message: string) => {
+    try {
+        const transporter = createEmailTransporter();
+        if (!transporter) {
+            console.warn('No email configuration found. Contact message stored but not notified.');
+            return false;
+        }
+
+        const emailBody = `
+<h2>Nouveau message de contact</h2>
+<p><strong>De:</strong> ${name} (${email})</p>
+<p><strong>Catégorie:</strong> ${category}</p>
+<p><strong>Objet:</strong> ${subject}</p>
+<p><strong>Message:</strong></p>
+<p>${message.replace(/\n/g, '<br>')}</p>
+        `;
+
+        await transporter.sendMail({
+            from: process.env.SMTP_FROM || process.env.GMAIL_USER || 'noreply@emploiplus-group.com',
+            to: 'contact@emploiplus-group.com',
+            subject: `Nouveau contact: ${subject}`,
+            html: emailBody,
+            replyTo: email,
+        });
+
+        console.log('Contact email sent to contact@emploiplus-group.com');
+        return true;
+    } catch (error) {
+        console.error('Error sending contact email:', error);
+        return false;
+    }
+};
+
 // Contact form endpoint (simple storage / notification placeholder)
 app.post('/api/contact', async (req, res) => {
     try {
-        const { email, subject, message } = req.body;
-        if (!email || !subject || !message)
+        const { email, name, subject, message, category } = req.body;
+        if (!email || !subject || !message || !name)
             return res.status(400).json({ success: false, message: 'Tous les champs sont requis' });
         // Insert into contacts table if exists, otherwise just log
         try {
             await pool.query(`CREATE TABLE IF NOT EXISTS contacts (
           id SERIAL PRIMARY KEY,
+          name TEXT,
           email TEXT,
+          category TEXT,
           subject TEXT,
           message TEXT,
           created_at TIMESTAMP DEFAULT NOW()
         )`);
-            await pool.query('INSERT INTO contacts (email, subject, message) VALUES ($1,$2,$3)', [email, subject, message]);
+            await pool.query('INSERT INTO contacts (name, email, category, subject, message) VALUES ($1,$2,$3,$4,$5)', [name, email, category, subject, message]);
         }
         catch (e) {
             console.warn('Contact DB warning:', e);
         }
-        console.log('Contact message received:', { email, subject, message });
-        res.json({ success: true, message: 'Message reçu' });
+        
+        // Try to send email notification
+        await sendContactNotification(name, email, category || 'general', subject, message);
+        
+        console.log('Contact message received:', { name, email, category, subject, message });
+        res.json({ success: true, message: 'Message reçu, nous vous contacterons bientôt' });
     }
     catch (err) {
         console.error('Contact error:', err);
         res.status(500).json({ success: false, message: 'Erreur serveur' });
     }
 });
+
 // GET /api/testimonials - Get all testimonials with user info
 app.get('/api/testimonials', async (req, res) => {
     try {
