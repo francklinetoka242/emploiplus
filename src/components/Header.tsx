@@ -387,17 +387,7 @@ const Header = () => {
                 <AccountQuickMenu />
               </div>
             </>
-          ) : (
-            <>
-              <Button variant="ghost" asChild className="bg-gradient-secondary text-muted hover:opacity-90">
-                <Link to="/connexion">Connexion</Link>
-              </Button>
-              <Button asChild className="bg-gradient-primary hover:opacity-90">
-                <Link to="/inscription">Inscription</Link>
-              </Button>
-
-            </>
-          )}
+          ) : null}
         </div>
 
         {/* Mobile Menu Button */}

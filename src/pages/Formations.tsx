@@ -232,20 +232,7 @@ export default function Formations() {
           <div className="lg:col-span-3 hidden lg:block">
             {user ? (
               <ProfileSidebar />
-            ) : (
-              <Card className="p-6 border-0 shadow-md text-center">
-                <h3 className="text-lg font-bold mb-2">Créez un compte pour voir plus de formations</h3>
-                <p className="text-sm text-muted-foreground mb-4">Inscrivez-vous pour accéder à toutes les formations, sauvegarder et suivre votre progression.</p>
-                <div className="flex flex-col gap-2">
-                  <Button asChild className="w-full" size="sm">
-                    <Link to="/connexion">Se connecter</Link>
-                  </Button>
-                  <Button asChild variant="outline" className="w-full" size="sm">
-                    <Link to="/inscription">Créer un compte</Link>
-                  </Button>
-                </div>
-              </Card>
-            )}
+            ) : null}
           </div>
 
           {/* Center Content - Formations */}

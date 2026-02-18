@@ -37,24 +37,7 @@ export default function ApplyJob() {
 
   const location = useLocation();
 
-  // If user is not authenticated, show an interstitial prompting to login or register
-  if (!user) {
-    const returnPath = location.pathname + (location.search || '');
-    return (
-      <div className="min-h-screen flex items-center justify-center p-6">
-        <div className="bg-white rounded-lg shadow p-8 max-w-md w-full text-center">
-          <h2 className="text-xl font-bold mb-3">Vous devez être connecté pour postuler</h2>
-          <p className="text-sm text-muted-foreground mb-6">Connectez-vous ou créez un compte pour continuer et finaliser votre candidature.</p>
-          <div className="flex gap-3 justify-center">
-            <a href={`/connexion?redirect=${encodeURIComponent(returnPath)}`} className="px-5 py-3 bg-primary text-white rounded-lg">Se connecter</a>
-            <a href={`/inscription?redirect=${encodeURIComponent(returnPath)}`} className="px-5 py-3 border border-primary text-primary rounded-lg">Créer un compte</a>
-          </div>
-          <div className="mt-4 text-xs text-muted-foreground">Après connexion, vous retournerez automatiquement à la page de candidature.</div>
-        </div>
-      </div>
-    );
-  }
-
+  // Continue to the component regardless of authentication (auth handled at API level)
   async function fetchJob() {
     setLoading(true);
     try {

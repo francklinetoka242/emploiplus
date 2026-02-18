@@ -32,32 +32,7 @@ const Footer = () => {
             </p>
           </div>
 
-          {/* Quick Links */}
-          <div className="space-y-4">
-            <h3 className="font-semibold text-white">Liens rapides</h3>
-            <ul className="space-y-2 text-sm">
-              <li>
-                <Link to="/emplois" className="text-slate-300 hover:text-white transition-colors">
-                  Offres d'emploi
-                </Link>
-              </li>
-              <li>
-                <Link to="/formations" className="text-slate-300 hover:text-white transition-colors">
-                  Formations
-                </Link>
-              </li>
-              <li>
-                <Link to="/services" className="text-slate-300 hover:text-white transition-colors">
-                  Nos services
-                </Link>
-              </li>
-              <li>
-                <Link to="/a-propos" className="text-slate-300 hover:text-white transition-colors">
-                  À propos
-                </Link>
-              </li>
-            </ul>
-          </div>
+  
 
           {/* Services professionnels */}
           <div className="space-y-4">

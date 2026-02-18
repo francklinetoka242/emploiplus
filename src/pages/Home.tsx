@@ -10,6 +10,7 @@ import HeroBanner from "@/components/HeroBanner";
 import Realizations from "@/components/Realizations";
 import Publications from "@/components/Publications";
 import DashboardNewsfeed from "@/components/DashboardNewsfeed";
+import logoMonango from "@/assets/logo_monago.jpg";
 
 const Home = () => {
   const { user } = useAuth();
@@ -168,14 +169,13 @@ const Home = () => {
         <div className="w-full px-4">
           <h2 className="text-2xl font-bold text-center mb-8">Nos partenaires</h2>
           
-          <div className="flex justify-center items-center gap-12 flex-wrap opacity-85 ">
-            
-            <div className="h-15 w- rounded-lg bg-muted flex items-center justify-center">
-             <a href="#"> <img src="/partnerLJEC.png" alt="Logo LJEC" /></a>
-            </div>
-
-            <div className="h-15 w-12 rounded-lg bg-muted flex items-center justify-center">
-              <a href="#"><img  src="/Logo.png" alt="Logo Emploi+" /></a>
+          <div className="flex justify-center items-center gap-12 flex-wrap opacity- ">
+           
+           <div className="h-14 w-24 rounded-lg bg-muted flex items-center justify-center">
+              <img src={logoMonango} alt="Logo MONANGO" />
+            </div> 
+            <div className="h-14 w- rounded-lg bg-muted flex items-center justify-center">
+              <img src="/partnerLJEC.png" alt="Logo LJEC" />
             </div>
 
           </div>
@@ -184,31 +184,6 @@ const Home = () => {
 
       {/* Publications / Newsfeed (instead of Realizations on Home) */}
       <Publications />
-
-      {/* Canaux de communication removed as requested */}
-
-      {/* CTA Section */}
-      <section className="py-20 bg-gradient-primary">
-        <div className="w-full px-4 text-center space-y-6">
-          <h2 className="text-3xl font-bold tracking-tight text-primary-foreground md:text-4xl">
-            Prêt à démarrer votre parcours professionnel ?
-          </h2>
-          <p className="text-lg text-primary-foreground/90 max-w-2xl mx-auto">
-            Rejoignez des milliers de candidats et entreprises qui font confiance à Emploi+.
-          </p>
-          <div className="flex flex-col gap-3 sm:flex-row justify-center">
-            <Button size="lg" asChild className="bg-secondary hover:bg-secondary/90">
-              <Link to="/inscription">
-                Créer un compte
-                <ArrowRight className="ml-2 h-5 w-5" />
-              </Link>
-            </Button>
-            <Button size="lg" variant="outline" asChild className="border-primary-foreground text-foreground hover:bg-primary-foreground/10">
-              <Link to="/connexion">Se connecter</Link>
-            </Button>
-          </div>
-        </div>
-      </section>
     </div>
     </PWALayout>
   );

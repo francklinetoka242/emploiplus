@@ -129,25 +129,6 @@ const About = () => {
           </Card>
         </div>
       </section>
-
-      {/* Call to Action */}
-      <section className="py-16 bg-gradient-primary">
-        <div className="container text-center space-y-6">
-          <h2 className="text-3xl font-bold text-primary-foreground">
-            Prêt à commencer votre parcours ?
-          </h2>
-          <p className="text-lg text-primary-foreground/90 max-w-2xl mx-auto">
-            Rejoignez Emploi+ dès aujourd'hui et découvrez toutes les
-            opportunités qui vous attendent.
-          </p>
-          <Button size="lg" asChild className="bg-secondary hover:bg-secondary/90">
-            <Link to="/inscription">
-              Créer un compte gratuit
-              <ArrowRight className="ml-2 h-5 w-5" />
-            </Link>
-          </Button>
-        </div>
-      </section>
     </div>
   );
 };

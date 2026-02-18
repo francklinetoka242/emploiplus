@@ -75,8 +75,8 @@ export default function Services() {
       <div className="bg-slate-50 py-9">
        
         <div className="w-full px-4">
-          {/* Navigation - Desktop and Mobile */}
-          <div className="grid grid-cols-4 gap-3 mb-8">
+          {/* Navigation - Mobile only */}
+          <div className="grid grid-cols-4 gap-3 mb-8 md:hidden">
             {navigation.map((item) => {
               const Icon = item.icon;
               const isActive = activeTab === item.id;

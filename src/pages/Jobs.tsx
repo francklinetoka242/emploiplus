@@ -227,23 +227,7 @@ const Jobs = () => {
         {/* Main Content with Two Columns */}
         <div className="container py-6 px-4">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-            {/* LEFT COLUMN - INVITE NON-AUTHENTICATED USERS TO CREATE ACCOUNT (desktop only) */}
-            <div className="lg:col-span-3 hidden lg:block">
-              <div className="space-y-6 sticky top-24">
-                <Card className="p-6 border-0 shadow-md text-center">
-                  <h3 className="text-lg font-bold mb-2">Créez un compte pour voir plus d'offres</h3>
-                  <p className="text-sm text-muted-foreground mb-4">Inscrivez-vous pour sauvegarder des offres, postuler et accéder à des recommandations personnalisées.</p>
-                  <div className="flex flex-col gap-2">
-                    <Button asChild className="w-full" size="sm">
-                      <Link to="/connexion">Se connecter</Link>
-                    </Button>
-                    <Button asChild variant="outline" className="w-full" size="sm">
-                      <Link to="/inscription">Créer un compte</Link>
-                    </Button>
-                  </div>
-                </Card>
-              </div>
-            </div>
+            {/* LEFT COLUMN - REMOVED (was login prompt) */}
 
             {/* CENTER & RIGHT COLUMN - JOBS LIST (Main Content) */}
             <div className="lg:col-span-9">

@@ -719,27 +719,6 @@ export default function CVTemplates() {
             </div>
           ))}
         </div>
-
-        {/* CTA Section */}
-        <Card className="p-12 mt-16 bg-gradient-to-r from-blue-600 to-blue-700 text-white border-none">
-          <div className="text-center">
-            <h2 className="text-3xl font-bold mb-4">Prêt à créer votre CV?</h2>
-            <p className="text-lg text-blue-50 mb-8">
-              Rejoignez des milliers de candidats qui ont trouvé leur emploi avec Emploi+
-            </p>
-            <Button
-              size="lg"
-              className="bg-white text-blue-600 hover:bg-blue-50"
-              onClick={() => {
-                if (CV_TEMPLATES.length > 0) {
-                  handleNewCV(CV_TEMPLATES[0].id);
-                }
-              }}
-            >
-              Créer un CV maintenant
-            </Button>
-          </div>
-        </Card>
       </div>
 
       {/* Preview Modal */}
