@@ -52,10 +52,12 @@ export const test_Config = () => {
  */
 
 // Test Notifications :
-// curl -X POST https://emploiplus-group.com/api/notifications/send -H "Content-Type: application/json" -d '{"userIds": ["test"], "type": "push", "title": "Test", "message": "Notification VPS"}'
+// Example using API_BASE below:
+const API_BASE = 'https://emploiplus-group.com';
+// curl -X POST ${API_BASE}/api/notifications/send -H "Content-Type: application/json" -d '{"userIds": ["test"], "type": "push", "title": "Test", "message": "Notification VPS"}'
 
 // Test Matching :
-// curl -X POST https://emploiplus-group.com/api/matching/calculate -H "Content-Type: application/json" -d '{"candidateId": "1", "jobId": "1"}'
+// curl -X POST ${API_BASE}/api/matching/calculate -H "Content-Type: application/json" -d '{"candidateId": "1", "jobId": "1"}'
 
 // ============================================================================
 // 4. PERFORMANCE & LATENCY (Navigateur)

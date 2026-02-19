@@ -17,11 +17,18 @@ export interface FormationData {
   price: string;
 }
 
+import { authHeaders, getApiBaseUrl } from '@/lib/headers';
+
 // API URL - utilise les variables d'environnement
-const API_URL = import.meta.env.VITE_API_BASE_URL 
-  ? `${import.meta.env.VITE_API_BASE_URL}/api`
+// Normalise `VITE_API_URL` / `VITE_API_BASE_URL` et n'ajoute `/api`
+// que s'il n'est pas déjà présent pour éviter les cas `.../api/api`.
+const _apiBase = getApiBaseUrl();
+const API_URL = _apiBase
+  ? (() => {
+      const normalized = _apiBase.replace(/\/+$/g, '');
+      return normalized.endsWith('/api') ? normalized : `${normalized}/api`;
+    })()
   : '/api';
-import { authHeaders } from '@/lib/headers';
 
 export const api = {
 

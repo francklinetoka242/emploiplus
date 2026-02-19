@@ -1,18 +1,28 @@
 // Get API base URL from environment variable - use for all API calls on Vercel
 export function getApiBaseUrl() {
   // Prefer VITE_API_URL (new) but fall back to VITE_API_BASE_URL (legacy)
-  return import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL || '';
+  const raw = import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL || '';
+  if (!raw) return '';
+  // Normalize: remove trailing slashes and any trailing "/api" so callers can
+  // append "/api" exactly once when needed.
+  return raw.toString().trim().replace(/\/+$|\/api$/g, '').replace(/\/api$/g, '');
 }
 
-// Build full API URL
+// Build full API URL. When `VITE_API_URL` is set, we ensure the final URL
+// contains a single `/api` segment and avoid duplicates when callers pass
+// paths that already include `/api`.
 export function buildApiUrl(path: string) {
   const baseUrl = getApiBaseUrl();
-  // Ensure path starts with /
   const cleanPath = path.startsWith('/') ? path : `/${path}`;
-  if (baseUrl) {
-    return `${baseUrl}${cleanPath}`;
+
+  if (!baseUrl) {
+    // No external base set (local development) — return path unchanged
+    return cleanPath;
   }
-  return cleanPath;
+
+  // If path already starts with /api, strip it so we add /api exactly once
+  const rest = cleanPath.startsWith('/api') ? cleanPath.slice(4) : cleanPath;
+  return `${baseUrl}/api${rest}`;
 }
 
 // Get auth headers with token (supports both JWT formats: admin token and user token)
