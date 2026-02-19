@@ -25,6 +25,7 @@ import servicesImage from "@/assets/services-digital.jpg";
 import Breadcrumb from "@/components/Breadcrumb";
 
 import HeroServices from "@/components/services/HeroServices";
+import SearchBar from '@/components/SearchBar';
 import OptimizationCandidates from "@/components/services/OptimizationCandidates";
 import OptimizationCompanies from "@/components/services/OptimizationCompanies";
 import CareerTools from "@/components/services/CareerTools";
@@ -40,6 +41,7 @@ export default function Services() {
     "optimization" | "tools" | "visual" | "digital"
   >("optimization");
   const { isVisible } = useScrollDirection(100);
+  const [searchQuery, setSearchQuery] = useState('');
 
   const navigation = [
     {
@@ -71,6 +73,15 @@ export default function Services() {
   return (
     <PWALayout notificationCount={0} messageCount={0}>
     <div className="min-h-screen bg-white pb-24 md:pb-0">
+
+      {/* Centered fixed search bar for Services page */}
+      <div className="fixed top-4 left-0 right-0 z-40 pointer-events-none">
+        <div className="container mx-auto px-4 flex justify-center pointer-events-auto">
+          <div className="w-full max-w-2xl">
+            <SearchBar value={searchQuery} onChange={setSearchQuery} placeholder="Rechercher services, formations..." />
+          </div>
+        </div>
+      </div>
 
       <div className="bg-slate-50 py-9">
        

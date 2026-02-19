@@ -10,6 +10,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useUserRole } from "@/hooks/useUserRole";
 import { useMessaging } from "@/hooks/useMessaging";
 import NotificationDropdown from '@/components/NotificationDropdown';
+import LanguageToggle from '@/components/LanguageToggle';
 
 interface UserProfile {
   id?: number;
@@ -260,7 +261,6 @@ const Header = () => {
               <img src="/Logo.png" alt="Logo Emploi+" />
             </div>
           </Link>
-         
         </div>
 
 
@@ -388,6 +388,11 @@ const Header = () => {
               </div>
             </>
           ) : null}
+        </div>
+
+        {/* Language toggle on the right (desktop) */}
+        <div className="hidden md:flex items-center ml-4">
+          <LanguageToggle />
         </div>
 
         {/* Mobile Menu Button */}

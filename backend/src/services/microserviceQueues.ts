@@ -13,6 +13,7 @@
 
 import { Queue, Worker } from 'bullmq';
 import { redisConfig } from '../config/redis.js';
+import { createClient } from '@supabase/supabase-js';
 
 // ============================================================================
 // REDIS CONNECTION

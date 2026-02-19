@@ -1,14 +1,8 @@
 import { Link } from "react-router-dom";
-import { Briefcase, Mail, MapPin, Phone, Facebook, Linkedin, Twitter, Globe, MessageCircle } from "lucide-react";
+import { Briefcase, Mail, MapPin, Phone, Facebook, Linkedin, Twitter, MessageCircle } from "lucide-react";
+import LanguageToggle from '@/components/LanguageToggle';
 
-const LANGS = [
-  { code: 'fr', label: 'Français' },
-  { code: 'en', label: 'English' },
-  { code: 'ln', label: 'Lingala' }
-];
-
-const getLang = () => localStorage.getItem('lang') || 'fr';
-const setLang = (l: string) => localStorage.setItem('lang', l);
+// language handled by LanguageToggle component
 
 const Footer = () => {
   return (
@@ -153,16 +147,7 @@ const Footer = () => {
             <p>&copy; {new Date().getFullYear()} Emploi+. Tous droits réservés.</p>
             <div className="flex items-center gap-4 justify-center">
               <div className="flex items-center gap-2">
-                <Globe className="h-4 w-4" />
-                <select
-                  className="bg-transparent text-slate-300"
-                  value={getLang()}
-                  onChange={(e) => { setLang(e.target.value); window.location.reload(); }}
-                >
-                  {LANGS.map((l) => (
-                    <option key={l.code} value={l.code}>{l.label}</option>
-                  ))}
-                </select>
+                <LanguageToggle />
               </div>
 
               <div className="flex gap-3">

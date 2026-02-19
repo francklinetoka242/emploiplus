@@ -5,7 +5,6 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { Search, MapPin, Briefcase, Building, Globe, Zap, X, ChevronUp } from "lucide-react";
-import { useScrollDirection } from "@/hooks/useScrollDirection";
 
 interface Job {
   id: string;
@@ -45,7 +44,8 @@ export default function JobSearchCompact({ onFilterChange }: JobSearchCompactPro
   const [type, setType] = useState("all");
   const [isExpanded, setIsExpanded] = useState(false);
 
-  const { isVisible } = useScrollDirection(80);
+  // Force visible by default so search bar is always shown independently
+  const isVisible = true;
 
   const { data: jobsResponse = { data: [], pagination: { total: 0 } } } = useQuery({
     queryKey: ["jobs"],
@@ -113,11 +113,7 @@ export default function JobSearchCompact({ onFilterChange }: JobSearchCompactPro
   return (
     <>
       {/* Sticky compact search bar */}
-      <div
-        className={`fixed top-0 left-0 right-0 bg-white border-b shadow-lg transition-all duration-300 z-40 ${
-          isVisible ? "translate-y-0" : "-translate-y-full"
-        }`}
-      >
+      <div className="fixed top-0 left-0 right-0 bg-white border-b shadow-lg transition-all duration-300 z-40">
         <div className="container max-w-7xl mx-auto px-4 py-3">
           <div className="flex items-center gap-2">
             {/* Search Input */}

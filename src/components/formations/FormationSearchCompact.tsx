@@ -2,7 +2,6 @@ import { useState, useEffect, useMemo, Dispatch, SetStateAction } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/lib/api";
 import { Search, ChevronDown, ChevronUp, X } from "lucide-react";
-import { useScrollDirection } from "@/hooks/useScrollDirection";
 
 interface Formation {
   id: number;
@@ -32,7 +31,8 @@ export default function FormationSearchCompact({ onFilterChange }: FormationSear
   const [priceRange, setPriceRange] = useState("");
   const [isExpanded, setIsExpanded] = useState(false);
 
-  const { isVisible } = useScrollDirection(80);
+  // Show search bar by default (independent of formation loading)
+  const isVisible = true;
 
   const { data: formationsResponse = { formations: [], total: 0 } } = useQuery({
     queryKey: ["formations"],
