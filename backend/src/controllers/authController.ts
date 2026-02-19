@@ -13,6 +13,9 @@ import bcrypt from 'bcryptjs';
 import crypto from 'crypto';
 import nodemailer from 'nodemailer';
 
+// Environment variables for email verification links
+const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:5173';
+
 /**
  * Register Admin
  */
@@ -93,15 +96,18 @@ export const registerAdmin = async (req: Request, res: Response) => {
       const transporter = (process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS)
         ? nodemailer.createTransport({
             host: process.env.SMTP_HOST,
-            port: parseInt(process.env.SMTP_PORT || '587'),
+            port: parseInt(process.env.SMTP_PORT || '587', 10),
             secure: process.env.SMTP_SECURE === 'true',
+            tls: {
+              rejectUnauthorized: false // Allow self-signed certificates on VPS
+            },
             auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS }
           })
         : null;
 
       if (transporter) {
-        const backendUrl = process.env.BACKEND_URL || `http://localhost:${process.env.PORT || 4000}`;
-        const verifyLink = `${backendUrl}/api/admin/verify-email?token=${verificationToken}`;
+        // Use FRONTEND_URL for email verification link (not backend URL)
+        const verifyLink = `${FRONTEND_URL}/admin/verify-email?token=${verificationToken}`;
         await transporter.sendMail({
           from: process.env.EMAIL_FROM || 'admin@emploiplus-group.com',
           to: admin.email,

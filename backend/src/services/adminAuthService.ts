@@ -5,14 +5,19 @@ import { pool } from "../config/database.js";
 import nodemailer from "nodemailer";
 import crypto from "crypto";
 
+
 const JWT_SECRET = process.env.JWT_SECRET || "emploi_connect_congo_secret_2025";
 const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:5173";
 
-// Configure nodemailer
+// Configure nodemailer with exclusive env vars for production
+// All configuration comes from environment variables (process.env)
 const transporter = nodemailer.createTransport({
   host: process.env.SMTP_HOST,
-  port: parseInt(process.env.SMTP_PORT || "587"),
+  port: parseInt(process.env.SMTP_PORT || "587", 10),
   secure: process.env.SMTP_SECURE === "true",
+  tls: {
+    rejectUnauthorized: false // Allow self-signed certificates on VPS
+  },
   auth: {
     user: process.env.SMTP_USER,
     pass: process.env.SMTP_PASSWORD,

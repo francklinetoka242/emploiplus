@@ -4238,12 +4238,15 @@ app.use((err, req, res, next) => {
 
 // Email configuration and helper function
 const createEmailTransporter = () => {
-    // Try to create transporter from environment variables
+    // Try to create transporter from environment variables (primary method)
     if (process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS) {
         return nodemailer.createTransport({
             host: process.env.SMTP_HOST,
-            port: parseInt(process.env.SMTP_PORT || '587'),
+            port: parseInt(process.env.SMTP_PORT || '587', 10),
             secure: process.env.SMTP_SECURE === 'true', // true for 465, false for other ports
+            tls: {
+              rejectUnauthorized: false // Allow self-signed certificates on VPS
+            },
             auth: {
                 user: process.env.SMTP_USER,
                 pass: process.env.SMTP_PASS,
