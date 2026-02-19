@@ -41,7 +41,25 @@ const Login = () => {
           localStorage.setItem("user", JSON.stringify(data.user || data.admin));
         }
         toast.success("Connexion réussie !");
-        navigate("/admin");
+
+        // Redirect based on admin role
+        const adminRole = data.admin?.role;
+        switch (adminRole) {
+          case "super_admin":
+            navigate("/admin");
+            break;
+          case "content_admin":
+            navigate("/admin/publications");
+            break;
+          case "admin_offres":
+            navigate("/admin/jobs");
+            break;
+          case "admin_users":
+            navigate("/admin/users");
+            break;
+          default:
+            navigate("/admin");
+        }
       } else {
         toast.error(data?.message || "Email ou mot de passe incorrect");
       }

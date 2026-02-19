@@ -1,8 +1,5 @@
 import { useState, useEffect } from 'react';
-import { authHeaders } from '@/lib/headers';
-
-// Get API base URL from environment variable
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '';
+import { authHeaders, buildApiUrl } from '@/lib/headers';
 
 // Backend-only auth hook: uses /api/register, /api/login and /api/users/me
 export const useAuth = () => {
@@ -30,7 +27,7 @@ export const useAuth = () => {
     }
 
     // If token exists, validate it and refresh user profile
-    fetch(`${API_BASE_URL}/api/users/me`, { headers: authHeaders() })
+    fetch(buildApiUrl("/api/users/me"), { headers: authHeaders() })
       .then(async (r) => {
         if (!r.ok) {
           // If unauthorized, token likely invalid — clear auth. For other errors, keep stored user.
@@ -62,7 +59,7 @@ export const useAuth = () => {
 
   const signUp = async (email: string, password: string, metadata: any) => {
     try {
-      const res = await fetch(`${API_BASE_URL}/api/register`, {
+      const res = await fetch(buildApiUrl("/api/register"), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password, ...metadata }),
@@ -84,7 +81,7 @@ export const useAuth = () => {
 
   const signIn = async (email: string, password: string) => {
     try {
-      const res = await fetch(`${API_BASE_URL}/api/login`, {
+      const res = await fetch(buildApiUrl("/api/login"), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password }),

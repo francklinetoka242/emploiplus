@@ -6,6 +6,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 
 import Layout from "./components/Layout";
+import { ProtectedRoute } from "./components/ProtectedRoute";
 
 // Pages publiques
 import Home from "./pages/Home";
@@ -209,17 +210,78 @@ const App = () => {
 
           {/* ADMIN — TOUT DANS LE LAYOUT */}
           <Route path="/admin" element={<AdminLayout />}>
-            <Route index element={<DashboardPage />} />
-            <Route path="jobs" element={<JobsPage />} />
-            <Route path="formations" element={<FormationsPage />} />
-            <Route path="users" element={<UsersPage />} />
-            <Route path="notifications" element={<AdminNotificationsPage />} />
-            <Route path="verify-requests" element={<VerifyRequestsPage />} />
-            <Route path="admins" element={<AdminsPage />} />
-            <Route path="faqs" element={<AdminFaqsPage />} />
-            <Route path="publications" element={<PublicationsAdminPage />} />
-            <Route path="portfolios" element={<PortfoliosAdminPage />} />
-            <Route path="catalogs" element={<CatalogsPage />} />
+            {/* Dashboard — accessible à tous les admins authentifiés */}
+            <Route index element={<ProtectedRoute><DashboardPage /></ProtectedRoute>} />
+            
+            {/* Jobs — super_admin et admin_offres */}
+            <Route path="jobs" element={
+              <ProtectedRoute requiredRoles={["super_admin", "admin_offres"]}>
+                <JobsPage />
+              </ProtectedRoute>
+            } />
+            
+            {/* Publications — super_admin et content_admin */}
+            <Route path="publications" element={
+              <ProtectedRoute requiredRoles={["super_admin", "content_admin"]}>
+                <PublicationsAdminPage />
+              </ProtectedRoute>
+            } />
+            
+            {/* Users — super_admin et admin_users */}
+            <Route path="users" element={
+              <ProtectedRoute requiredRoles={["super_admin", "admin_users"]}>
+                <UsersPage />
+              </ProtectedRoute>
+            } />
+            
+            {/* Admins — super_admin uniquement */}
+            <Route path="admins" element={
+              <ProtectedRoute requiredRoles={["super_admin"]}>
+                <AdminsPage />
+              </ProtectedRoute>
+            } />
+            
+            {/* Formations — super_admin uniquement */}
+            <Route path="formations" element={
+              <ProtectedRoute requiredRoles={["super_admin"]}>
+                <FormationsPage />
+              </ProtectedRoute>
+            } />
+            
+            {/* FAQs — super_admin uniquement */}
+            <Route path="faqs" element={
+              <ProtectedRoute requiredRoles={["super_admin"]}>
+                <AdminFaqsPage />
+              </ProtectedRoute>
+            } />
+            
+            {/* Notifications — tous authentifiés */}
+            <Route path="notifications" element={
+              <ProtectedRoute>
+                <AdminNotificationsPage />
+              </ProtectedRoute>
+            } />
+            
+            {/* Verify Requests — super_admin uniquement */}
+            <Route path="verify-requests" element={
+              <ProtectedRoute requiredRoles={["super_admin"]}>
+                <VerifyRequestsPage />
+              </ProtectedRoute>
+            } />
+            
+            {/* Portfolios — super_admin uniquement */}
+            <Route path="portfolios" element={
+              <ProtectedRoute requiredRoles={["super_admin"]}>
+                <PortfoliosAdminPage />
+              </ProtectedRoute>
+            } />
+            
+            {/* Catalogs — super_admin uniquement */}
+            <Route path="catalogs" element={
+              <ProtectedRoute requiredRoles={["super_admin"]}>
+                <CatalogsPage />
+              </ProtectedRoute>
+            } />
           </Route>
 
           {/* Pages spéciales */}

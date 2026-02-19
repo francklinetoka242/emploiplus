@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";        // ← LE "F" EST MAJUSCUL
 import { Card } from "@/components/ui/card";
 import { toast } from "sonner";
 import { Shield } from "lucide-react";
+import { buildApiUrl } from "@/lib/headers";
 
 export default function AdminLoginPage() {
   const [email, setEmail] = useState("exemple@site.com");
@@ -18,7 +19,7 @@ export default function AdminLoginPage() {
     setLoading(true);
 
     try {
-      const res = await fetch("/api/admin/login", {
+      const res = await fetch(buildApiUrl("/admin/login"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
@@ -30,7 +31,25 @@ export default function AdminLoginPage() {
         localStorage.setItem("adminToken", data.token);
         localStorage.setItem("admin", JSON.stringify(data.admin));
         toast.success("Connecté avec succès !");
-        navigate("/admin");
+
+        // Redirect based on admin role
+        const role = data.admin?.role;
+        switch (role) {
+          case "super_admin":
+            navigate("/admin");
+            break;
+          case "content_admin":
+            navigate("/admin/publications");
+            break;
+          case "admin_offres":
+            navigate("/admin/jobs");
+            break;
+          case "admin_users":
+            navigate("/admin/users");
+            break;
+          default:
+            navigate("/admin");
+        }
       } else {
         toast.error("Identifiants incorrects");
       }

@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { toast } from "sonner";
 import { Shield, LogIn } from "lucide-react";
+import { buildApiUrl } from "@/lib/headers";
 
 export default function AdminLogin() {
   const [email, setEmail] = useState("email@email.com");
@@ -18,7 +19,7 @@ export default function AdminLogin() {
     setLoading(true);
 
     try {
-      const res = await fetch("/api/admin/login", {
+      const res = await fetch(buildApiUrl("/admin/login"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
@@ -31,7 +32,25 @@ export default function AdminLogin() {
         localStorage.setItem("admin", JSON.stringify(data.admin));
         const name = data.admin.nom && data.admin.prenom ? `${data.admin.prenom} ${data.admin.nom}` : (data.admin.full_name || "Admin");
         toast.success(`Bienvenue ${name} !`);
-        navigate("/admin");
+
+        // Redirect based on admin role
+        const role = data.admin?.role;
+        switch (role) {
+          case "super_admin":
+            navigate("/admin");
+            break;
+          case "content_admin":
+            navigate("/admin/publications");
+            break;
+          case "admin_offres":
+            navigate("/admin/jobs");
+            break;
+          case "admin_users":
+            navigate("/admin/users");
+            break;
+          default:
+            navigate("/admin");
+        }
       } else {
         toast.error("Identifiants incorrects");
       }

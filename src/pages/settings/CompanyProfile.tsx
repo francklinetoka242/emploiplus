@@ -104,7 +104,7 @@ export default function CompanyProfile() {
 
         // Update API with new logo
         const headers: Record<string, string> = authHeaders('application/json');
-        const res = await fetch("/api/users/me", {
+        const res = await fetch(buildApiUrl("/api/users/me"), {
           method: 'PUT',
           headers,
           body: JSON.stringify({ profile_image_url: newImageUrl }),
@@ -132,7 +132,7 @@ export default function CompanyProfile() {
     try {
       setUploadingLogo(true);
       const headers: Record<string, string> = authHeaders('application/json');
-      const res = await fetch("/api/users/me", {
+      const res = await fetch(buildApiUrl("/api/users/me"), {
         method: 'PUT',
         headers,
         body: JSON.stringify({ profile_image_url: null }),
@@ -158,7 +158,7 @@ export default function CompanyProfile() {
     setLoading(true);
     try {
       const headers: Record<string, string> = authHeaders('application/json');
-      const res = await fetch("/api/users/me", {
+      const res = await fetch(buildApiUrl("/api/users/me"), {
         method: 'PUT',
         headers,
         body: JSON.stringify({
