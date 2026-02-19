@@ -10,7 +10,7 @@ import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
 import { pool, isConnected, connectedPromise } from './config/database.js';
 import { API_PORT, CORS_ORIGIN } from './config/constants.js';
-import { registerRoutes } from './routes/index.js';
+import apiRouter from './routes/index.js';
 
 // Chargement des variables d'environnement (.env)
 dotenv.config();
@@ -56,7 +56,8 @@ app.use('/uploads', express.static('uploads'));
 // ENREGISTREMENT DES ROUTES
 // ──────────────────────────────────────────────────
 
-registerRoutes(app);
+// Mount API router under /api
+app.use('/api', apiRouter);
 
 // ──────────────────────────────────────────────────
 // GESTION DES ERREURS
@@ -105,7 +106,7 @@ connectedPromise
 
 const PORT = process.env.PORT || API_PORT || 5000;
 
-const server = app.listen(PORT, '0.0.0.0', () => {
+const server = app.listen(Number(PORT), '0.0.0.0', () => {
   console.log('==============================================');
   console.log(`🚀 SERVEUR EMPLOIPLUS LANCÉ`);
   console.log(`📡 URL API : https://emploiplus-group.com/api`);

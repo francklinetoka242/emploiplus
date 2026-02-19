@@ -144,7 +144,7 @@ async function sendToTopic(
       throw new Error('Topic is required');
     }
 
-    const message: admin.messaging.Message = {
+    const message: any = {
       notification: {
         title: payload.title,
         body: payload.body,
@@ -197,7 +197,7 @@ async function sendToTopic(
 
     console.log(`[PushNotification] Sending to topic: ${options.topic}`);
 
-    const response = await messaging.send(message);
+    const response = await (messaging as any).send(message);
 
     result.success = true;
     result.sentCount = 1; // Topic send counts as 1
@@ -269,7 +269,7 @@ async function sendToUsers(
     // Batch send to multiple devices
     const tokens = deviceTokens.map((dt: any) => dt.token);
     
-    const message: admin.messaging.MulticastMessage = {
+    const message: any = {
       notification: {
         title: payload.title,
         body: payload.body,
@@ -293,7 +293,7 @@ async function sendToUsers(
 
     console.log(`[PushNotification] Sending to ${tokens.length} devices`);
 
-    const response = await messaging.sendMulticast(message);
+    const response = await (messaging as any).sendMulticast(message);
 
     result.success = response.failureCount === 0;
     result.sentCount = response.successCount;

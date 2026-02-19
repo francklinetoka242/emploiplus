@@ -43,5 +43,5 @@
     "useDefineForClassFields": true
   },
   "include": ["src/**/*"],
-  "exclude": ["node_modules", "dist", "src/**/*.old.ts", "src/**/server.old.ts"]
+  "exclude": ["node_modules", "dist", "src/server.old.ts", "src/**/*.old.ts"]
 }

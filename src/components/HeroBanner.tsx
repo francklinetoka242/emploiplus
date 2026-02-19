@@ -9,6 +9,7 @@ export default function HeroBanner({ title, subtitle }: { title?: string; subtit
   const subtitleRef = useRef<HTMLParagraphElement | null>(null);
   const buttonsRef = useRef<HTMLDivElement | null>(null);
   const svgRef = useRef<SVGSVGElement | null>(null);
+  const imageRef = useRef<HTMLImageElement | null>(null);
 
   useEffect(() => {
     const t = titleRef.current;
@@ -16,23 +17,32 @@ export default function HeroBanner({ title, subtitle }: { title?: string; subtit
     const b = buttonsRef.current;
     const svg = svgRef.current;
 
+    // Slower, more relaxed sequencing so visitors have time to read
     if (t) {
       setTimeout(() => {
         t.classList.add('animate-slide-in-left');
         t.classList.remove('opacity-0');
-      }, 200);
+      }, 800);
     }
     if (s) {
       setTimeout(() => {
         s.classList.add('animate-slide-in-right');
         s.classList.remove('opacity-0');
-      }, 400);
+      }, 1400);
     }
     if (b) {
       setTimeout(() => {
         b.classList.add('animate-slide-in-up');
         b.classList.remove('opacity-0');
-      }, 600);
+      }, 2000);
+    }
+
+    // Image comes from the right into its slot
+    if (imageRef.current) {
+      setTimeout(() => {
+        imageRef.current?.classList.add('animate-slide-in-from-right');
+        imageRef.current?.classList.remove('opacity-0');
+      }, 1200);
     }
 
     // Trigger SVG path animation and set delay
@@ -72,22 +82,13 @@ export default function HeroBanner({ title, subtitle }: { title?: string; subtit
             </div>
           </div>
           <div className="relative">
-              <div className="aspect-[4/3] overflow-hidden rounded-2xl shadow-strong relative">
+            <div className="aspect-[4/3] overflow-hidden rounded-2xl shadow-strong relative">
               <img
+                ref={imageRef}
                 src={heroImage}
                 alt="Professionnels collaborant"
-                className="h-full w-full object-cover"
+                className="h-full w-full object-cover opacity-0"
               />
-              {/* animated border overlay: SVG path starts at top-right and draws clockwise */}
-              <svg
-                ref={svgRef}
-                className="hero-border-svg absolute inset-0 pointer-events-none"
-                viewBox="0 0 100 100"
-                preserveAspectRatio="none"
-              >
-                {/* Path starts at top-right (100,0) then goes down, left, up, back to start to trace clockwise */}
-                <path d="M100 0 L100 100 L0 100 L0 0 L100 0" pathLength="400" />
-              </svg>
             </div>
           </div>
         </div>

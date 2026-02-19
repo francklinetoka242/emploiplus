@@ -85,3 +85,14 @@ export const verifyEmailToken = async (token: string) => {
     return { success: false, message: "Erreur de vérification" };
   }
 };
+
+export const createAdminBySuperAdmin = async (data: any, createdById?: number) => {
+  try {
+    // Delegate to registerAdmin but mark as created by super admin.
+    // In future we can record `createdById` in audit logs or set different defaults.
+    return await registerAdmin(data, true);
+  } catch (error) {
+    console.error('❌ createAdminBySuperAdmin error:', error);
+    return { success: false, message: 'Erreur lors de la création par super admin' };
+  }
+};
