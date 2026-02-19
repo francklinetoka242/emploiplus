@@ -17,6 +17,9 @@ dotenv.config();
 
 const app: Express = express();
 
+// Configuration pour proxy (CyberPanel/LiteSpeed)
+app.set('trust proxy', 1);
+
 // ──────────────────────────────────────────────────
 // MIDDLEWARES DE SÉCURITÉ
 // ──────────────────────────────────────────────────
@@ -33,7 +36,7 @@ const allowedOrigin = process.env.FRONTEND_URL || CORS_ORIGIN;
 app.use(cors({
   origin: allowedOrigin,
   credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
