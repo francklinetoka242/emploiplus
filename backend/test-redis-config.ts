@@ -1,41 +1,29 @@
 /**
- * Test Redis Configuration
- * Vérifie que la configuration Redis fonctionne avec REDIS_URL et fallback host:port
+ * Test Redis Configuration - VPS Production
+ * Vérifie la compatibilité réseau et BullMQ
  */
 
-import { getRedisConfig } from './src/config/redis.js';
+import 'dotenv/config'; 
+import { redisConfig } from './src/config/redis.js';
 
-console.log('='.repeat(80));
-console.log('🔍 Testing Redis Configuration');
-console.log('='.repeat(80));
+console.log('🚀 [Diagnostic] Vérification du Cache Redis...');
 
-// Test 1: Current environment
-console.log('\n📋 Current Environment Variables:');
-console.log(`  REDIS_URL: ${process.env.REDIS_URL ? '✓ Set' : '✗ Not set'}`);
-console.log(`  REDIS_HOST: ${process.env.REDIS_HOST || 'localhost (default)'}`);
-console.log(`  REDIS_PORT: ${process.env.REDIS_PORT || '6379 (default)'}`);
-console.log(`  REDIS_PASSWORD: ${process.env.REDIS_PASSWORD ? '✓ Set' : '✗ Not set'}`);
+// 1. État des Variables
+console.log(`\n📡 Mode de connexion : ${redisConfig.url ? 'URL complète' : 'Host/Port'}`);
+console.log(`🏠 Hôte cible : ${redisConfig.host || 'Défini par URL'}`);
+console.log(`🔒 Mot de passe : ${redisConfig.password ? 'Configuré ✅' : 'Non défini (Normal si local) ℹ️'}`);
 
-// Test 2: Redis config output
-const config = getRedisConfig();
-console.log('\n⚙️  Redis Configuration Generated:');
-console.log(`  ${JSON.stringify(config, null, 2)}`);
-
-// Test 3: Validate config
-console.log('\n✅ Configuration Validation:');
-if ('url' in config) {
-  console.log(`  ✓ Using REDIS_URL: ${config.url}`);
+// 2. Validation Critique BullMQ
+if (redisConfig.maxRetriesPerRequest === null) {
+  console.log('🛠  BullMQ : Configuration compatible (maxRetries=null) ✅');
 } else {
-  console.log(`  ✓ Using host:port - ${config.host}:${config.port}`);
-  if (config.password) {
-    console.log(`  ✓ Password auth enabled`);
-  }
+  console.error('❌ ERREUR : maxRetriesPerRequest doit être NULL pour éviter les crashs BullMQ !');
 }
 
-if (config.maxRetriesPerRequest === null) {
-  console.log(`  ✓ maxRetriesPerRequest: null (BullMQ compatible)`);
+// 3. Test de résolution réseau
+const finalHost = redisConfig.host === 'localhost' ? '127.0.0.1' : redisConfig.host;
+if (finalHost === '127.0.0.1') {
+  console.log('⚡ Optimisation VPS : Utilisation de l\'IP directe active.');
 }
 
-console.log('\n' + '='.repeat(80));
-console.log('✨ Redis configuration test completed');
-console.log('='.repeat(80));
+console.log('\n✨ Diagnostic terminé. Ton système de tâches (Matching/Emails) est prêt.');

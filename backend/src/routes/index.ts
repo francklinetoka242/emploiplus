@@ -1,53 +1,71 @@
-import { Express } from 'express';
+/**
+ * Main API Routes
+ * Placeholder for modular route separation
+ * 
+ * MIGRATION GUIDE:
+ * Extract routes from server.old.ts and organize by domain:
+ * - routes/jobs.ts (jobs, job-applications)
+ * - routes/users.ts (users, profiles)
+ * - routes/formations.ts (formations)
+ * - routes/messaging.ts (conversations, messages)
+ * - routes/feed.ts (newsfeed, posts)
+ * - routes/admin.ts (admin-specific endpoints)
+ * - routes/search.ts (search endpoints)
+ * 
+ * Then import and mount them in this file
+ */
+
+import express, { Router, Request, Response } from 'express';
 import { pool } from '../config/database.js';
-import authRoutes from './auth.js';
+
+const router: Router = express.Router();
 
 /**
- * Centralised route registration
- * Imports and registers all route modules
+ * Placeholder: Health check
+ * Remove this once you have real routes
  */
-export const registerRoutes = (app: Express) => {
-  /**
-   * TODO: Import route modules as they are created
-   * Current routes are still in server.ts but will be migrated here
-   * 
-   * Example pattern:
-   * import authRoutes from './auth.js';
-   * import userRoutes from './users.js';
-   * import jobRoutes from './jobs.js';
-   * 
-   * app.use('/api/auth', authRoutes);
-   * app.use('/api/users', userRoutes);
-   * app.use('/api/jobs', jobRoutes);
-   */
+router.get('/health', (req: Request, res: Response) => {
+  res.json({
+    status: 'ok',
+    service: 'emploi-connect-api',
+    timestamp: new Date().toISOString(),
+  });
+});
 
-  // Health check endpoint
-  app.get('/api/health', (req, res) => {
+/**
+ * Database health check
+ */
+router.get('/health/db', async (req: Request, res: Response) => {
+  try {
+    await pool.query('SELECT 1');
     res.json({
-      success: true,
-      status: 'Backend is running',
+      status: 'ok',
+      database: 'PostgreSQL',
       timestamp: new Date().toISOString(),
     });
-  });
+  } catch (error) {
+    res.status(503).json({
+      status: 'error',
+      database: 'PostgreSQL',
+      message: error instanceof Error ? error.message : 'Database unavailable',
+    });
+  }
+});
 
-  // Database status endpoint
-  app.get('/api/health/db', async (req, res) => {
-    try {
-      const result = await pool.query('SELECT 1');
-      res.json({
-        success: true,
-        database: 'Connected',
-        timestamp: new Date().toISOString(),
-      });
-    } catch (err) {
-      res.status(503).json({
-        success: false,
-        database: 'Disconnected',
-        error: String(err),
-      });
-    }
-  });
+/**
+ * TODO: Import and mount route modules below
+ * Example:
+ * 
+ * import jobRoutes from './jobs.js';
+ * import userRoutes from './users.js';
+ * import messagingRoutes from './messaging.js';
+ * 
+ * router.use('/jobs', jobRoutes);
+ * router.use('/users', userRoutes);
+ * router.use('/messages', messagingRoutes);
+ */
 
+export default router;
   // Mount auth routes
   app.use('/api/auth', authRoutes);
 };

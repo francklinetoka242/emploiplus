@@ -1,43 +1,46 @@
-// vite.config.ts (à la racine)
-import { defineConfig } from "vite";
+import { defineConfig, loadEnv } from "vite";
 import react from "@vitejs/plugin-react-swc";
 import path from "path";
 
-export default defineConfig({
-  server: {
-    port: 5173,
-    host: "0.0.0.0",
-    open: true,
-    proxy: {
-      "/api": {
-        target: "http://localhost:5000",
-        changeOrigin: true,
-        secure: false,
-      },
-      "/uploads": {
-        target: "http://localhost:5000",
-        changeOrigin: true,
-        secure: false,
-      },
-    },
-  },
-  build: {
-    outDir: "dist",
-    sourcemap: false, // Disabled in production
-    minify: "terser",
-    terserOptions: {
-      compress: {
-        drop_console: true, // Remove console logs in production
+export default defineConfig(({ mode }) => {
+  // Charge les variables d'environnement selon le mode (development ou production)
+  const env = loadEnv(mode, process.cwd());
+
+  return {
+    server: {
+      port: 5173,
+      host: "0.0.0.0",
+      open: true,
+      proxy: {
+        "/api": {
+          // Utilise localhost sur ton Mac, mais en production 
+          // c'est la Rewrite Rule de CyberPanel qui prend le relais
+          target: "http://127.0.0.1:5000",
+          changeOrigin: true,
+          secure: false,
+        },
+        "/uploads": {
+          target: "http://127.0.0.1:5000",
+          changeOrigin: true,
+          secure: false,
+        },
       },
     },
-  },
-  resolve: {
-    alias: {
-      "@": path.resolve(__dirname, "./src"),
+    build: {
+      outDir: "dist",
+      sourcemap: false,
+      minify: "terser",
+      terserOptions: {
+        compress: {
+          drop_console: true, 
+        },
+      },
     },
-  },
-  optimizeDeps: {
-    include: [],
-  },
-  plugins: [react()],
+    resolve: {
+      alias: {
+        "@": path.resolve(__dirname, "./src"),
+      },
+    },
+    plugins: [react()],
+  };
 });

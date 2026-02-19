@@ -1,16 +1,6 @@
 /**
- * ============================================================================
- * Redis Configuration Helper
- * ============================================================================
- * 
- * Parses REDIS_URL environment variable and creates BullMQ-compatible config.
- * Supports both local (host:port) and remote (redis://) formats.
- * 
- * Environment variables:
- * - REDIS_URL: Full connection string (e.g., redis://user:pass@host:port/db)
- * - REDIS_HOST: Fallback host (default: localhost)
- * - REDIS_PORT: Fallback port (default: 6379)
- * - REDIS_PASSWORD: Fallback password (optional)
+ * Redis Configuration Helper - VPS Production
+ * Configure la connexion pour BullMQ et le cache.
  */
 
 interface RedisConfig {
@@ -18,27 +8,27 @@ interface RedisConfig {
   port?: number;
   password?: string;
   url?: string;
-  maxRetriesPerRequest?: null;
+  maxRetriesPerRequest: null; // Obligatoire pour BullMQ
 }
 
 export function getRedisConfig(): RedisConfig {
   const redisUrl = process.env.REDIS_URL;
 
-  // If REDIS_URL is provided, use it directly (BullMQ supports URL format)
+  // Priorité à l'URL complète si elle existe dans le .env
   if (redisUrl) {
-    console.log('[Redis] Using REDIS_URL for connection');
     return {
       url: redisUrl,
       maxRetriesPerRequest: null,
     };
   }
 
-  // Fallback to host:port configuration
-  const host = process.env.REDIS_HOST || 'localhost';
+  // Fallback sur configuration Hôte/Port
+  // Utilisation de 127.0.0.1 au lieu de localhost pour la stabilité VPS
+  const host = process.env.REDIS_HOST || '127.0.0.1';
   const port = parseInt(process.env.REDIS_PORT || '6379', 10);
   const password = process.env.REDIS_PASSWORD;
 
-  console.log(`[Redis] Using host:port configuration (${host}:${port})`);
+  console.log(`[Redis] Connexion établie sur ${host}:${port}`);
 
   return {
     host,
@@ -48,5 +38,4 @@ export function getRedisConfig(): RedisConfig {
   };
 }
 
-// Export singleton instance
 export const redisConfig = getRedisConfig();

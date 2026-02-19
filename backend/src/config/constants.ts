@@ -1,34 +1,130 @@
-export const JWT_SECRET = process.env.JWT_SECRET || 'change_this_in_production';
+import { Request, Response } from 'express';
+import { pool } from '../config/database.js';
+import { hashPassword, comparePassword, isValidEmail, getErrorMessage } from '../utils/helpers.js';
+import { generateToken } from '../middleware/auth.js';
+import bcrypt from 'bcryptjs';
+import crypto from 'crypto';
+import nodemailer from 'nodemailer';
 
-export const API_PORT = parseInt(process.env.PORT || '5000', 10);
+// Utilisation stricte du domaine de production
+const FRONTEND_URL = process.env.FRONTEND_URL || 'https://emploiplus-group.com';
 
-export const CORS_ORIGIN = process.env.CORS_ORIGIN || 'http://localhost:5173';
+/**
+ * Inscription Administrateur
+ */
+export const registerAdmin = async (req: Request, res: Response) => {
+  try {
+    const { email, password, nom, prenom, role = 'content_admin' } = req.body;
 
-export const ADMIN_ROLES = ['admin', 'super_admin', 'admin_content'];
+    if (!email || !password) {
+      return res.status(400).json({ success: false, message: 'Email et mot de passe requis' });
+    }
 
-export const USER_ROLES = ['candidate', 'company'];
+    const { rows: existing } = await pool.query('SELECT id FROM admins WHERE email = $1', [email.toLowerCase()]);
+    if (existing.length > 0) {
+      return res.status(400).json({ success: false, message: 'Cet email est déjà enregistré' });
+    }
 
-export const PAGINATION = {
-  DEFAULT_LIMIT: 10,
-  MAX_LIMIT: 100,
-  DEFAULT_OFFSET: 0,
+    const hashed = bcrypt.hashSync(password, 10);
+    const verificationToken = crypto.randomBytes(32).toString('hex');
+
+    const { rows } = await pool.query(
+      `INSERT INTO admins (email, password, nom, prenom, role, verification_token, is_verified, created_at)
+       VALUES ($1, $2, $3, $4, $5, $6, false, NOW()) RETURNING id, email`,
+      [email.toLowerCase(), hashed, nom || '', prenom || '', role, verificationToken]
+    );
+
+    // Envoi Email de Validation
+    const transporter = nodemailer.createTransport({
+      host: process.env.SMTP_HOST,
+      port: parseInt(process.env.SMTP_PORT || '465'),
+      secure: true,
+      auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASSWORD }
+    });
+
+    const verifyLink = `${FRONTEND_URL}/admin/verify-email?token=${verificationToken}`;
+    await transporter.sendMail({
+      from: process.env.SMTP_FROM,
+      to: email,
+      subject: 'Validation Compte Admin - EmploiPlus',
+      html: `<p>Bonjour, cliquez ici pour valider votre accès : <a href="${verifyLink}">Valider mon compte</a></p>`
+    });
+
+    return res.status(201).json({ success: true, message: 'Admin créé, email envoyé.' });
+  } catch (err) {
+    return res.status(500).json({ success: false, message: 'Erreur inscription admin' });
+  }
 };
 
-export const FILE_UPLOAD = {
-  MAX_SIZE: 10 * 1024 * 1024, // 10MB
-  ALLOWED_TYPES: ['image/jpeg', 'image/png', 'application/pdf'],
-  UPLOAD_DIR: 'uploads',
+/**
+ * Connexion Administrateur
+ */
+export const loginAdmin = async (req: Request, res: Response) => {
+  try {
+    const { email, password } = req.body;
+    const { rows } = await pool.query('SELECT * FROM admins WHERE email = $1', [email.toLowerCase()]);
+    const admin = rows[0];
+
+    if (!admin || !bcrypt.compareSync(password, admin.password)) {
+      return res.status(401).json({ success: false, message: 'Identifiants incorrects' });
+    }
+
+    const token = generateToken(admin.id, admin.role);
+    const { password: _, ...safeAdmin } = admin;
+    return res.json({ success: true, token, admin: safeAdmin });
+  } catch (err) {
+    return res.status(500).json({ success: false, message: 'Erreur connexion admin' });
+  }
 };
 
-export const JOB_TYPES = ['CDI', 'CDD', 'Stage', 'Alternance', 'Freelance'];
+/**
+ * Inscription Utilisateur (Candidat / Entreprise)
+ */
+export const registerUser = async (req: Request, res: Response) => {
+  try {
+    const { full_name, email, password, user_type = 'candidate' } = req.body;
 
-export const CONTRACT_TYPES = ['CDI', 'CDD', 'Stage', 'Alternance', 'Freelance'];
+    const hashed = await hashPassword(password);
+    const { rows } = await pool.query(
+      `INSERT INTO users (full_name, email, password, user_type, created_at)
+       VALUES ($1, $2, $3, $4, NOW()) RETURNING id, email, user_type`,
+      [full_name, email.toLowerCase(), hashed, user_type]
+    );
 
-export const SECTORS = [
-  'IT', 'Finance', 'Healthcare', 'Education', 'Retail', 'Manufacturing',
-  'Transportation', 'Telecommunications', 'Hospitality', 'Other'
-];
+    const user = rows[0];
+    const token = generateToken(user.id, user.user_type);
+    return res.status(201).json({ success: true, token, user });
+  } catch (err) {
+    return res.status(500).json({ success: false, message: 'Erreur inscription utilisateur' });
+  }
+};
 
-export const LOCATIONS = ['Local', 'Remote', 'Hybrid'];
+/**
+ * Connexion Utilisateur
+ */
+export const loginUser = async (req: Request, res: Response) => {
+  try {
+    const { email, password } = req.body;
+    const { rows } = await pool.query('SELECT * FROM users WHERE email = $1 AND is_deleted = false', [email.toLowerCase()]);
+    const user = rows[0];
 
-export const FORMATION_STATUS = ['Upcoming', 'Ongoing', 'Completed', 'Cancelled'];
+    if (!user || user.is_blocked || !(await comparePassword(password, user.password))) {
+      return res.status(401).json({ success: false, message: 'Connexion refusée' });
+    }
+
+    const token = generateToken(user.id, user.user_type);
+    const { password: _, ...safeUser } = user;
+    return res.json({ success: true, token, user: safeUser });
+  } catch (err) {
+    return res.status(500).json({ success: false, message: 'Erreur connexion' });
+  }
+};
+
+/**
+ * Rafraîchir le Token
+ */
+export const refreshToken = async (req: Request, res: Response) => {
+  const { userId, userRole } = (req as any);
+  if (!userId) return res.status(401).json({ success: false, message: 'Non autorisé' });
+  return res.json({ success: true, token: generateToken(userId, userRole) });
+};

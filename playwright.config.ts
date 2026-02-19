@@ -7,7 +7,8 @@ export default defineConfig({
   fullyParallel: true,
   reporter: [['list'], ['html', { outputFolder: 'playwright-report' }]],
   use: {
-    baseURL: 'http://localhost:5174',
+    // Changement ici : on pointe vers le vrai site
+    baseURL: 'https://emploiplus-group.com', 
     headless: true,
     viewport: { width: 390, height: 844 },
     ignoreHTTPSErrors: true,

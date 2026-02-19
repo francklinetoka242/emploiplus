@@ -14,7 +14,8 @@
 
 import { io, Socket } from 'socket.io-client';
 
-const SOCKET_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+// ✅ Utilise le domaine réel en production
+const SOCKET_URL = import.meta.env.VITE_API_URL || 'https://emploiplus-group.com';
 
 // Get JWT token from localStorage/session
 const getAuthToken = () => localStorage.getItem('authToken') || '';

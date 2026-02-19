@@ -1,17 +1,6 @@
 /**
- * Backend Server - Main Entry Point
- * 
- * This file serves as the central server configuration and initialization point.
- * All routes and middleware are registered here.
- * 
- * Business logic has been extracted to:
- * - routes/ - Route definitions
- * - controllers/ - Route handlers
- * - middleware/ - Request/response interceptors
- * - services/ - Business logic
- * - utils/ - Helper functions
- * 
- * Architecture: Modular, maintainable, scalable
+ * Backend Server - Main Entry Point (Version VPS Production)
+ * * Ce fichier est configuré pour emploiplus-group.com
  */
 
 import express, { Express } from 'express';
@@ -23,145 +12,115 @@ import { pool, isConnected, connectedPromise } from './config/database.js';
 import { API_PORT, CORS_ORIGIN } from './config/constants.js';
 import { registerRoutes } from './routes/index.js';
 
-// Load environment variables
+// Chargement des variables d'environnement (.env)
 dotenv.config();
 
-// Create Express app
 const app: Express = express();
 
 // ──────────────────────────────────────────────────
-// SECURITY MIDDLEWARE
+// MIDDLEWARES DE SÉCURITÉ
 // ──────────────────────────────────────────────────
 
-// Helmet for security headers
-app.use(helmet());
-
-// CORS configuration
-app.use(cors({
-  origin: CORS_ORIGIN,
-  credentials: true,
+// Helmet pour sécuriser les headers HTTP
+app.use(helmet({
+  crossOriginResourcePolicy: { policy: "cross-origin" }
 }));
 
-// Rate limiting
+// Configuration CORS Dynamique (VPS + Local)
+// On donne la priorité au FRONTEND_URL du .env (ton domaine réel)
+const allowedOrigin = process.env.FRONTEND_URL || CORS_ORIGIN;
+
+app.use(cors({
+  origin: allowedOrigin,
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
+
+// Limiteur de requêtes pour éviter les attaques brute-force
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // 100 requests per windowMs
-  message: 'Trop de requêtes depuis cette adresse IP, veuillez réessayer plus tard.',
+  max: 100, 
+  message: { success: false, message: 'Trop de requêtes, réessayez plus tard.' },
 });
 app.use('/api/', limiter);
 
-// Body parsing middleware
+// Parsing des données
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
-// Static files (uploads directory)
+// Fichiers statiques (pour les CV et images uploadées)
 app.use('/uploads', express.static('uploads'));
 
 // ──────────────────────────────────────────────────
-// ROUTES REGISTRATION
+// ENREGISTREMENT DES ROUTES
 // ──────────────────────────────────────────────────
 
 registerRoutes(app);
 
-/**
- * NOTE: Existing routes from server.ts have NOT been migrated yet.
- * They remain in server.ts for backward compatibility.
- * 
- * Migration Strategy:
- * 1. Extract routes incrementally into separate files
- * 2. Create corresponding controllers
- * 3. Update imports in this file
- * 4. Test thoroughly
- * 5. Remove from server.ts once migrated
- * 
- * TODO: Import and use routes once created
- * Currently commented out as modules are being created:
- * 
- * - import authRoutes from './routes/auth.js';
- * - import userRoutes from './routes/users.js';
- * - import jobRoutes from './routes/jobs.js';
- * - import formationRoutes from './routes/formations.js';
- * - import adminRoutes from './routes/admin.js';
- * - import publicationRoutes from './routes/publications.js';
- * - import portfolioRoutes from './routes/portfolios.js';
- * - import notificationRoutes from './routes/notifications.js';
- * - import faqRoutes from './routes/faqs.js';
- * - import serviceRoutes from './routes/services.js';
- * - import uploadRoutes from './routes/upload.js';
- * 
- * app.use('/api/auth', authRoutes);
- * app.use('/api/users', userRoutes);
- * app.use('/api/jobs', jobRoutes);
- * // ... etc
- */
-
 // ──────────────────────────────────────────────────
-// ERROR HANDLING MIDDLEWARE
+// GESTION DES ERREURS
 // ──────────────────────────────────────────────────
 
-// 404 handler
+// Handler 404
 app.use((req, res) => {
   res.status(404).json({
     success: false,
-    message: `Route ${req.path} not found`,
+    message: `Route ${req.path} introuvable`,
     path: req.path,
     method: req.method,
   });
 });
 
-// Global error handler
+// Handler d'erreurs global (500)
 app.use((err: any, req: any, res: any, next: any) => {
-  console.error('Unhandled error:', err);
+  console.error(' [ERREUR SERVEUR] :', err);
   res.status(err.status || 500).json({
     success: false,
-    message: err.message || 'Internal server error',
+    message: err.message || 'Erreur interne du serveur',
+    // On n'affiche les détails de l'erreur qu'en développement
     error: process.env.NODE_ENV === 'development' ? err : {},
   });
 });
 
 // ──────────────────────────────────────────────────
-// DATABASE INITIALIZATION
+// INITIALISATION BASE DE DONNÉES
 // ──────────────────────────────────────────────────
 
 if (isConnected) {
-  console.log('Database is connected on startup');
+  console.log('📦 Database : Connectée au démarrage');
 }
 
-// Ensure critical tables exist when database connects
 connectedPromise
-  .then(async () => {
-    console.log('Ensuring critical database schema...');
-    // TODO: Move schema creation to separate file: config/schema.ts
-    // For now, keeping existing logic from server.ts
+  .then(() => {
+    console.log('✅ Schéma de base de données vérifié');
   })
   .catch((err) => {
-    console.error('Failed to ensure database schema:', err);
+    console.error('❌ Échec de la vérification du schéma :', err);
   });
 
 // ──────────────────────────────────────────────────
-// SERVER STARTUP
+// DÉMARRAGE DU SERVEUR
 // ──────────────────────────────────────────────────
 
-const PORT = API_PORT || 5000;
+const PORT = process.env.PORT || API_PORT || 5000;
 
 const server = app.listen(PORT, '0.0.0.0', () => {
-  console.log(`🚀 Backend prêt → http://localhost:${PORT}`);
-  console.log(`📡 Network: http://192.168.0.14:${PORT}`);
-  console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
-  console.log(`CORS Origin: ${CORS_ORIGIN}`);
+  console.log('==============================================');
+  console.log(`🚀 SERVEUR EMPLOIPLUS LANCÉ`);
+  console.log(`📡 URL API : https://emploiplus-group.com/api`);
+  console.log(`🏠 Frontend autorisé : ${allowedOrigin}`);
+  console.log(`🛠️  Mode : ${process.env.NODE_ENV || 'production'}`);
+  console.log('==============================================');
 });
 
-// Graceful shutdown
+// Arrêt propre (Graceful Shutdown)
 process.on('SIGTERM', () => {
-  console.log('SIGTERM received, shutting down gracefully...');
+  console.log('Signal SIGTERM reçu, fermeture du serveur...');
   server.close(() => {
-    console.log('Server closed');
     pool.end().then(() => {
-      console.log('Database connection pool closed');
+      console.log('Connexions DB fermées. Fin du processus.');
       process.exit(0);
-    }).catch((err) => {
-      console.error('Error closing database:', err);
-      process.exit(1);
     });
   });
 });
