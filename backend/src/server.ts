@@ -15,6 +15,11 @@ import { requestLogger } from './middleware/logger.js';
 import { errorHandler } from './middleware/errorHandler.js';
 
 const app = express();
+
+// 💡 CORRECTIF : Indispensable derrière un reverse proxy (CyberPanel/LiteSpeed)
+// Cela permet à express-rate-limit de récupérer l'IP réelle du client.
+app.set('trust proxy', 1); 
+
 const httpServer = createServer(app);
 
 // ──────────────────────────────────────────────
@@ -44,6 +49,7 @@ const apiLimiter = rateLimit({
   max: parseInt(process.env.RATE_LIMIT_MAX || '120', 10),
   standardHeaders: true, 
   legacyHeaders: false,
+  // 💡 Note: trust proxy (défini plus haut) évite l'erreur ERR_ERL_UNEXPECTED_X_FORWARDED_FOR
   message: { 
     status: 429, 
     message: `Trop de requêtes. Veuillez réessayer après ${process.env.RATE_LIMIT_WINDOW || '15'} minutes.` 
@@ -55,7 +61,6 @@ app.use('/api/', apiLimiter);
 // ROUTE MOUNTING
 // ──────────────────────────────────────────────
 
-// Importation dynamique ou directe des routes modulaires
 import authRoutes from './routes/auth.js';
 import adminAuthRoutes from './routes/admin-auth.js';
 import apiRoutes from './routes/index.js';
@@ -64,7 +69,6 @@ app.use('/api/auth', authRoutes);
 app.use('/api/admin', adminAuthRoutes);
 app.use('/api', apiRoutes);
 
-// Endpoint Health Check pour PM2 ou UptimeRobot
 app.get('/_health', (req, res) => {
   res.json({ 
     status: 'ok', 
@@ -82,11 +86,10 @@ app.use(errorHandler);
 
 async function startServer() {
   try {
-    // On attend que PostgreSQL soit prêt
     await connectedPromise;
 
     const PORT = parseInt(process.env.PORT || '5000', 10);
-    const HOST = '0.0.0.0'; // Écoute externe sur le VPS
+    const HOST = '0.0.0.0';
 
     httpServer.listen(PORT, HOST, () => {
       console.log('\n┌─────────────────────────────────────┐');
