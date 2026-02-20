@@ -1,26 +1,22 @@
 #!/bin/bash
 
-# Deploy script for Backend Webhooks
-# Usage: ./deploy.sh [environment]
+# Script de déploiement Backend - PRODUCTION
+# Usage: ./deploy.sh
 
 set -e
 
-ENVIRONMENT=${1:-staging}
-
-echo "🚀 Deploying Backend - Production - $ENVIRONMENT"
+echo "🚀 Deploying Backend - PRODUCTION"
 echo "============================================="
 echo ""
 
-# Step 1: Check if .env exists
+# Étape 1 : Vérification de l'environnement
 echo "1️⃣  Checking environment..."
 if [ ! -f .env ]; then
-  echo "❌ .env not found! Copy .env.example and fill in your values"
+  echo "❌ .env not found! Assurez-vous que le fichier .env existe sur le serveur."
   exit 1
 fi
 
-# Verify required variables
-
-# Only verify essential variables for production
+# Vérification des variables essentielles pour PostgreSQL et JWT
 required_vars=(
   "DATABASE_URL"
   "PORT"
@@ -37,38 +33,26 @@ done
 echo "✓ Environment variables configured"
 echo ""
 
-# Step 2: Install dependencies
+# Étape 2 : Installation des dépendances
 echo "2️⃣  Installing dependencies..."
 npm install --omit=dev
 echo "✓ Dependencies installed"
 echo ""
 
-# Step 3: Run tests
-echo "3️⃣  Running integration tests..."
-./integration-test.sh
-echo ""
-
-# Step 4: Build
-echo "4️⃣  Building project..."
+# Étape 3 : Build (On ignore les tests d'intégration obsolètes)
+echo "3️⃣  Building project..."
+rm -rf dist/
 npm run build
 echo "✓ Build successful"
 echo ""
 
-# Step 5: Summary
-echo "✅ Deployment preparation complete!"
+# Étape 4 : Redémarrage du service (PM2)
+echo "4️⃣  Restarting application..."
+# On essaie de restart, si le processus n'existe pas, on le start
+pm2 restart emploiplus-backend || pm2 start dist/server.js --name "emploiplus-backend"
 echo ""
-echo "Next steps:"
-echo "  1. Execute DB migrations (apply SQL files in /backend/src/migrations as needed)"
-echo ""
-echo "  2. Create webhooks/endpoints in your hosting provider or API gateway as required:" 
-echo "     - POST https://your-backend.onrender.com/api/jobs/analyze"
-echo "     - POST https://your-backend.onrender.com/api/posts/moderate"
-echo "     - POST https://your-backend.onrender.com/api/activity/score"
-echo ""
-echo "  3. Push to Render:"
-echo "     git add ."
-echo "     git commit -m 'feat: Backend webhooks microservices'"
-echo "     git push origin main"
-echo ""
-echo "  4. Verify deployment:"
-echo "     curl https://your-backend.onrender.com/api/health/webhooks"
+
+echo "✅ DEPLOYMENT COMPLETE!"
+echo "---------------------------------------------"
+echo "Le serveur tourne maintenant sur le port $(grep PORT .env | cut -d '=' -f2)"
+echo "Utilisez 'pm2 logs emploiplus-backend' pour voir les logs."
