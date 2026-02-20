@@ -107,7 +107,7 @@ connectedPromise
 // DÉMARRAGE DU SERVEUR
 // ──────────────────────────────────────────────────
 
-const PORT = process.env.PORT || API_PORT || 5000;
+const PORT = Number(process.env.PORT ?? API_PORT ?? 5000);
 
 const server = app.listen(Number(PORT), '0.0.0.0', () => {
   console.log('==============================================');

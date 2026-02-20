@@ -100,7 +100,7 @@ async function startServer() {
     const PORT = parseInt(process.env.PORT || '5000', 10);
     const HOST = '0.0.0.0';
 
-    httpServer.listen(PORT, HOST, () => {
+    httpServer.listen(Number(PORT), HOST, () => {
       console.log('\n┌─────────────────────────────────────┐');
       console.log('│    🚀 BACKEND EMPLOI PLUS PRÊT      │');
       console.log(`│    Port      : ${PORT.toString().padEnd(21)}│`);
