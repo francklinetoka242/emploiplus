@@ -38,23 +38,6 @@ export default defineConfig(({ mode }) => {
       },
       rollupOptions: {
         output: {
-          // Sépare les grosses dépendances en chunks dédiés pour améliorer
-          // le caching et réduire le téléchargement initial.
-          manualChunks(id: string) {
-            if (id.includes('node_modules')) {
-              if (id.match(/node_modules\/(react|react-dom|react-router|react-router-dom)\/?.*/)) {
-                return 'vendor-react';
-              }
-              if (id.match(/node_modules\/(lucide-react)\/?.*/)) {
-                return 'vendor-lucide';
-              }
-              if (id.match(/node_modules\/(antd|@?mui|mantine|chakra-ui|@headlessui)\/?.*/)) {
-                return 'vendor-ui';
-              }
-              // Chaque autre dépendance tierce taille raisonnable
-              return 'vendor';
-            }
-          },
           // Nommage clair des fichiers pour faciliter l'inspection
           entryFileNames: `assets/[name]-[hash].js`,
           chunkFileNames: `assets/[name]-[hash].js`,
