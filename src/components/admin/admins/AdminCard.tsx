@@ -6,7 +6,8 @@ type AdminRole = "super_admin" | "admin_offres" | "admin_users" | "admin";
 
 interface Admin {
   id: string;
-  full_name: string;
+  first_name?: string;
+  last_name?: string;
   email: string;
   role: AdminRole;
   created_at: string;
@@ -25,7 +26,7 @@ export default function AdminCard({ admin }: Props) {
             <Shield className="h-12 w-12 text-primary" />
           </div>
           <div>
-            <h3 className="text-xl font-bold">{admin.full_name || admin.email}</h3>
+            <h3 className="text-xl font-bold">{admin.first_name && admin.last_name ? `${admin.first_name} ${admin.last_name}` : admin.email}</h3>
             <p className="text-muted-foreground flex items-center gap-2">
               <Mail className="h-4 w-4" />
               {admin.email}

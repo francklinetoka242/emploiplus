@@ -29,13 +29,20 @@ const JWT_SECRET = process.env.JWT_SECRET || 'change_this_in_production';
 router.post('/admin/register', async (req: Request, res: Response) => {
   console.log('👉 Requête reçue sur la route d\'inscription admin (auth.ts /admin/register)');
   try {
-    const { email, password, full_name, role = 'admin' } = req.body;
+    const { email, password, first_name, last_name, role = 'admin' } = req.body;
 
     // Validation
     if (!email || !password) {
       return res.status(400).json({
         success: false,
         message: 'Email et mot de passe sont requis',
+      });
+    }
+
+    if (!first_name || !last_name) {
+      return res.status(400).json({
+        success: false,
+        message: 'Prénom et nom sont requis',
       });
     }
 
@@ -46,31 +53,20 @@ router.post('/admin/register', async (req: Request, res: Response) => {
       });
     }
 
-    // Check if admin already exists
-    const { rows: existing } = await pool.query(
-      'SELECT id FROM admins WHERE email = $1',
-      [email]
-    );
+    // Use the registerAdmin service for consistency
+    const result = await registerAdmin({
+      email,
+      password,
+      prenom: first_name,
+      nom: last_name,
+      role, // Will be 'admin' by default if not provided
+    });
 
-    if (existing.length > 0) {
-      return res.status(400).json({
-        success: false,
-        message: 'Cet email est déjà utilisé',
-      });
+    if (!result.success) {
+      return res.status(400).json(result);
     }
 
-    // Hash password
-    const hashed = bcrypt.hashSync(password, 10);
-
-    // Create admin
-    const { rows } = await pool.query(
-      `INSERT INTO admins (email, password, full_name, role)
-       VALUES ($1, $2, $3, $4)
-       RETURNING id, email, full_name, role, created_at`,
-      [email, hashed, full_name || null, role]
-    );
-
-    const admin = rows[0];
+    const admin = result.admin;
     const token = jwt.sign(
       { id: admin.id, role: admin.role },
       JWT_SECRET,
@@ -83,9 +79,9 @@ router.post('/admin/register', async (req: Request, res: Response) => {
       admin: {
         id: admin.id,
         email: admin.email,
-        full_name: admin.full_name,
+        first_name: admin.first_name,
+        last_name: admin.last_name,
         role: admin.role,
-        created_at: admin.created_at,
       },
     });
   } catch (err) {

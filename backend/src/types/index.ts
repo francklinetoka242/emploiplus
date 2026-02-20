@@ -15,9 +15,12 @@
 export interface Admin {
   id: string;
   email: string;
-  full_name?: string;
+  first_name?: string;
+  last_name?: string;
   role: "super_admin" | "admin_offers" | "admin_users" | "content_admin";
   is_blocked?: boolean;
+  is_verified?: boolean;
+  created_at?: string;
 }
 
 /**

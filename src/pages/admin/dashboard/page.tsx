@@ -30,7 +30,7 @@ export default function DashboardPage() {
   const [stats, setStats] = useState<Stats>({ jobs: 0, formations: 0, admins: 0, users: 0 });
   const [loading, setLoading] = useState(true);
   const admin = JSON.parse(localStorage.getItem("admin") || "{}");
-  const displayName = admin?.prenom && admin?.nom ? `${admin.prenom} ${admin.nom}` : (admin?.full_name || admin?.email || 'Admin');
+  const displayName = admin?.first_name && admin?.last_name ? `${admin.first_name} ${admin.last_name}` : (admin?.prenom && admin?.nom ? `${admin.prenom} ${admin.nom}` : (admin?.email || 'Admin'));
   const [showFullDashboard, setShowFullDashboard] = useState(true);
 
   // Analytics realtime modal

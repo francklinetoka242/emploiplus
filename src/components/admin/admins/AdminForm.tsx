@@ -10,7 +10,8 @@ type AdminRole = "super_admin" | "admin_offres" | "admin_users" | "admin";
 
 interface Admin {
   id: string;
-  full_name: string;
+  first_name?: string;
+  last_name?: string;
   email: string;
   role: AdminRole;
 }
@@ -22,7 +23,8 @@ interface AdminFormProps {
 
 export default function AdminForm({ admin, onSuccess }: AdminFormProps) {
   const [form, setForm] = useState({
-    full_name: "",
+    first_name: "",
+    last_name: "",
     email: "",
     password: "",
     role: "admin_offres" as "super_admin" | "admin_offres" | "admin_users" | "admin",
@@ -31,7 +33,8 @@ export default function AdminForm({ admin, onSuccess }: AdminFormProps) {
   useEffect(() => {
     if (admin) {
       setForm({
-        full_name: admin.full_name || "",
+        first_name: admin.first_name || "",
+        last_name: admin.last_name || "",
         email: admin.email || "",
         password: "",
         role: admin.role,
@@ -46,7 +49,8 @@ export default function AdminForm({ admin, onSuccess }: AdminFormProps) {
     const method = admin ? "PUT" : "POST";
 
     const body: Record<string, string> = {
-      full_name: form.full_name,
+      first_name: form.first_name,
+      last_name: form.last_name,
       email: form.email,
       role: form.role,
     };
@@ -77,13 +81,23 @@ export default function AdminForm({ admin, onSuccess }: AdminFormProps) {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6 max-w-2xl">
-      <div className="space-y-2">
-        <Label>Nom complet</Label>
-        <Input
-          value={form.full_name}
-          onChange={(e) => setForm({ ...form, full_name: e.target.value })}
-          required={!admin}
-        />
+      <div className="grid grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <Label>Prénom</Label>
+          <Input
+            value={form.first_name}
+            onChange={(e) => setForm({ ...form, first_name: e.target.value })}
+            required={!admin}
+          />
+        </div>
+        <div className="space-y-2">
+          <Label>Nom</Label>
+          <Input
+            value={form.last_name}
+            onChange={(e) => setForm({ ...form, last_name: e.target.value })}
+            required={!admin}
+          />
+        </div>
       </div>
 
       <div className="space-y-2">

@@ -30,7 +30,7 @@ export default function AdminLogin() {
       if (data.success) {
         localStorage.setItem("adminToken", data.token);
         localStorage.setItem("admin", JSON.stringify(data.admin));
-        const name = data.admin.nom && data.admin.prenom ? `${data.admin.prenom} ${data.admin.nom}` : (data.admin.full_name || "Admin");
+        const name = data.admin.first_name && data.admin.last_name ? `${data.admin.first_name} ${data.admin.last_name}` : (data.admin.nom && data.admin.prenom ? `${data.admin.prenom} ${data.admin.nom}` : "Admin");
         toast.success(`Bienvenue ${name} !`);
 
         // Redirect based on admin role

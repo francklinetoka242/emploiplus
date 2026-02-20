@@ -207,7 +207,7 @@ export default function AdminsPage() {
                     <Shield className="h-10 w-10 text-white" />
                   </div>
                   <div className="flex-1">
-                    <h3 className="text-2xl font-bold text-gray-900">{admin.full_name}</h3>
+                    <h3 className="text-2xl font-bold text-gray-900">{admin.first_name && admin.last_name ? `${admin.first_name} ${admin.last_name}` : (admin.nom && admin.prenom ? `${admin.prenom} ${admin.nom}` : admin.email)}</h3>
                     <p className="text-muted-foreground flex items-center gap-2 mt-1">
                       <Mail className="h-4 w-4" />
                       {admin.email}
