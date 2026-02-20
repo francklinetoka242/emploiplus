@@ -5,7 +5,7 @@
 
 import express, { Express } from 'express';
 import dotenv from 'dotenv';
-import cors from 'cors';
+import { initializeCors } from './middleware/cors.js';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
 import { pool, isConnected, connectedPromise } from './config/database.js';
@@ -29,16 +29,8 @@ app.use(helmet({
   crossOriginResourcePolicy: { policy: "cross-origin" }
 }));
 
-// Configuration CORS Dynamique (VPS + Local)
-// On donne la priorité au FRONTEND_URL du .env (ton domaine réel)
-const allowedOrigin = process.env.FRONTEND_URL || CORS_ORIGIN;
-
-app.use(cors({
-  origin: allowedOrigin,
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
-}));
+// Configuration CORS via middleware (gère plusieurs origines et proxy headers)
+app.use(initializeCors());
 
 // Limiteur de requêtes pour éviter les attaques brute-force
 const limiter = rateLimit({
