@@ -55,7 +55,10 @@ const apiLimiter = rateLimit({
     message: `Trop de requêtes. Veuillez réessayer après ${process.env.RATE_LIMIT_WINDOW || '15'} minutes.` 
   },
 });
-app.use('/api/', apiLimiter);
+// Apply rate limiter to API entrypoints. Also protect the non-prefixed
+// mounts (`/auth` and `/admin`) in case the frontend sends requests
+// without the `/api` prefix (common after proxy rewrites).
+app.use(['/api/', '/auth', '/admin'], apiLimiter);
 
 // ──────────────────────────────────────────────
 // ROUTE MOUNTING
@@ -65,8 +68,14 @@ import authRoutes from './routes/auth.js';
 import adminAuthRoutes from './routes/admin-auth.js';
 import apiRoutes from './routes/index.js';
 
+// Mount routes both with and without the `/api` prefix so the backend
+// accepts calls that come from misconfigured frontends or proxies.
 app.use('/api/auth', authRoutes);
+app.use('/auth', authRoutes);
+
 app.use('/api/admin', adminAuthRoutes);
+app.use('/admin', adminAuthRoutes);
+
 app.use('/api', apiRoutes);
 
 app.get('/_health', (req, res) => {
