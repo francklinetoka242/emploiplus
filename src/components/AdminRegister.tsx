@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { ShieldCheck } from "lucide-react";
+import { buildApiUrl } from '@/lib/headers';
 
 type FormState = {
   firstName: string;
@@ -37,7 +38,7 @@ export default function AdminRegister(): JSX.Element {
 
     setLoading(true);
     try {
-      const resp = await fetch(`${import.meta.env.VITE_API_URL}/auth/admin/register`, {
+      const resp = await fetch(buildApiUrl('/auth/admin/register'), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

@@ -9,6 +9,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
 import { GoogleLoginButton } from "@/components/auth/GoogleLoginButton";
 import { PWALayout } from "@/components/layout/PWALayout";
+import { buildApiUrl } from '@/lib/headers';
 
 const LoginUser = () => {
   const navigate = useNavigate();
@@ -32,7 +33,7 @@ const LoginUser = () => {
     setLoading(true);
     
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/auth/admin/login`, {
+      const response = await fetch(buildApiUrl('/auth/admin/login'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password })

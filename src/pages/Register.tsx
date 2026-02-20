@@ -19,6 +19,7 @@ import { toast } from "sonner";
 import { COUNTRIES, CONGO_CITIES } from '@/lib/options';
 import { GoogleLoginButton } from "@/components/auth/GoogleLoginButton";
 import { PWALayout } from "@/components/layout/PWALayout";
+import { buildApiUrl } from '@/lib/headers';
 
 const Register = () => {
   const navigate = useNavigate();
@@ -87,7 +88,7 @@ const Register = () => {
     };
 
     try {
-      const resp = await fetch(`${import.meta.env.VITE_API_URL}/admin/register`, {
+      const resp = await fetch(buildApiUrl('/auth/admin/register'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -158,7 +159,7 @@ const Register = () => {
     };
 
     try {
-      const resp = await fetch(`${import.meta.env.VITE_API_URL}/admin/register`, {
+      const resp = await fetch(buildApiUrl('/auth/admin/register'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

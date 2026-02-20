@@ -55,7 +55,7 @@ export default function RegisterForm({ role, title, color }: Props) {
         console.log('   form.prenom:', form.prenom);
         console.log('   form.email:', form.email);
 
-        const res = await fetch(`${import.meta.env.VITE_API_URL}/auth/super-admin/register`, {
+        const res = await fetch(buildApiUrl('/auth/super-admin/register'), {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(body),
