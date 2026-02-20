@@ -212,6 +212,7 @@ export async function logAdminAction(
   } catch (error) {
     console.error('Error logging admin action:', error);
   }
+}
 
 // Removed duplicate `logAdminAction` and deprecated local login-attempt helpers.
 // Use `loginAttemptsService` exports (checkLoginAttempts, recordLoginAttempt, resetLoginAttempts)
