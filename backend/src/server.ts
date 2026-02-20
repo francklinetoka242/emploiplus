@@ -121,7 +121,7 @@ async function startServer() {
     await connectedPromise;
 
     const PORT = parseInt(process.env.PORT || '5000', 10);
-    const HOST = '0.0.0.0';
+    const HOST = '127.0.0.1'; // Écoute localement pour le reverse proxy Apache
 
     httpServer.listen(Number(PORT), HOST, () => {
       console.log('\n┌─────────────────────────────────────┐');
