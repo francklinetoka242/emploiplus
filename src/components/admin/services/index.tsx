@@ -6,8 +6,8 @@
 import { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ShoppingBag, Settings } from 'lucide-react';
-import { ServiceCatalogForm } from './ServiceCatalogForm';
-import { ServiceForm } from './ServiceForm';
+import ServiceCatalogForm from './ServiceCatalogForm';
+import ServiceForm from './ServiceForm';
 import { ServiceShowcase } from './ServiceShowcase';
 
 export function ServicesManagement() {

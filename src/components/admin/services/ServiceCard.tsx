@@ -7,7 +7,7 @@ import { useState } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Star, Zap, Share2, Download, Facebook, MessageCircle } from 'lucide-react';
-import { toast } from '@/lib/toast';
+import { toast } from 'sonner';
 
 interface ServiceCardProps {
   id: number;

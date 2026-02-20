@@ -102,6 +102,7 @@ import JobsPage from "./pages/admin/jobs/page";
 import UsersPage from "./pages/admin/users/page";
 import AdminsPage from "./pages/admin/admins/page";
 import FormationsPage from "./pages/admin/formations/page";
+import ServicesPage from "./pages/admin/services/page";
 import AdminFaqsPage from "./pages/admin/faqs/page";
 import PublicationsAdminPage from "./pages/admin/publications/page";
 import PortfoliosAdminPage from "./pages/admin/portfolios/page";
@@ -245,6 +246,13 @@ const App = () => {
             <Route path="formations" element={
               <ProtectedRoute requiredRoles={["super_admin"]}>
                 <FormationsPage />
+              </ProtectedRoute>
+            } />
+            
+            {/* Services — super_admin uniquement */}
+            <Route path="services" element={
+              <ProtectedRoute requiredRoles={["super_admin"]}>
+                <ServicesPage />
               </ProtectedRoute>
             } />
             

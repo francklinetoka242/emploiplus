@@ -8,6 +8,7 @@ import { verifyAdminToken, checkPermission, requireSuperAdmin } from '../middlew
 
 // Import controllers
 import * as adminController from '../controllers/admin.controller.js';
+import * as jobsController from '../controllers/admin-jobs.controller.js';
 import * as dashboardController from '../controllers/admin-dashboard.controller.js';
 import * as usersController from '../controllers/admin-users.controller.js';
 import * as uploadsController from '../controllers/admin-uploads.controller.js';
@@ -109,22 +110,28 @@ router.get('/audit-logs',
 
 router.get('/jobs', 
   checkPermission('perm_jobs'),
-  dashboardController.listJobs
+  jobsController.listJobs
+);
+
+router.get('/jobs/:id', 
+  checkPermission('perm_jobs'),
+  jobsController.getJob
 );
 
 router.post('/jobs', 
   checkPermission('perm_jobs'),
-  dashboardController.createJob
+  jobsController.createJob
 );
 
 router.patch('/jobs/:id', 
   checkPermission('perm_jobs'),
-  dashboardController.updateJob
+  jobsController.updateJob
 );
 
 router.delete('/jobs/:id', 
   checkPermission('perm_jobs'),
-  dashboardController.deleteJob
+  jobsController.deleteJob
+);
 );
 
 // ============================================================================

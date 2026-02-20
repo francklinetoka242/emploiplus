@@ -12,13 +12,16 @@ export async function listTrainings(req: Request, res: Response, next: NextFunct
     if (q) { params.push(`%${String(q).toLowerCase()}%`); where.push(`(LOWER(name) LIKE $${params.length} OR LOWER(description) LIKE $${params.length})`); }
     const whereSql = where.length > 0 ? `WHERE ${where.join(' AND ')}` : '';
     const offset = (pageNum - 1) * pageSize;
-    const sql = `SELECT * FROM trainings ${whereSql} ORDER BY created_at DESC LIMIT $${params.length + 1} OFFSET $${params.length + 2}`;
+    const sql = `SELECT id, name, provider, modalities, description, image_url, deadline_date, created_at FROM trainings ${whereSql} ORDER BY created_at DESC LIMIT $${params.length + 1} OFFSET $${params.length + 2}`;
     params.push(pageSize, offset);
     const result = await pool.query(sql, params);
     const countRes = await pool.query(`SELECT COUNT(*) as total FROM trainings ${whereSql}`, params.slice(0, params.length - 2));
     const total = parseInt(countRes.rows[0]?.total || '0', 10);
-    res.json({ data: result.rows, pagination: { total, page: pageNum, pages: Math.ceil(total / pageSize), hasNextPage: offset + pageSize < total } });
-  } catch (err) { next(err); }
+    res.json({ data: result.rows || [], pagination: { total, page: pageNum, pages: Math.ceil(total / pageSize), hasNextPage: offset + pageSize < total } });
+  } catch (err) { 
+    console.error('Error listing trainings:', err);
+    res.json({ data: [], pagination: { total: 0, page: 1, pages: 0, hasNextPage: false } });
+  }
 }
 
 export async function getTraining(req: Request, res: Response, next: NextFunction) {

@@ -16,7 +16,7 @@ import {
   DialogTrigger
 } from '@/components/ui/dialog';
 import { Plus, Edit2, Trash2, Eye, EyeOff, Star } from 'lucide-react';
-import { toast } from '@/lib/toast';
+import { toast } from 'sonner';
 
 interface Service {
   id: number;
@@ -43,7 +43,7 @@ interface ServiceFormProps {
   onServiceCreated?: (service: Service) => void;
 }
 
-export function ServiceForm({ catalogId, onServiceCreated }: ServiceFormProps) {
+export default function ServiceForm({ catalogId, onServiceCreated }: ServiceFormProps) {
   const [services, setServices] = useState<Service[]>([]);
   const [catalogs, setCatalogs] = useState<ServiceCatalog[]>([]);
   const [loading, setLoading] = useState(true);

@@ -30,6 +30,7 @@ export function Sidebar() {
     ...(role === "super_admin" || role === "admin_offres" ? [
       { label: "Offres d'emploi", icon: Briefcase, path: "/admin/jobs" },
       { label: "Formations", icon: BookOpen, path: "/admin/formations" },
+      { label: "Services", icon: ShoppingBag, path: "/admin/services" },
     ] : []),
     ...(role === "super_admin" || role === "admin_users" ? [
       { label: "Utilisateurs", icon: Users, path: "/admin/users" },

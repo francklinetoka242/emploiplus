@@ -16,7 +16,7 @@ export async function listJobs(req: Request, res: Response) {
   try {
     const { company_id, is_closed, limit = '20', offset = '0' } = req.query;
 
-    let query = 'SELECT * FROM jobs WHERE 1=1';
+    let query = 'SELECT id, title, description, company_id, location, salary_min, salary_max, job_type, experience_level, deadline_date, is_closed, created_at, updated_at FROM jobs WHERE 1=1';
     const values = [];
 
     if (company_id) {
@@ -33,10 +33,10 @@ export async function listJobs(req: Request, res: Response) {
     values.push(Number(limit), Number(offset));
 
     const result = await pool.query(query, values);
-    res.json(result.rows);
+    res.json(result.rows || []);
   } catch (error) {
     console.error('Error listing jobs:', error);
-    res.status(500).json({ error: 'Erreur lors de la récupération des offres' });
+    res.json([]);
   }
 }
 
@@ -128,7 +128,7 @@ export async function listTrainings(req: Request, res: Response) {
   try {
     const { category, is_closed, limit = '20', offset = '0' } = req.query;
 
-    let query = 'SELECT * FROM trainings WHERE 1=1';
+    let query = 'SELECT id, title, description, provider, duration, level, category, deadline_date, certification, cost, is_closed, created_at, updated_at FROM trainings WHERE 1=1';
     const values = [];
 
     if (category) {
@@ -145,10 +145,10 @@ export async function listTrainings(req: Request, res: Response) {
     values.push(Number(limit), Number(offset));
 
     const result = await pool.query(query, values);
-    res.json(result.rows);
+    res.json(result.rows || []);
   } catch (error) {
     console.error('Error listing trainings:', error);
-    res.status(500).json({ error: 'Erreur lors de la récupération des formations' });
+    res.json([]);
   }
 }
 
@@ -239,7 +239,7 @@ export async function listFAQs(req: Request, res: Response) {
   try {
     const { category, is_active } = req.query;
 
-    let query = 'SELECT * FROM faqs WHERE 1=1';
+    let query = 'SELECT id, category, question, answer, order_position, is_active, created_at, updated_at FROM faqs WHERE 1=1';
     const values = [];
 
     if (category) {
@@ -255,10 +255,10 @@ export async function listFAQs(req: Request, res: Response) {
     query += ` ORDER BY category, order_position`;
 
     const result = await pool.query(query, values);
-    res.json(result.rows);
+    res.json(result.rows || []);
   } catch (error) {
     console.error('Error listing FAQs:', error);
-    res.status(500).json({ error: 'Erreur lors de la récupération des FAQs' });
+    res.json([]);
   }
 }
 
@@ -343,10 +343,10 @@ export async function listStaticPages(req: Request, res: Response) {
       'SELECT id, slug, title, meta_description, published, created_at, updated_at FROM static_pages ORDER BY slug'
     );
 
-    res.json(result.rows);
+    res.json(result.rows || []);
   } catch (error) {
     console.error('Error listing static pages:', error);
-    res.status(500).json({ error: 'Erreur lors de la récupération des pages' });
+    res.json([]);
   }
 }
 

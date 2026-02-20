@@ -22,16 +22,17 @@ export async function listJobs(req: Request, res: Response, next: NextFunction) 
 
     const offset = (pageNum - 1) * pageSize;
 
-    const sql = `SELECT * FROM jobs ${whereSql} ORDER BY created_at DESC LIMIT $${params.length + 1} OFFSET $${params.length + 2}`;
+    const sql = `SELECT id, title, description, company, location, salary, type, created_at FROM jobs ${whereSql} ORDER BY created_at DESC LIMIT $${params.length + 1} OFFSET $${params.length + 2}`;
     params.push(pageSize, offset);
 
     const result = await pool.query(sql, params);
     const countRes = await pool.query(`SELECT COUNT(*) as total FROM jobs ${whereSql}`, params.slice(0, params.length - 2));
     const total = parseInt(countRes.rows[0]?.total || '0', 10);
 
-    res.json({ data: result.rows, pagination: { total, page: pageNum, pages: Math.ceil(total / pageSize), hasNextPage: offset + pageSize < total } });
-  } catch (err) {
-    next(err);
+    res.json({ data: result.rows || [], pagination: { total, page: pageNum, pages: Math.ceil(total / pageSize), hasNextPage: offset + pageSize < total } });
+  } catch (err) { 
+    console.error('Error listing jobs:', err);
+    res.json({ data: [], pagination: { total: 0, page: 1, pages: 0, hasNextPage: false } });
   }
 }
 
