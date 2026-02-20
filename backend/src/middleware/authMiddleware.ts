@@ -3,7 +3,7 @@ import jwt from "jsonwebtoken";
 import type { AdminUser } from '../types/index.js';
 
 interface AdminRequest extends Request {
-  admin?: AdminUser | { id: string; role: string };
+  admin?: any;
 }
 
 export const protectAdmin = (req: AdminRequest, res: Response, next: NextFunction) => {

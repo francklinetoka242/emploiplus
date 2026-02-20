@@ -53,7 +53,7 @@ export async function getSystemHealth(req: Request, res: Response) {
       database: {
         status: dbStatus as 'connected' | 'disconnected',
         poolSize,
-        activeConnections: pool.activeCount || 0
+        activeConnections: (pool as any).totalCount || 0
       },
       system: {
         ram: {
