@@ -91,10 +91,11 @@ export async function loginAdmin(req: Request, res: Response) {
     }
 
     // Generate JWT token
+    const signOptions: any = { expiresIn: JWT_EXPIRY };
     const token = jwt.sign(
       { id: admin.id, email: admin.email },
       JWT_SECRET as string,
-      { expiresIn: JWT_EXPIRY as string }
+      signOptions
     );
 
     // Log login action
