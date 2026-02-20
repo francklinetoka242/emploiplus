@@ -27,7 +27,7 @@ export const useAuth = () => {
     }
 
     // If token exists, validate it and refresh user profile
-    fetch(buildApiUrl("/api/users/me"), { headers: authHeaders() })
+    fetch(buildApiUrl("/users/me"), { headers: authHeaders() })
       .then(async (r) => {
         if (!r.ok) {
           // If unauthorized, token likely invalid — clear auth. For other errors, keep stored user.
@@ -59,7 +59,7 @@ export const useAuth = () => {
 
   const signUp = async (email: string, password: string, metadata: any) => {
     try {
-      const res = await fetch(buildApiUrl("/api/register"), {
+      const res = await fetch(buildApiUrl("/register"), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password, ...metadata }),
@@ -81,7 +81,7 @@ export const useAuth = () => {
 
   const signIn = async (email: string, password: string) => {
     try {
-      const res = await fetch(buildApiUrl("/api/login"), {
+      const res = await fetch(buildApiUrl("/login"), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password }),

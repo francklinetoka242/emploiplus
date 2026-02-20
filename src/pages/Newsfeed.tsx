@@ -144,7 +144,7 @@ const Newsfeed = () => {
       const fetchCandidateData = async () => {
         try {
           const headers = authHeaders('application/json');
-          const res = await fetch(buildApiUrl('/api/users/me'), { headers });
+          const res = await fetch(buildApiUrl('/users/me'), { headers });
           if (res.ok) {
             const data = await res.json();
             setCandidateCompany(data.company || '');
@@ -178,7 +178,7 @@ const Newsfeed = () => {
       
       const offset = page * pageSize;
       const headers = authHeaders('application/json');
-      const apiUrl = buildApiUrl(`/api/publications?limit=${pageSize}&offset=${offset}`);
+      const apiUrl = buildApiUrl(`/publications?limit=${pageSize}&offset=${offset}`);
       const res = await fetch(apiUrl, { headers });
       
       if (!res.ok) {
@@ -245,7 +245,7 @@ const Newsfeed = () => {
 
   const fetchJobs = async () => {
     try {
-      const res = await fetch(buildApiUrl('/api/jobs?limit=5'));
+      const res = await fetch(buildApiUrl('/jobs?limit=5'));
       if (!res.ok) throw new Error('Erreur chargement offres');
       const data = await res.json();
       setJobs(Array.isArray(data) ? data.slice(0, 5) : []);
@@ -256,7 +256,7 @@ const Newsfeed = () => {
 
   const fetchFormations = async () => {
     try {
-      const res = await fetch(buildApiUrl('/api/formations?limit=5'));
+      const res = await fetch(buildApiUrl('/formations?limit=5'));
       if (!res.ok) throw new Error('Erreur chargement formations');
       const data = await res.json();
       setFormations(Array.isArray(data) ? data.slice(0, 5) : []);
@@ -267,7 +267,7 @@ const Newsfeed = () => {
 
   const fetchCandidates = async () => {
     try {
-      const res = await fetch(buildApiUrl('/api/users/candidates?limit=5'));
+      const res = await fetch(buildApiUrl('/users/candidates?limit=5'));
       if (!res.ok) throw new Error('Erreur chargement candidats');
       const data = await res.json();
       setCandidates(Array.isArray(data) ? data.slice(0, 5) : []);
@@ -280,7 +280,7 @@ const Newsfeed = () => {
     if (role !== 'company') return;
     try {
       const headers = authHeaders();
-      const res = await fetch(buildApiUrl('/api/company/stats'), { headers });
+      const res = await fetch(buildApiUrl('/company/stats'), { headers });
       if (!res.ok) throw new Error('Erreur chargement stats');
       const data = await res.json();
       setCompanyStats({
@@ -301,7 +301,7 @@ const Newsfeed = () => {
       const headers = authHeaders();
       
       // Fetch candidate stats
-      const res = await fetch(buildApiUrl('/api/candidate/stats'), { headers });
+      const res = await fetch(buildApiUrl('/candidate/stats'), { headers });
       if (!res.ok) throw new Error('Erreur chargement stats');
       const data = await res.json();
       
@@ -309,7 +309,7 @@ const Newsfeed = () => {
       let profileViewsWeek = 0;
       let profileViewsTotal = 0;
       try {
-        const profileStatsRes = await fetch(buildApiUrl('/api/users/me/profile-stats'), { headers });
+        const profileStatsRes = await fetch(buildApiUrl('/users/me/profile-stats'), { headers });
         if (profileStatsRes.ok) {
           const profileStats = await profileStatsRes.json();
           profileViewsWeek = profileStats.profile_views_week || 0;
@@ -384,7 +384,7 @@ const Newsfeed = () => {
         image_url: image_url || null,
       };
 
-      const res = await fetch(buildApiUrl('/api/publications'), {
+      const res = await fetch(buildApiUrl('/publications'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -430,7 +430,7 @@ const Newsfeed = () => {
           : p
       ));
 
-      const res = await fetch(buildApiUrl(`/api/publications/${publicationId}/like`), {
+      const res = await fetch(buildApiUrl(`/publications/${publicationId}/like`), {
         method: 'POST',
         headers: authHeaders('application/json'),
       });
@@ -476,7 +476,7 @@ const Newsfeed = () => {
     }
 
     try {
-      const res = await fetch(buildApiUrl(`/api/publications/${publicationId}/comments`), {
+      const res = await fetch(buildApiUrl(`/publications/${publicationId}/comments`), {
         headers: authHeaders(),
       });
       if (res.ok) {
@@ -520,7 +520,7 @@ const Newsfeed = () => {
   const handleDelete = async (publicationId: number) => {
     setLoading(true);
     try {
-      const res = await fetch(buildApiUrl(`/api/publications/${publicationId}`), {
+      const res = await fetch(buildApiUrl(`/publications/${publicationId}`), {
         method: 'DELETE',
         headers: authHeaders('application/json'),
       });

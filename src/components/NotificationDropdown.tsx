@@ -35,7 +35,7 @@ export default function NotificationDropdown() {
     setLoading(true);
     try {
       const headers = authHeaders();
-      const res = await fetch(buildApiUrl('/api/notifications'), { headers });
+      const res = await fetch(buildApiUrl('/notifications'), { headers });
       if (res.ok) {
         const data = await res.json();
         const notifs = data.success ? data.notifications : (Array.isArray(data) ? data : []);

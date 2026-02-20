@@ -13,16 +13,31 @@ export function getApiBaseUrl() {
 // paths that already include `/api`.
 export function buildApiUrl(path: string) {
   const baseUrl = getApiBaseUrl();
-  const cleanPath = path.startsWith('/') ? path : `/${path}`;
+  // Ensure path starts with a single leading slash
+  let cleanPath = path.startsWith('/') ? path : `/${path}`;
+
+  // Collapse duplicate slashes in the provided path
+  cleanPath = cleanPath.replace(/\/+/g, '/');
 
   if (!baseUrl) {
-    // No external base set (local development) — return path unchanged
+    // No external base set (local development) — return normalized path
     return cleanPath;
   }
 
-  // If path already starts with /api, strip it so we add /api exactly once
-  const rest = cleanPath.startsWith('/api') ? cleanPath.slice(4) : cleanPath;
-  return `${baseUrl}/api${rest}`;
+  // Remove any leading /api from the path to avoid double '/api/api'
+  let rest = cleanPath.replace(/^\/api(\/|$)/, '/');
+
+  // Compose URL and collapse accidental duplicate segments (but preserve protocol)
+  const joined = `${baseUrl.replace(/\/+$/g, '')}/api${rest}`;
+
+  // Collapse duplicate '/api/api' if still present and multiple slashes (excluding protocol)
+  const withoutDupApi = joined.replace(/\/api\/+(api)\//g, '/api/');
+
+  // Remove any duplicate slashes except the '://' after protocol
+  const protoSafe = withoutDupApi.replace(/:\/\//, '___PROTO___');
+  const collapsed = protoSafe.replace(/([^_])\/+/g, '$1/').replace(/___PROTO___/, '://');
+
+  return collapsed;
 }
 
 // Get auth headers with token (supports both JWT formats: admin token and user token)

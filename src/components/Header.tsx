@@ -46,7 +46,7 @@ const AccountQuickMenu = () => {
           const token = localStorage.getItem('token');
           const headers: Record<string,string> = {};
           Object.assign(headers, authHeaders());
-          const res = await fetch(buildApiUrl('/api/users/me'), { headers });
+          const res = await fetch(buildApiUrl('/users/me'), { headers });
           if (res.ok) {
             const data: UserProfile = await res.json();
             setProfileData(data);
@@ -134,7 +134,7 @@ const Header = () => {
         const token = localStorage.getItem('token');
         const headers: Record<string,string> = {};
         Object.assign(headers, authHeaders());
-        const res = await fetch(buildApiUrl('/api/notifications'), { headers });
+        const res = await fetch(buildApiUrl('/notifications'), { headers });
         if (!res.ok) return;
         const data = await res.json() as Notification[];
         if (!mounted) return;

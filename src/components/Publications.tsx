@@ -18,7 +18,7 @@ export default function Publications() {
   useEffect(() => {
     const fetchPublications = async () => {
       try {
-        const res = await fetch(buildApiUrl('/api/publications'));
+        const res = await fetch(buildApiUrl('/publications'));
         if (!res.ok) {
           console.error('Failed to fetch publications', res.status);
           setItems([]);

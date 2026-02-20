@@ -45,7 +45,7 @@ export default function CompanyDashboard() {
       const headers = authHeaders('application/json');
       
       // Fetch company profile stats
-      const res = await fetch(buildApiUrl('/api/users/me/profile-stats'), { headers });
+      const res = await fetch(buildApiUrl('/users/me/profile-stats'), { headers });
       if (!res.ok) {
         throw new Error(`HTTP ${res.status}: ${res.statusText}`);
       }

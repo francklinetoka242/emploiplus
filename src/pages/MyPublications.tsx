@@ -50,7 +50,7 @@ const MyPublications = () => {
   const fetchMyPublications = async () => {
     try {
       setLoading(true);
-      const apiUrl = buildApiUrl('/api/publications');
+      const apiUrl = buildApiUrl('/publications');
       const res = await fetch(apiUrl, {
         headers: authHeaders(),
       });
@@ -91,7 +91,7 @@ const MyPublications = () => {
     }
 
     try {
-      const apiUrl = buildApiUrl(`/api/publications/${publicationId}`);
+      const apiUrl = buildApiUrl(`/publications/${publicationId}`);
       const res = await fetch(apiUrl, {
         method: 'PUT',
         headers: {
@@ -122,7 +122,7 @@ const MyPublications = () => {
     }
 
     try {
-      const apiUrl = buildApiUrl(`/api/publications/${publicationId}`);
+      const apiUrl = buildApiUrl(`/publications/${publicationId}`);
       const res = await fetch(apiUrl, {
         method: 'DELETE',
         headers: authHeaders(),

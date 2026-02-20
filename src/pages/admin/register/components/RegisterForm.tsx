@@ -79,7 +79,7 @@ export default function RegisterForm({ role, title, color }: Props) {
           return;
         }
 
-        const res = await fetch(buildApiUrl("/api/admin/create"), {
+        const res = await fetch(buildApiUrl("/admin/create"), {
           method: "POST",
           headers: authHeaders('application/json', 'adminToken'),
           body: JSON.stringify({

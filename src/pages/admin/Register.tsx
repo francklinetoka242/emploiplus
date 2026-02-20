@@ -33,7 +33,7 @@ export default function AdminRegister() {
     setLoading(true);
 
     try {
-      const res = await fetch(buildApiUrl("/api/admin/register"), {
+      const res = await fetch(buildApiUrl("/admin/register"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

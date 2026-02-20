@@ -82,7 +82,7 @@ const UserProfile = () => {
   const fetchUserProfile = async () => {
     setLoading(true);
     try {
-      const res = await fetch(buildApiUrl(`/api/users/${userId}`), { headers: authHeaders() });
+      const res = await fetch(buildApiUrl(`/users/${userId}`), { headers: authHeaders() });
       if (!res.ok) {
         if (res.status === 404) {
           toast.error("Utilisateur non trouvé");
@@ -95,7 +95,7 @@ const UserProfile = () => {
       setUserProfile(data);
 
       // Fetch publications from this user
-      const pubRes = await fetch(buildApiUrl("/api/publications"), { headers: authHeaders() });
+      const pubRes = await fetch(buildApiUrl("/publications"), { headers: authHeaders() });
       if (pubRes.ok) {
         const pubData = await pubRes.json();
         const pubsArray = Array.isArray(pubData) ? pubData : pubData.publications || [];
@@ -104,7 +104,7 @@ const UserProfile = () => {
       }
 
       // Fetch other users for sidebar
-      const usersRes = await fetch(buildApiUrl("/api/users/candidates?limit=10"), { headers: authHeaders() });
+      const usersRes = await fetch(buildApiUrl("/users/candidates?limit=10"), { headers: authHeaders() });
       if (usersRes.ok) {
         const usersData = await usersRes.json();
         const filteredUsers = (Array.isArray(usersData) ? usersData : [])

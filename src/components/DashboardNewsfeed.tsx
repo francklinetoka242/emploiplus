@@ -59,7 +59,7 @@ const DashboardNewsfeed = () => {
     setLoading(true);
     try {
       try {
-        const res = await fetch(buildApiUrl('/api/publications'));
+        const res = await fetch(buildApiUrl('/publications'));
         if (res.ok) {
           const data = await res.json();
           setNews(Array.isArray(data) ? data : []);
@@ -144,7 +144,7 @@ const DashboardNewsfeed = () => {
         formData.append('image', selectedImage);
       }
 
-      const res = await fetch(buildApiUrl('/api/publications'), {
+      const res = await fetch(buildApiUrl('/publications'), {
         method: 'POST',
         headers: authHeaders(),
         body: formData,

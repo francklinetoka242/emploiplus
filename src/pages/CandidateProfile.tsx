@@ -57,14 +57,14 @@ export default function CandidateProfilePage() {
     setLoading(true);
     try {
       // Fetch candidate profile
-      const res = await fetch(buildApiUrl(`/api/users/${candidateId}`), { headers: authHeaders() });
+      const res = await fetch(buildApiUrl(`/users/${candidateId}`), { headers: authHeaders() });
       if (!res.ok) throw new Error('Candidat non trouvé');
       const data: CandidateData = await res.json();
       setCandidate(data);
 
       // Record profile visit
       try {
-        await fetch(buildApiUrl(`/api/users/${candidateId}/visit`), {
+        await fetch(buildApiUrl(`/users/${candidateId}/visit`), {
           method: 'POST',
           headers: authHeaders('application/json'),
         });
@@ -73,7 +73,7 @@ export default function CandidateProfilePage() {
       }
 
       // Fetch suggested candidates
-      const suggestedRes = await fetch(buildApiUrl(`/api/candidates/suggested?limit=5&excludeId=${candidateId}`), { headers: authHeaders() });
+      const suggestedRes = await fetch(buildApiUrl(`/candidates/suggested?limit=5&excludeId=${candidateId}`), { headers: authHeaders() });
       if (suggestedRes.ok) {
         const suggestedData = await suggestedRes.json();
         setSuggestedCandidates(Array.isArray(suggestedData) ? suggestedData : []);

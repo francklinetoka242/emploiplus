@@ -24,7 +24,7 @@ export default function VerifyEmailPage() {
           return;
         }
 
-        const response = await fetch(buildApiUrl(`/api/admin/verify-email?token=${token}`), {
+        const response = await fetch(buildApiUrl(`/admin/verify-email?token=${token}`), {
           method: "GET",
           headers: { "Content-Type": "application/json" },
         });
