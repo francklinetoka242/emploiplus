@@ -10,8 +10,13 @@ import { pool } from '../config/database.js';
 import { checkLoginAttempts, recordLoginAttempt, resetLoginAttempts, getClientIP } from '../services/loginAttemptsService.js';
 import { logAdminAction } from '../middleware/adminAuth.js';
 
-const JWT_SECRET = process.env.JWT_ADMIN_SECRET || 'admin_secret_key';
-const JWT_EXPIRY = process.env.JWT_ADMIN_EXPIRY || '24h';
+const JWT_SECRET: string | undefined = process.env.JWT_ADMIN_SECRET || process.env.JWT_SECRET;
+const JWT_EXPIRY: string | number = process.env.JWT_ADMIN_EXPIRY || '24h';
+
+if (!JWT_SECRET) {
+  // Fail fast during startup/build so TypeScript/Runtime know secret is required
+  console.error('JWT admin secret is not set. Set JWT_ADMIN_SECRET in environment.');
+}
 
 /**
  * Admin Login
@@ -79,10 +84,16 @@ export async function loginAdmin(req: Request, res: Response) {
       [admin.role_id]
     );
 
+    // Ensure secret exists at runtime
+    if (!JWT_SECRET) {
+      console.error('Missing JWT secret for admin token generation');
+      return res.status(500).json({ error: 'Configuration JWT manquante' });
+    }
+
     // Generate JWT token
     const token = jwt.sign(
       { id: admin.id, email: admin.email },
-      JWT_SECRET,
+      JWT_SECRET as string,
       { expiresIn: JWT_EXPIRY }
     );
 

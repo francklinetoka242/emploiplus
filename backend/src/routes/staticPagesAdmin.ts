@@ -1,6 +1,6 @@
 import { Router, Request, Response } from 'express';
 import { pool } from '../config/database.js';
-import checkPermission from '../middleware/checkPermission';
+import checkPermission from '../middleware/checkPermission.js';
 
 const router = Router();
 

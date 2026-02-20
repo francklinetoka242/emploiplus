@@ -1,5 +1,5 @@
 import express from 'express';
-import checkPermission from '../middleware/checkPermission';
+import checkPermission from '../middleware/checkPermission.js';
 
 const router = express.Router();
 
