@@ -1,4 +1,5 @@
-import type { Request, Response, NextFunction } from "express";
+import { Request } from "express";
+import type { Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 import type { AdminUser } from '../types/index.js';
 
@@ -12,7 +13,7 @@ export const protectAdmin = (req: AdminRequest, res: Response, next: NextFunctio
   if (!token) return res.status(401).json({ message: "Non autorisé" });
 
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET!) as any;
+    const decoded = (jwt.verify(token, process.env.JWT_SECRET!) as any);
     // Attach minimal admin info; code downstream can rely on proper AdminUser when available
     req.admin = decoded;
     next();
