@@ -7,7 +7,7 @@ set -e
 
 ENVIRONMENT=${1:-staging}
 
-echo "🚀 Deploying Backend Webhooks - $ENVIRONMENT"
+echo "🚀 Deploying Backend - Production - $ENVIRONMENT"
 echo "============================================="
 echo ""
 
@@ -19,12 +19,12 @@ if [ ! -f .env ]; then
 fi
 
 # Verify required variables
+
+# Only verify essential variables for production
 required_vars=(
-  "SUPABASE_URL"
-  "SUPABASE_SERVICE_ROLE_KEY"
-  "SUPABASE_WEBHOOK_SECRET"
-  "REDIS_HOST"
-  "REDIS_PORT"
+  "DATABASE_URL"
+  "PORT"
+  "JWT_SECRET"
 )
 
 for var in "${required_vars[@]}"; do
@@ -58,12 +58,9 @@ echo ""
 echo "✅ Deployment preparation complete!"
 echo ""
 echo "Next steps:"
-echo "  1. Execute migrations in Supabase:"
-echo "     - migrations/003_job_matches_activity_logs.sql"
-echo "     - migrations/004_engagement_function.sql"
-echo "     - migrations/005_notifications_table.sql"
+echo "  1. Execute DB migrations (apply SQL files in /backend/src/migrations as needed)"
 echo ""
-echo "  2. Create webhooks in Supabase Dashboard:"
+echo "  2. Create webhooks/endpoints in your hosting provider or API gateway as required:" 
 echo "     - POST https://your-backend.onrender.com/api/jobs/analyze"
 echo "     - POST https://your-backend.onrender.com/api/posts/moderate"
 echo "     - POST https://your-backend.onrender.com/api/activity/score"

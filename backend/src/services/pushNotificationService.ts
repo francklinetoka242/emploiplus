@@ -13,7 +13,7 @@
  */
 
 import admin from 'firebase-admin';
-import { createClient } from '@supabase/supabase-js';
+import { pool } from '../config/database.js';
 
 // Initialize Firebase Admin
 let firebaseApp: admin.app.App | null = null;
@@ -240,24 +240,12 @@ async function sendToUsers(
     return result;
   }
 
-  const supabase = createClient(
-    process.env.SUPABASE_URL || '',
-    process.env.SUPABASE_SERVICE_KEY || '' // Use service key for admin operations
-  );
-
   try {
-    // Fetch device tokens for users
-    const { data: deviceTokens, error } = await supabase
-      .from('device_tokens')
-      .select('user_id, token')
-      .in('user_id', options.userIds);
-
-    if (error) {
-      console.error('[PushNotification] Failed to fetch device tokens:', error);
-      result.success = false;
-      result.failedCount = options.userIds.length;
-      return result;
-    }
+    // Fetch device tokens for users from Postgres
+    const { rows: deviceTokens } = await pool.query(
+      'SELECT user_id, token FROM device_tokens WHERE user_id = ANY($1::text[])',
+      [options.userIds || []]
+    );
 
     if (!deviceTokens || deviceTokens.length === 0) {
       console.warn('[PushNotification] No device tokens found for users:', options.userIds);

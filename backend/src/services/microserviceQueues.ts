@@ -13,7 +13,7 @@
 
 import { Queue, Worker } from 'bullmq';
 import { redisConfig } from '../config/redis.js';
-import { createClient } from '@supabase/supabase-js';
+import { pool } from '../config/database.js';
 
 // ============================================================================
 // REDIS CONNECTION
@@ -23,20 +23,7 @@ import { createClient } from '@supabase/supabase-js';
 // SUPABASE CLIENT
 // ============================================================================
 
-const SUPABASE_URL = process.env.SUPABASE_URL;
-const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
-
-if (!SUPABASE_URL) {
-  console.warn('[microserviceQueues] Warning: SUPABASE_URL is not configured');
-}
-if (!SUPABASE_SERVICE_ROLE_KEY) {
-  console.warn('[microserviceQueues] Warning: SUPABASE_SERVICE_ROLE_KEY is not configured');
-}
-
-const supabase = createClient(
-  SUPABASE_URL || '',
-  SUPABASE_SERVICE_ROLE_KEY || ''
-);
+// Supabase removed: using Postgres pool instead
 
 // ============================================================================
 // QUEUE DEFINITIONS
@@ -118,15 +105,11 @@ export const jobAnalysisWorker = new Worker(
       const extractedSkills = requiredSkills || [];
       console.log(`[Worker] Extracted skills: ${extractedSkills.join(', ')}`);
 
-      // Étape 2: Trouver les candidats avec matching
-      const { data: candidates, error: queryError } = await supabase
-        .from('candidates')
-        .select('id, email, skills, experience_level')
-        .contains('skills', extractedSkills)
-        .lte('experience_level', experienceLevel)
-        .limit(100);
-
-      if (queryError) throw queryError;
+      // Étape 2: Trouver des candidats (requête Postgres simplifiée)
+      const { rows: candidates } = await pool.query(
+        'SELECT id, email, skills, experience_level FROM candidates WHERE experience_level <= $1 LIMIT 100',
+        [experienceLevel]
+      );
 
       console.log(`[Worker] Found ${candidates?.length || 0} candidates`);
 
@@ -147,24 +130,32 @@ export const jobAnalysisWorker = new Worker(
           };
         });
 
-        const { error: insertError } = await supabase
-          .from('job_matches')
-          .insert(matches);
-
-        if (insertError) throw insertError;
-
-        console.log(`[Worker] Created ${matches.length} match records`);
+        // Insert matches in transaction
+        const client = await pool.connect();
+        try {
+          await client.query('BEGIN');
+          for (const m of matches) {
+            await client.query(
+              `INSERT INTO job_matches (job_id, candidate_id, match_score, created_at)
+               VALUES ($1, $2, $3, $4)`,
+              [m.job_id, m.candidate_id, m.match_score, m.created_at]
+            );
+          }
+          await client.query('COMMIT');
+          console.log(`[Worker] Created ${matches.length} match records`);
+        } catch (e) {
+          await client.query('ROLLBACK');
+          throw e;
+        } finally {
+          client.release();
+        }
       }
 
       // Étape 4: Mettre à jour le job
-      await supabase
-        .from('jobs')
-        .update({
-          analysis_completed: true,
-          analysis_completed_at: new Date().toISOString(),
-          candidates_matched: candidates?.length || 0,
-        })
-        .eq('id', jobId);
+      await pool.query(
+        `UPDATE jobs SET analysis_completed = true, analysis_completed_at = $1, candidates_matched = $2 WHERE id = $3`,
+        [new Date().toISOString(), candidates?.length || 0, jobId]
+      );
 
       return {
         success: true,

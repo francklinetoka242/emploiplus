@@ -22,27 +22,14 @@
 import { Queue, Worker } from 'bullmq';
 import axios from 'axios';
 import { redisConfig } from '../config/redis.js';
-import { createClient } from '@supabase/supabase-js';
+import { pool } from '../config/database.js';
 
 // ============================================================================
 // CONFIGURATION
 // ============================================================================
 
 // Initialize Supabase admin client (pour récupérer les utilisateurs)
-const SUPABASE_URL = process.env.SUPABASE_URL;
-const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
-
-if (!SUPABASE_URL) {
-  console.warn('[notificationQueue] Warning: SUPABASE_URL is not configured');
-}
-if (!SUPABASE_SERVICE_ROLE_KEY) {
-  console.warn('[notificationQueue] Warning: SUPABASE_SERVICE_ROLE_KEY is not configured');
-}
-
-const supabase = createClient(
-  SUPABASE_URL || '',
-  SUPABASE_SERVICE_ROLE_KEY || ''
-);
+// Supabase removed: using Postgres pool instead
 
 // OneSignal configuration
 const ONE_SIGNAL_API_KEY = process.env.ONE_SIGNAL_API_KEY || '';
@@ -152,15 +139,10 @@ async function notificationWorkerHandler(job: any) {
       targetUsers = data.userIds;
     } else if (data.broadcastToRole) {
       // Broadcast à tous les utilisateurs d'un rôle
-      const { data: users, error } = await supabase
-        .from('profiles')
-        .select('id')
-        .eq('user_type', data.broadcastToRole)
-        .eq('is_blocked', false);
-
-      if (error) {
-        throw new Error(`Failed to fetch ${data.broadcastToRole} users: ${error.message}`);
-      }
+      const { rows: users } = await pool.query(
+        'SELECT id FROM profiles WHERE user_type = $1 AND is_blocked = false',
+        [data.broadcastToRole]
+      );
 
       targetUsers = (users || []).map((u: any) => u.id);
       console.log(`[Notification] Found ${targetUsers.length} ${data.broadcastToRole} users`);
@@ -226,25 +208,29 @@ async function filterUsersBySkills(
   filters: { skills?: string[]; jobTitle?: string }
 ): Promise<string[]> {
   try {
-    let query = supabase.from('profiles').select('id');
+    try {
+      // Basic filtering implementation using SQL. For advanced JSON/array operators,
+      // adjust the query to match your schema (e.g., skills as text[] or JSON).
+      let baseQuery = 'SELECT id, skills, job_title FROM profiles WHERE id = ANY($1::text[])';
+      const params: any[] = [userIds];
 
-    if (filters.skills && filters.skills.length > 0) {
-      // Supposant que la colonne 'skills' contient un array JSON
-      query = query.contains('skills', filters.skills);
-    }
+      if (filters.skills && filters.skills.length > 0) {
+        // Simple contains by text match (fallback): check skills text representation
+        baseQuery += ' AND (' + filters.skills.map((_, idx) => `skills::text ILIKE '%' || $${idx + 2} || '%'`).join(' OR ') + ')';
+        for (const s of filters.skills) params.push(s);
+      }
 
-    if (filters.jobTitle) {
-      query = query.ilike('job_title', `%${filters.jobTitle}%`);
-    }
+      if (filters.jobTitle) {
+        params.push(`%${filters.jobTitle}%`);
+        baseQuery += ` AND job_title ILIKE $${params.length}`;
+      }
 
-    const { data, error } = await query;
-
-    if (error) {
+      const { rows: data } = await pool.query(baseQuery, params);
+      return (data || []).map((u: any) => u.id);
+    } catch (error) {
       console.error('[Filtering] Error:', error);
-      return userIds; // Return all si filtering échoue
+      return userIds;
     }
-
-    return (data || []).map((u: any) => u.id);
   } catch (error) {
     console.error('[Filtering] Exception:', error);
     return userIds;

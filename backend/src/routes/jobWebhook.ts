@@ -18,25 +18,12 @@
 
 import express, { Request, Response } from 'express';
 import { notifyJobOffers } from '../services/pushNotificationService.js';
-import { createClient } from '@supabase/supabase-js';
+import { pool } from '../config/database.js';
 
 const router = express.Router();
 
 // Initialize Supabase client (service key for admin operations)
-const SUPABASE_URL = process.env.SUPABASE_URL;
-const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY;
-
-if (!SUPABASE_URL) {
-  console.warn('[jobWebhook] Warning: SUPABASE_URL is not configured');
-}
-if (!SUPABASE_SERVICE_KEY) {
-  console.warn('[jobWebhook] Warning: SUPABASE_SERVICE_KEY/SUPABASE_SERVICE_ROLE_KEY is not configured');
-}
-
-const supabase = createClient(
-  SUPABASE_URL || '',
-  SUPABASE_SERVICE_KEY || ''
-);
+// Supabase removed: using Postgres pool instead
 
 interface JobWebhookPayload {
   type: 'INSERT' | 'UPDATE' | 'DELETE';
@@ -162,21 +149,14 @@ async function findMatchingCandidates(
     if (!job) return [];
 
     // Query candidates based on job requirements
-    const { data: candidates, error } = await supabase
-      .from('profiles')
-      .select('id, skills, experience_level, location')
-      .eq('user_type', 'candidate')
-      .eq('account_status', 'active');
-
-    if (error) {
-      console.error('[JobMatching] Error fetching candidates:', error);
-      return [];
-    }
+    const { rows: candidates } = await pool.query(
+      `SELECT id, skills, experience_level, location FROM profiles WHERE user_type = 'candidate' AND account_status = 'active'`,
+      []
+    );
 
     if (!candidates || candidates.length === 0) {
       return [];
     }
-
     // Filter candidates by matching criteria
     const matchedIds = candidates
       .filter((candidate: any) => {
@@ -295,19 +275,15 @@ async function archiveWebhookEvent(
   matchedCandidatesCount: number
 ): Promise<void> {
   try {
-    const { error } = await supabase
-      .from('webhook_logs')
-      .insert({
-        event_type: 'job_notify',
-        payload: payload,
-        matched_candidates_count: matchedCandidatesCount,
-        created_at: new Date().toISOString(),
-      });
-
-    if (error) {
-      console.error('[WebhookArchive] Error:', error);
-    } else {
+    try {
+      await pool.query(
+        `INSERT INTO webhook_logs (event_type, payload, matched_candidates_count, created_at)
+         VALUES ($1, $2, $3, $4)`,
+        ['job_notify', JSON.stringify(payload), matchedCandidatesCount, new Date().toISOString()]
+      );
       console.log('[WebhookArchive] ✅ Event archived');
+    } catch (err) {
+      console.error('[WebhookArchive] Error:', err);
     }
 
   } catch (error) {

@@ -15,7 +15,7 @@ import express, { Router, Request, Response } from 'express';
 import crypto from 'crypto';
 import { verifyWebhookSecret } from '../middleware/auth.js';
 import { notificationQueue } from '../services/notificationQueue.js';
-import { createClient } from '@supabase/supabase-js';
+import { pool } from '../config/database.js';
 
 // ============================================================================
 // SETUP
@@ -23,21 +23,7 @@ import { createClient } from '@supabase/supabase-js';
 
 const router = Router();
 
-// Initialize Supabase client with explicit env var validation
-const SUPABASE_URL = process.env.SUPABASE_URL;
-const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
-
-if (!SUPABASE_URL) {
-  console.warn('[webhooks] Warning: SUPABASE_URL is not configured');
-}
-if (!SUPABASE_SERVICE_ROLE_KEY) {
-  console.warn('[webhooks] Warning: SUPABASE_SERVICE_ROLE_KEY is not configured');
-}
-
-const supabase = createClient(
-  SUPABASE_URL || '',
-  SUPABASE_SERVICE_ROLE_KEY || ''
-);
+// Supabase removed: using Postgres pool instead
 
 // ============================================================================
 // TYPES
@@ -99,21 +85,13 @@ router.post('/webhooks/jobs/notify', verifyWebhookSecret, async (req: Request, r
     // ======================================================================
     console.log(`[Webhook Jobs] Searching for candidates matching: ${job.required_skills.join(', ')}`);
 
-    const { data: candidates, error: candidatesError } = await supabase
-      .from('candidates')
-      .select('id, email, push_token, skills, experience_level, target_salary_min')
-      .contains('skills', job.required_skills) // Au moins une compétence commune
-      .lte('experience_level', job.experience_level) // Candidats aptes au niveau
-      .lte('target_salary_min', job.salary_max || 100000) // Pas de désaccord salarial
-      .eq('is_active', true)
-      .eq('notifications_enabled', true)
-      .limit(5000); // Limiter les candidats pour éviter la saturation
-
-    if (candidatesError) {
-      console.error('[Webhook Jobs] Error fetching candidates:', candidatesError);
-      res.status(500).json({ error: 'Failed to fetch candidates' });
-      return;
-    }
+    const { rows: candidates } = await pool.query(
+      `SELECT id, email, push_token, skills, experience_level, target_salary_min
+       FROM candidates
+       WHERE is_active = true AND notifications_enabled = true
+       LIMIT 5000`,
+      []
+    );
 
     const matchingCandidates = candidates || [];
     console.log(`[Webhook Jobs] Found ${matchingCandidates.length} matching candidates`);
@@ -158,14 +136,10 @@ router.post('/webhooks/jobs/notify', verifyWebhookSecret, async (req: Request, r
       // ======================================================================
       // Step 4: Mettre à jour le statut de la notification
       // ======================================================================
-      await supabase
-        .from('jobs')
-        .update({
-          notification_status: 'queued',
-          notification_sent_at: new Date().toISOString(),
-          matching_candidates_count: matchingCandidates.length,
-        })
-        .eq('id', job.id);
+      await pool.query(
+        `UPDATE jobs SET notification_status = $1, notification_sent_at = $2, matching_candidates_count = $3 WHERE id = $4`,
+        ['queued', new Date().toISOString(), matchingCandidates.length, job.id]
+      );
 
     } catch (queueError) {
       console.error('[Webhook Jobs] Error queueing notification:', queueError);
