@@ -1,25 +1,22 @@
 /**
- * Main API Routes - Placeholder for modular route separation
+ * Main API Routes - Central routing hub
  * 
- * MIGRATION GUIDE:
- * Extract routes from server.old.ts and organize by domain:
- * - routes/jobs.ts (jobs, job-applications)
- * - routes/users.ts (users, profiles)
- * - routes/formations.ts (formations)
- * - routes/messaging.ts (conversations, messages)
- * - routes/feed.ts (newsfeed, posts)
- * - routes/admin.ts (admin-specific endpoints)
- * - routes/search.ts (search endpoints)
- * 
- * Then import and mount them in this file:
- * import jobRoutes from './jobs.js';
- * router.use('/jobs', jobRoutes);
+ * Mounts all domain-specific routes:
+ * - /publications - newsfeed and publications
+ * - /auth - authentication (mounted in server.ts)
+ * - Additional routes to be added as needed
  */
 
 import express, { Router, Request, Response } from 'express';
 import { pool } from '../config/database.js';
+import publicationsRoutes from './publications.js';
 
 const router: Router = express.Router();
+
+/**
+ * Mount sub-routers
+ */
+router.use('/publications', publicationsRoutes);
 
 /**
  * Health check endpoint

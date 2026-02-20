@@ -2,7 +2,7 @@ import cors from 'cors';
 
 export function initializeCors() {
   const rawOrigins = process.env.CORS_ORIGINS || 
-    'https://emploiplus-group.com,http://localhost:5173,http://localhost:5174';
+    'https://emploiplus-group.com,http://emploiplus-group.com,https://www.emploiplus-group.com,http://www.emploiplus-group.com,http://localhost:5173,http://localhost:5174';
   
   const allowedOrigins = rawOrigins.split(',').map((s) => s.trim());
 
