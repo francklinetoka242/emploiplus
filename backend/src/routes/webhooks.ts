@@ -1,21 +1,27 @@
 /**
  * ============================================================================
- * Webhook Routes - Job Postings & Matching
+ * Webhook Routes - DEPRECATED (Supabase → PostgreSQL Migration)
  * ============================================================================
  *
- * Endpoints:
+ * ⚠️ DEPRECATED: This file uses Supabase webhooks which are obsolete.
+ * 
+ * TODO (Future): Refactor using only PostgreSQL triggers or
+ * application-level events instead of Supabase webhooks.
+ * 
+ * Endpoints (DISABLED):
  * - POST /api/webhooks/jobs/notify  - Nouvelle offre d'emploi
- * - POST /api/webhooks/matching/update - Mise à jour profil/CV (recalc matching)
+ * - POST /api/webhooks/matching/update - Mise à jour profil/CV
  *
- * Sécurité: Signature HMAC SHA256 vérifiée
- * Processing: Queue asynchrone via BullMQ
+ * Status: Commented out pending PostgreSQL event system implementation
  */
 
 import express, { Router, Request, Response } from 'express';
-import crypto from 'crypto';
-import { verifyWebhookSecret } from '../middleware/auth.js';
-import { notificationQueue } from '../services/notificationQueue.js';
-import { pool } from '../config/database.js';
+
+// TODO: Replace with PostgreSQL-based event handling
+// import crypto from 'crypto';
+// import { verifyWebhookSecret } from '../middleware/auth.js';
+// import { notificationQueue } from '../services/notificationQueue.js';
+// import { pool } from '../config/database.js';
 
 // ============================================================================
 // SETUP
@@ -23,12 +29,12 @@ import { pool } from '../config/database.js';
 
 const router = Router();
 
-// Supabase removed: using Postgres pool instead
-
 // ============================================================================
-// TYPES
+// TYPES (DEPRECATED)
 // ============================================================================
 
+// TODO: Migrate to PostgreSQL triggers
+/*
 interface JobPostingWebhook {
   id: string;
   title: string;
@@ -51,39 +57,33 @@ interface MatchingCandidate {
   experience_level: 'Junior' | 'Intermédiaire' | 'Senior';
   target_salary_min?: number;
 }
+*/
 
 // ============================================================================
-// POST /api/webhooks/jobs/notify - Nouvelle offre d'emploi
+// POST /api/webhooks/jobs/notify - DEPRECATED
 // ============================================================================
 
 /**
- * Webhook Supabase:
- * Event: INSERT on public.jobs
+ * DEPRECATED: This endpoint is disabled pending PostgreSQL event system.
  * 
- * Processus:
- * 1. Valider la signature HMAC
- * 2. Extraire les données de l'offre
- * 3. Matcher les candidats pertinents
- * 4. Ajouter à la queue de notifications
+ * Previously: Supabase webhook for new job postings
+ * Events: INSERT on public.jobs
+ * 
+ * TODO: Implement using PostgreSQL NOTIFY/LISTEN or application-level events
  */
+
+/*
 router.post('/webhooks/jobs/notify', verifyWebhookSecret, async (req: Request, res: Response) => {
   try {
-    const job: JobPostingWebhook = req.body.record || req.body;
-    
+    const job = req.body.record || req.body;
     console.log(`[Webhook Jobs] New job posting: ${job.id} (${job.title})`);
 
-    // ======================================================================
-    // Step 1: Valider les données
-    // ======================================================================
     if (!job.id || !job.title || !job.company_id) {
       res.status(400).json({ error: 'Missing required job fields' });
       return;
     }
 
-    // ======================================================================
-    // Step 2: Récupérer les candidats pertinents
-    // ======================================================================
-    console.log(`[Webhook Jobs] Searching for candidates matching: ${job.required_skills.join(', ')}`);
+    console.log(`[Webhook Jobs] Searching for candidates matching: ${job.required_skills?.join(', ')}`);
 
     const { rows: candidates } = await pool.query(
       `SELECT id, email, push_token, skills, experience_level, target_salary_min
@@ -96,87 +96,38 @@ router.post('/webhooks/jobs/notify', verifyWebhookSecret, async (req: Request, r
     const matchingCandidates = candidates || [];
     console.log(`[Webhook Jobs] Found ${matchingCandidates.length} matching candidates`);
 
-    // ======================================================================
-    // Step 3: Ajouter à la queue de notifications
-    // ======================================================================
-    const notificationTitle = `Nouvelle offre d'emploi: ${job.title}`;
-    const notificationBody = `${job.company_id} recherche ${job.experience_level}`;
+    // TODO: Re-implement with PostgreSQL event system
+    // Old Supabase code kept for reference
+    // const notificationTitle = `Nouvelle offre d'emploi: ${job.title}`;
+    // await notificationQueue.add(...);
+    // await pool.query(...);
+    // res.status(200).json({...});
 
-    try {
-      await notificationQueue.add(
-        'batch-job-notification',
-        {
-          jobId: job.id,
-          jobTitle: job.title,
-          companyId: job.company_id,
-          location: job.location,
-          salaryMin: job.salary_min,
-          salaryMax: job.salary_max,
-          jobType: job.job_type,
-          requiredSkills: job.required_skills,
-          experienceLevel: job.experience_level,
-          candidateIds: matchingCandidates.map(c => c.id),
-          notificationTitle,
-          notificationBody,
-          // Metadata pour tracking
-          createdAt: new Date().toISOString(),
-        },
-        {
-          attempts: 3,
-          backoff: {
-            type: 'exponential',
-            delay: 2000,
-          },
-          removeOnComplete: true,
-        }
-      );
-
-      console.log(`[Webhook Jobs] Job notification added to queue`);
-
-      // ======================================================================
-      // Step 4: Mettre à jour le statut de la notification
-      // ======================================================================
-      await pool.query(
-        `UPDATE jobs SET notification_status = $1, notification_sent_at = $2, matching_candidates_count = $3 WHERE id = $4`,
-        ['queued', new Date().toISOString(), matchingCandidates.length, job.id]
-      );
-
-    } catch (queueError) {
-      console.error('[Webhook Jobs] Error queueing notification:', queueError);
-      res.status(500).json({ error: 'Failed to queue notification' });
-      return;
-    }
-
-    // ======================================================================
-    // Step 5: Répondre avec succès
-    // ======================================================================
-    res.status(200).json({
-      success: true,
-      jobId: job.id,
-      candidatesMatched: matchingCandidates.length,
-      message: `Job notification queued for ${matchingCandidates.length} candidates`,
+    res.status(503).json({
+      success: false,
+      message: 'Webhooks disabled - Pending PostgreSQL migration',
     });
-
   } catch (error) {
-    console.error('[Webhook Jobs] Unexpected error:', error);
+    console.error('[Webhook Jobs] Error:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
+*/
 
 // ============================================================================
-// POST /api/webhooks/matching/update - Mise à jour du profil candidat
+// POST /api/webhooks/matching/update - DEPRECATED
 // ============================================================================
 
 /**
- * Webhook Supabase:
- * Event: UPDATE on public.candidates (skills, experience_level)
+ * DEPRECATED: This endpoint is disabled pending PostgreSQL event system.
  * 
- * Processus:
- * 1. Valider la signature
- * 2. Récupérer les offres actives pertinentes
- * 3. Mettre à jour le matching score
- * 4. Notifier si nouvel intérêt potentiel
+ * Previously: Supabase webhook for candidate profile updates
+ * Events: UPDATE on public.candidates
+ * 
+ * TODO: Implement using PostgreSQL NOTIFY/LISTEN or application-level events
  */
+
+/*
 router.post('/webhooks/matching/update', verifyWebhookSecret, async (req: Request, res: Response) => {
   try {
     const candidateRecord = req.body.record || req.body;
@@ -189,146 +140,38 @@ router.post('/webhooks/matching/update', verifyWebhookSecret, async (req: Reques
     console.log(`[Webhook Matching] Updating profile for candidate: ${candidateId}`);
 
     if (!skillsChanged && !experienceChanged) {
-      console.log('[Webhook Matching] No relevant changes, skipping update');
       res.status(200).json({ message: 'No changes to process' });
       return;
     }
 
-    // ======================================================================
-    // Step 1: Trouver les offres d'emploi actives
-    // ======================================================================
-    const { data: activeJobs, error: jobsError } = await supabase
-      .from('jobs')
-      .select('id, title, required_skills, experience_level, salary_min, salary_max')
-      .eq('status', 'active')
-      .limit(500);
+    // TODO: Re-implement with PostgreSQL event system
+    // Old Supabase code:
+    // const { data: activeJobs } = await supabase
+    //   .from('jobs')
+    //   .select('id, title, required_skills, experience_level, salary_min, salary_max')
+    //   .eq('status', 'active')
+    //   .limit(500);
 
-    if (jobsError) {
-      console.error('[Webhook Matching] Error fetching jobs:', jobsError);
-      res.status(500).json({ error: 'Failed to fetch jobs' });
-      return;
-    }
-
-    // ======================================================================
-    // Step 2: Calculer les nouveaux matchings
-    // ======================================================================
-    const newMatches = (activeJobs || []).filter(job => {
-      const commonSkills = job.required_skills.filter((skill: string) =>
-        candidateRecord.skills.includes(skill)
-      );
-      
-      return (
-        commonSkills.length > 0 && // Au moins une compétence commune
-        candidateRecord.experience_level >= job.experience_level // Niveau suffisant
-      );
+    res.status(503).json({
+      success: false,
+      message: 'Webhooks disabled - Pending PostgreSQL migration',
     });
-
-    console.log(`[Webhook Matching] Found ${newMatches.length} newly matching jobs`);
-
-    // ======================================================================
-    // Step 3: Notifier pour les nouveaux matchings
-    // ======================================================================
-    if (newMatches.length > 0) {
-      try {
-        // Récupérer les informations du candidat
-        const { data: candidate } = await supabase
-          .from('candidates')
-          .select('email, push_token')
-          .eq('id', candidateId)
-          .single();
-
-        if (candidate && candidate.push_token) {
-          await notificationQueue.add(
-            'candidate-matching-update',
-            {
-              candidateId,
-              candidateEmail: candidate.email,
-              jobIds: newMatches.map(j => j.id),
-              jobCount: newMatches.length,
-              notificationTitle: `${newMatches.length} nouvelles opportunités correspondent à votre profil`,
-              notificationBody: 'Vérifiez les offres d\'emploi qui vous conviennent',
-            },
-            {
-              attempts: 3,
-              backoff: {
-                type: 'exponential',
-                delay: 2000,
-              },
-            }
-          );
-
-          console.log(`[Webhook Matching] Notification queued for candidate: ${candidateId}`);
-        }
-
-      } catch (notificationError) {
-        console.error('[Webhook Matching] Error queuing notification:', notificationError);
-        // Ne pas échouer si la notification échoue
-      }
-    }
-
-    // ======================================================================
-    // Step 4: Mettre à jour le matching score dans la DB
-    // ======================================================================
-    try {
-      // Créer des entrées dans candidate_job_matches
-      for (const job of newMatches) {
-        const commonSkills = job.required_skills.filter((skill: string) =>
-          candidateRecord.skills.includes(skill)
-        );
-
-        const matchScore = Math.min(
-          (commonSkills.length / job.required_skills.length) * 100,
-          100
-        );
-
-        await supabase
-          .from('candidate_job_matches')
-          .upsert(
-            {
-              candidate_id: candidateId,
-              job_id: job.id,
-              match_score: matchScore,
-              common_skills: commonSkills,
-              updated_at: new Date().toISOString(),
-            },
-            { onConflict: 'candidate_id,job_id' }
-          );
-      }
-
-      console.log(`[Webhook Matching] Updated ${newMatches.length} match records`);
-
-    } catch (updateError) {
-      console.error('[Webhook Matching] Error updating matches:', updateError);
-      // Continuer même si l'update échoue
-    }
-
-    // ======================================================================
-    // Step 5: Répondre
-    // ======================================================================
-    res.status(200).json({
-      success: true,
-      candidateId,
-      newMatchesCount: newMatches.length,
-      message: `Profile updated. Found ${newMatches.length} new job matches`,
-    });
-
   } catch (error) {
-    console.error('[Webhook Matching] Unexpected error:', error);
+    console.error('[Webhook Matching] Error:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
+*/
 
 // ============================================================================
-// POST /api/webhooks/test - Test endpoint
+// Temporary placeholder endpoint (webhooks disabled)
 // ============================================================================
 
-/**
- * Endpoint de test pour vérifier la signature webhook
- */
-router.post('/webhooks/test', verifyWebhookSecret, (req: Request, res: Response) => {
-  res.status(200).json({
-    success: true,
-    message: 'Webhook signature verified successfully',
+router.get('/webhooks/status', (req: Request, res: Response) => {
+  res.status(503).json({
+    status: 'disabled',
+    message: 'Webhook routes are deprecated and awaiting PostgreSQL event system implementation',
+    todo: 'Implement PostgreSQL NOTIFY/LISTEN or application-level events',
     timestamp: new Date().toISOString(),
   });
 });

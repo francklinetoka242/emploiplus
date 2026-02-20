@@ -5,7 +5,7 @@ interface AdminRequest extends Request {
   admin?: { id: string; role: string };
 }
 
-export const protectAdmin = (req: AdminRequest, res: Response, next: NextFunction) => {
+export const protectAdmin = (req: any, res: Response, next: NextFunction) => {
   const token = req.headers.authorization?.split(" ")[1];
 
   if (!token) return res.status(401).json({ message: "Non autorisé" });
@@ -20,7 +20,7 @@ export const protectAdmin = (req: AdminRequest, res: Response, next: NextFunctio
 };
 
 export const restrictTo = (...roles: string[]) => {
-  return (req: AdminRequest, res: Response, next: NextFunction) => {
+  return (req: any, res: Response, next: NextFunction) => {
     if (!req.admin || !roles.includes(req.admin.role)) {
       return res.status(403).json({ message: "Accès interdit" });
     }

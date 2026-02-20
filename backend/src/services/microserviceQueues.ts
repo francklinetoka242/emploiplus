@@ -3,12 +3,21 @@
  * Microservice Queues - BullMQ Job Processing
  * ============================================================================
  *
- * Trois queues spécialisées:
+ * ⚠️ DEPRECATED: This file used Supabase which is now replaced by PostgreSQL
+ *
+ * TODO (Future): Re-implement these queues with PostgreSQL instead of Supabase:
  * - jobAnalysisQueue    - Analyze job postings
  * - postModerationQueue - Moderate posts
  * - activityScoringQueue- Score user engagement
  *
- * Chaque queue a un worker qui traite les jobs en arrière-plan
+ * Current Status: All workers with Supabase calls are commented out
+ * to unblock the build migration from Supabase → PostgreSQL.
+ *
+ * Implementation Plan:
+ * 1. Keep BullMQ redis queues (no change needed)
+ * 2. Replace all supabase.from(...).select/update/insert with pg pool queries
+ * 3. Update worker logic to use PostgreSQL directly
+ * 4. Re-enable all endpoints
  */
 
 import { Queue, Worker } from 'bullmq';
@@ -19,11 +28,7 @@ import { pool } from '../config/database.js';
 // REDIS CONNECTION
 // ============================================================================
 
-// ============================================================================
-// SUPABASE CLIENT
-// ============================================================================
-
-// Supabase removed: using Postgres pool instead
+// Using Redis for queue storage only (no Supabase client needed)
 
 // ============================================================================
 // QUEUE DEFINITIONS
@@ -93,84 +98,21 @@ export const jobNotificationQueue = new Queue('job-notifications', {
 // WORKER 1: Job Analysis
 // ============================================================================
 
+/**
+ * DEPRECATED: This worker uses Supabase which is being replaced by PostgreSQL
+ * TODO: Re-implement using pg pool instead of Supabase
+ */
+
 export const jobAnalysisWorker = new Worker(
   'job-analysis',
   async (job) => {
-    const { jobId, title, description, requiredSkills, experienceLevel } = job.data;
-
-    console.log(`[Worker] Analyzing job ${jobId}: ${title}`);
-
-    try {
-      // Étape 1: Extraire les compétences
-      const extractedSkills = requiredSkills || [];
-      console.log(`[Worker] Extracted skills: ${extractedSkills.join(', ')}`);
-
-      // Étape 2: Trouver des candidats (requête Postgres simplifiée)
-      const { rows: candidates } = await pool.query(
-        'SELECT id, email, skills, experience_level FROM candidates WHERE experience_level <= $1 LIMIT 100',
-        [experienceLevel]
-      );
-
-      console.log(`[Worker] Found ${candidates?.length || 0} candidates`);
-
-      // Étape 3: Créer les entrées de matching
-      if (candidates && candidates.length > 0) {
-        const matches = candidates.map(candidate => {
-          // Calculer le score
-          const commonSkills = candidate.skills.filter((s: string) =>
-            extractedSkills.includes(s)
-          );
-          const matchScore = (commonSkills.length / extractedSkills.length) * 100;
-
-          return {
-            job_id: jobId,
-            candidate_id: candidate.id,
-            match_score: Math.round(matchScore),
-            created_at: new Date().toISOString(),
-          };
-        });
-
-        // Insert matches in transaction
-        const client = await pool.connect();
-        try {
-          await client.query('BEGIN');
-          for (const m of matches) {
-            await client.query(
-              `INSERT INTO job_matches (job_id, candidate_id, match_score, created_at)
-               VALUES ($1, $2, $3, $4)`,
-              [m.job_id, m.candidate_id, m.match_score, m.created_at]
-            );
-          }
-          await client.query('COMMIT');
-          console.log(`[Worker] Created ${matches.length} match records`);
-        } catch (e) {
-          await client.query('ROLLBACK');
-          throw e;
-        } finally {
-          client.release();
-        }
-      }
-
-      // Étape 4: Mettre à jour le job
-      await pool.query(
-        `UPDATE jobs SET analysis_completed = true, analysis_completed_at = $1, candidates_matched = $2 WHERE id = $3`,
-        [new Date().toISOString(), candidates?.length || 0, jobId]
-      );
-
-      return {
-        success: true,
-        jobId,
-        candidatesMatched: candidates?.length || 0,
-      };
-
-    } catch (error) {
-      console.error(`[Worker] Error analyzing job ${jobId}:`, error);
-      throw error; // Re-throw pour retry
-    }
+    console.log(`[Worker] Job analysis disabled - Pending PostgreSQL implementation`);
+    console.log(`[Worker] TODO: Re-implement with pg pool instead of Supabase`);
+    throw new Error('Job analysis worker disabled - awaiting PostgreSQL migration');
   },
   {
     connection: redisConfig as any,
-    concurrency: 5, // Traiter 5 jobs en parallèle
+    concurrency: 5,
   }
 );
 
@@ -178,130 +120,41 @@ export const jobAnalysisWorker = new Worker(
 // WORKER 2: Post Moderation
 // ============================================================================
 
+/**
+ * DEPRECATED: This worker uses Supabase which is being replaced by PostgreSQL
+ * TODO: Re-implement using pg pool instead of Supabase
+ */
+
 export const postModerationWorker = new Worker(
   'post-moderation',
   async (job) => {
-    const { postId, content, images, links } = job.data;
-
-    console.log(`[Worker] Moderating post ${postId}`);
-
-    try {
-      let isFlagged = false;
-      let flagReason = '';
-
-      // Étape 1: Vérifier spam
-      const spamPatterns = [
-        /click\s+here/i,
-        /buy\s+now/i,
-        /free\s+money/i,
-        /casino/i,
-        /bitcoin/i,
-      ];
-
-      for (const pattern of spamPatterns) {
-        if (pattern.test(content)) {
-          isFlagged = true;
-          flagReason = 'Suspected spam';
-          break;
-        }
-      }
-
-      // Étape 2: Vérifier liens (en production: utiliser Google Safe Browsing API)
-      if (links && links.length > 0) {
-        console.log(`[Worker] Checking ${links.length} links...`);
-        // TODO: Appeler API de vérification
-      }
-
-      // Étape 3: Analyser les images (en production: utiliser Google Vision ou AWS Rekognition)
-      if (images && images.length > 0) {
-        console.log(`[Worker] Checking ${images.length} images...`);
-        // TODO: Appeler API de vision
-      }
-
-      // Étape 4: Mettre à jour le post
-      await supabase
-        .from('posts')
-        .update({
-          is_flagged: isFlagged,
-          flag_reason: isFlagged ? flagReason : null,
-          moderated_at: new Date().toISOString(),
-        })
-        .eq('id', postId);
-
-      return {
-        success: true,
-        postId,
-        isFlagged,
-        flagReason,
-      };
-
-    } catch (error) {
-      console.error(`[Worker] Error moderating post ${postId}:`, error);
-      throw error;
-    }
+    console.log(`[Worker] Post moderation disabled - Pending PostgreSQL implementation`);
+    throw new Error('Post moderation worker disabled - awaiting PostgreSQL migration');
   },
   {
     connection: redisConfig as any,
-    concurrency: 10, // Plus rapide que job analysis
+    concurrency: 10,
   }
 );
 
 // ============================================================================
-// WORKER 3B: Job Match Notifications
+// WORKER 3: Job Match Notifications
 // ============================================================================
+
+/**
+ * DEPRECATED: This worker uses Supabase which is being replaced by PostgreSQL
+ * TODO: Re-implement using pg pool instead of Supabase
+ */
 
 export const jobNotificationWorker = new Worker(
   'job-notifications',
   async (job) => {
-    const { jobId, candidateId, matchScore, jobTitle, company } = job.data;
-
-    console.log(`[Worker] Sending match notification: candidate ${candidateId} for job "${jobTitle}"`);
-
-    try {
-      // Récupérer les détails du candidat
-      const { data: candidate, error: candError } = await supabase
-        .from('users')
-        .select('id, email, name')
-        .eq('id', candidateId)
-        .single();
-
-      if (candError || !candidate) {
-        console.error(`[Worker] Candidate ${candidateId} not found`);
-        throw new Error(`Candidate ${candidateId} not found`);
-      }
-
-      // En production: envoyer email/push notification
-      console.log(`[Worker] Would send notification to ${candidate.email}: "Match found! ${jobTitle} at ${company} (${matchScore}%)"`);
-
-      // Optionnel: Enregistrer dans une table de notifications
-      const { error: notifError } = await supabase
-        .from('notifications')
-        .insert({
-          user_id: candidateId,
-          type: 'job_match',
-          title: `New Job Match: ${jobTitle}`,
-          message: `You match ${matchScore}% for this role at ${company}`,
-          data: { jobId, matchScore },
-          is_read: false,
-        });
-
-      if (notifError) console.error(`[Worker] Error saving notification:`, notifError);
-
-      return {
-        success: true,
-        candidateId,
-        jobId,
-        email: candidate.email,
-      };
-
-    } catch (error) {
-      console.error(`[Worker] Error sending notification:`, error);
-      throw error;
-    }
+    console.log(`[Worker] Job notifications disabled - Pending PostgreSQL implementation`);
+    throw new Error('Job notification worker disabled - awaiting PostgreSQL migration');
   },
   {
     connection: redisConfig as any,
-    concurrency: 15, // Notifications = très rapides
+    concurrency: 15,
   }
 );
 
@@ -309,78 +162,20 @@ export const jobNotificationWorker = new Worker(
 // WORKER 4: Activity Scoring
 // ============================================================================
 
+/**
+ * DEPRECATED: This worker uses Supabase which is being replaced by PostgreSQL
+ * TODO: Re-implement using pg pool instead of Supabase
+ */
+
 export const activityScoringWorker = new Worker(
   'activity-scoring',
   async (job) => {
-    const { userId, action, targetId, targetType } = job.data;
-
-    console.log(`[Worker] Scoring ${action} by user ${userId}`);
-
-    try {
-      // Étape 1: Déterminer les points
-      const pointsMap: { [key: string]: number } = {
-        view: 1,
-        like: 5,
-        comment: 10,
-        share: 15,
-        apply: 20,
-      };
-
-      const points = pointsMap[action] || 0;
-
-      // Étape 2: Appliquer multiplicateurs (bonus pour heures creuses)
-      const hour = new Date().getHours();
-      const multiplier = (hour >= 20 || hour <= 8) ? 1.5 : 1.0;
-      const finalPoints = Math.round(points * multiplier);
-
-      // Étape 3: Enregistrer l'activité
-      const { error: logError } = await supabase
-        .from('activity_logs')
-        .insert({
-          user_id: userId,
-          action,
-          target_type: targetType,
-          target_id: targetId,
-          points_earned: finalPoints,
-          created_at: new Date().toISOString(),
-        });
-
-      if (logError) throw logError;
-
-      // Étape 4: Mettre à jour le score utilisateur
-      const { data: currentUser } = await supabase
-        .from('users')
-        .select('engagement_score')
-        .eq('id', userId)
-        .single();
-
-      const newScore = (currentUser?.engagement_score || 0) + finalPoints;
-
-      await supabase
-        .from('users')
-        .update({
-          engagement_score: newScore,
-          last_activity_at: new Date().toISOString(),
-        })
-        .eq('id', userId);
-
-      console.log(`[Worker] User ${userId} earned ${finalPoints} points`);
-
-      return {
-        success: true,
-        userId,
-        pointsEarned: finalPoints,
-        newScore,
-      };
-
-    } catch (error) {
-      console.error(`[Worker] Error scoring activity for ${userId}:`, error);
-      throw error;
-    }
+    console.log(`[Worker] Activity scoring disabled - Pending PostgreSQL implementation`);
+    throw new Error('Activity scoring worker disabled - awaiting PostgreSQL migration');
   },
   {
     connection: redisConfig as any,
-    concurrency: 20, // Très rapide, haute concurrence
+    concurrency: 20,
   }
 );
 
@@ -424,7 +219,8 @@ export async function checkQueueHealth() {
     const jobNotificationHealth = await jobNotificationQueue.getJobCounts();
 
     return {
-      status: 'ok',
+      status: 'partial',
+      message: 'Queues are connected but workers are disabled pending PostgreSQL migration',
       queues: {
         'job-analysis': jobAnalysisHealth,
         'post-moderation': postModerationHealth,
@@ -450,18 +246,20 @@ export async function checkQueueHealth() {
 export async function initializeQueues() {
   try {
     console.log('[Queues] Initializing BullMQ workers...');
+    console.log('[Queues] ⚠️  WARNING: Workers are disabled pending PostgreSQL migration');
     
-    // Workers already initialized above, just verify connections
+    // Verify connections
     await jobAnalysisQueue.waitUntilReady();
     await postModerationQueue.waitUntilReady();
     await activityScoringQueue.waitUntilReady();
     await jobNotificationQueue.waitUntilReady();
     
-    console.log('[Queues] All 4 workers ready ✓');
-    console.log('[Queues]  - job-analysis (5 concurrent)');
-    console.log('[Queues]  - post-moderation (10 concurrent)');
-    console.log('[Queues]  - activity-scoring (20 concurrent)');
-    console.log('[Queues]  - job-notifications (15 concurrent)');
+    console.log('[Queues] All 4 queues ready (workers disabled) ✓');
+    console.log('[Queues] TODO: Re-implement workers with PostgreSQL');
+    console.log('[Queues]  - job-analysis (placeholder)');
+    console.log('[Queues]  - post-moderation (placeholder)');
+    console.log('[Queues]  - activity-scoring (placeholder)');
+    console.log('[Queues]  - job-notifications (placeholder)');
     return true;
   } catch (error) {
     console.error('[Queues] Initialization failed:', error);
