@@ -7,6 +7,7 @@ import 'dotenv/config';
 import express from 'express';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
+import compression from 'compression';
 import { createServer } from 'http';
 
 import { pool, connectedPromise, shutdown } from './config/database.js';
@@ -32,6 +33,20 @@ app.use(helmet({
     maxAge: parseInt(process.env.HSTS_MAX_AGE || '31536000', 10),
     includeSubDomains: true,
     preload: true
+  }
+}));
+
+// ✅ COMPRESSION GZIP - Réduit la taille des réponses de 70-80%
+// Essentiel pour les zones à bas débit
+app.use(compression({
+  level: 6, // Compression level (0-9): 6 = bon équilibre CPU/compression
+  threshold: 512, // Compresser seulement si réponse > 512 bytes
+  filter: (req, res) => {
+    // Ne pas compresser WebP (déjà compressé)
+    if (req.headers['accept']?.includes('image/webp')) {
+      return false;
+    }
+    return compression.filter(req, res);
   }
 }));
 
@@ -66,6 +81,8 @@ app.use(['/api/', '/auth', '/admin'], apiLimiter);
 
 import authRoutes from './routes/auth.js';
 import adminAuthRoutes from './routes/admin-auth.js';
+import adminRoutes from './routes/admin.js';
+import securityMonitoringRoutes from './routes/security-monitoring.js';
 import apiRoutes from './routes/index.js';
 
 // Mount routes both with and without the `/api` prefix so the backend
@@ -73,8 +90,14 @@ import apiRoutes from './routes/index.js';
 app.use('/api/auth', authRoutes);
 app.use('/auth', authRoutes);
 
-app.use('/api/admin', adminAuthRoutes);
-app.use('/admin', adminAuthRoutes);
+app.use('/api/admin-auth', adminAuthRoutes);
+app.use('/admin-auth', adminAuthRoutes);
+
+app.use('/api/admin', adminRoutes);
+app.use('/admin', adminRoutes);
+
+app.use('/api/security', securityMonitoringRoutes);
+app.use('/security', securityMonitoringRoutes);
 
 app.use('/api', apiRoutes);
 

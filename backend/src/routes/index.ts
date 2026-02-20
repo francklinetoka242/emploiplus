@@ -13,6 +13,10 @@
 
 import express, { Router, Request, Response } from 'express';
 import { pool } from '../config/database.js';
+import jobsRoutes from './jobsRoutes.js';
+import trainingRoutes from './trainingRoutes.js';
+import faqRoutes from './faq.routes.js';
+import servicesRoutes from './services.routes.js';
 
 const router: Router = express.Router();
 
@@ -52,5 +56,11 @@ router.get('/health/db', async (req: Request, res: Response) => {
     });
   }
 });
+
+// Mount jobs and trainings routes (module-isolated)
+router.use('/jobs', jobsRoutes);
+router.use('/trainings', trainingRoutes);
+router.use('/faqs', faqRoutes);
+router.use('/services', servicesRoutes);
 
 export default router;

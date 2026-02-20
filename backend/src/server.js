@@ -2495,7 +2495,7 @@ app.get("/api/stats", async (_, res) => {
 // Admin-only extended statistics for Super Admin (real-time overview)
 app.get('/api/admin/stats', adminAuth, async (req, res) => {
     try {
-        const [totalUsersR, totalCandidatesR, totalCompaniesR, totalJobsR, totalApplicationsR, validatedR, jobsPerCompanyR, appsPerCompanyR, recentAppsR] = await Promise.all([
+        const [totalUsersR, totalCandidatesR, totalCompaniesR, totalJobsR, totalApplicationsR, validatedR, jobsPerCompanyR, appsPerCompanyR, recentAppsR, faqsActiveR] = await Promise.all([
             pool.query("SELECT COUNT(*) FROM users WHERE COALESCE(is_deleted,false) = false"),
             pool.query("SELECT COUNT(*) FROM users WHERE LOWER(user_type) IN ('candidate','candidat')"),
             pool.query("SELECT COUNT(*) FROM users WHERE LOWER(user_type) IN ('company','entreprise')"),
@@ -2505,6 +2505,7 @@ app.get('/api/admin/stats', adminAuth, async (req, res) => {
             pool.query("SELECT j.company_id, j.company, COUNT(*) AS job_count FROM jobs j WHERE j.company_id IS NOT NULL OR j.company IS NOT NULL GROUP BY j.company_id, j.company ORDER BY job_count DESC LIMIT 50"),
             pool.query("SELECT ja.company_id, u.company_name, COUNT(*) AS applications_count FROM job_applications ja LEFT JOIN users u ON u.id = ja.company_id GROUP BY ja.company_id, u.company_name ORDER BY applications_count DESC LIMIT 50"),
             pool.query("SELECT ja.id, ja.job_id, ja.applicant_id, ja.status, ja.created_at, j.title as job_title, j.company as job_company, u.full_name as applicant_name, u.email as applicant_email FROM job_applications ja LEFT JOIN jobs j ON j.id = ja.job_id LEFT JOIN users u ON u.id = ja.applicant_id ORDER BY ja.created_at DESC LIMIT 20"),
+            pool.query("SELECT COUNT(*) FROM faqs WHERE is_visible = true"),
         ]);
         const stats = {
             total_users: parseInt(totalUsersR.rows[0].count || '0'),
@@ -2516,6 +2517,7 @@ app.get('/api/admin/stats', adminAuth, async (req, res) => {
             jobs_per_company: (jobsPerCompanyR.rows || []).map((r) => ({ company_id: r.company_id, company: r.company, job_count: parseInt(r.job_count) })),
             applications_per_company: (appsPerCompanyR.rows || []).map((r) => ({ company_id: r.company_id, company_name: r.company_name, applications_count: parseInt(r.applications_count) })),
             recent_applications: (recentAppsR.rows || []).map((r) => ({ id: r.id, job_id: r.job_id, job_title: r.job_title, job_company: r.job_company, applicant_id: r.applicant_id, applicant_name: r.applicant_name, applicant_email: r.applicant_email, status: r.status, created_at: r.created_at })),
+            total_faqs_active: parseInt(faqsActiveR.rows[0]?.count || '0'),
         };
         res.json(stats);
     }

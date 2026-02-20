@@ -200,9 +200,9 @@ const AdminDashboard = () => {
             />
             <KPICard
               icon={Bell}
-              title="Notifications"
-              value={stats.total_notifications || 0}
-              subtitle="Système"
+              title="FAQ actives"
+              value={stats.total_faqs_active || 0}
+              subtitle="Questions visibles"
               color="border-l-cyan-500"
             />
           </div>

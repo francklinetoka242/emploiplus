@@ -57,10 +57,32 @@ export default function JobSearchCompact({ onFilterChange }: JobSearchCompactPro
   const jobs = Array.isArray(jobsResponse) ? jobsResponse : (jobsResponse?.data || []);
 
   // Extracted values from jobs
+  // Compute full locations list and cities filtered by selected country
   const locations = useMemo(() => {
     const locs = new Set((jobs || []).map((j) => j.location).filter(Boolean));
     return Array.from(locs).sort() as string[];
   }, [jobs]);
+
+  const citiesForCountry = useMemo(() => {
+    if (!country) return locations;
+    // Locations are expected in format "City, Country" or similar
+    const set = new Set<string>();
+    (jobs || []).forEach((j) => {
+      const loc = String(j.location || '').trim();
+      if (!loc) return;
+      const parts = loc.split(',').map(p => p.trim()).filter(Boolean);
+      if (parts.length === 0) return;
+      const last = parts[parts.length - 1];
+      if (last.toLowerCase() === String(country).toLowerCase()) {
+        // push city or full location if no city part
+        const city = parts.slice(0, parts.length - 1).join(', ') || parts[0];
+        set.add(city);
+      }
+    });
+    // If none found, fall back to full locations
+    const arr = set.size > 0 ? Array.from(set) : locations;
+    return arr.sort();
+  }, [jobs, country, locations]);
 
   const countries = useMemo(() => {
     const set = new Set<string>();
@@ -218,11 +240,11 @@ export default function JobSearchCompact({ onFilterChange }: JobSearchCompactPro
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="none">Tous les lieux</SelectItem>
-                    {locations.map((l) => (
-                      <SelectItem key={l} value={l}>
-                        {l}
-                      </SelectItem>
-                    ))}
+                        {(country ? citiesForCountry : locations).map((l) => (
+                          <SelectItem key={l} value={l}>
+                            {l}
+                          </SelectItem>
+                        ))}
                   </SelectContent>
                 </Select>
               </div>

@@ -2,11 +2,43 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
-All colors MUST be HSL.
-*/
+/* 
+ * OPTIMISATION BAS DÉBIT (Congo)
+ * Polices système uniquement - pas de Google Fonts
+ * Charge ultra-rapide sur connexions lentes
+ */
 
 @layer base {
+  body {
+    /* System fonts stack: les plus rapides et légères */
+    /* macOS / iOS → Safari */
+    /* Windows → Edge, Chrome */
+    /* Android → Roboto natif */
+    font-family:
+      -apple-system,
+      BlinkMacSystemFont,
+      'Segoe UI',
+      'Helvetica Neue',
+      Helvetica,
+      Arial,
+      sans-serif,
+      'Apple Color Emoji',
+      'Segoe UI Emoji';
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  code,
+  pre,
+  kbd {
+    font-family:
+      'SFMono-Regular',
+      'Menlo',
+      'Monaco',
+      'Courier New',
+      monospace;
+  }
+}
   :root {
     --background: 0 0% 100%;
     --foreground: 241 100% 20%;

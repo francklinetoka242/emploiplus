@@ -12,6 +12,27 @@ export default {
         "2xl": "1400px",
       },
     },
+    // 🚀 OPTIMISATION BAS DÉBIT: Polices système uniquement
+    fontFamily: {
+      sans: [
+        '-apple-system',
+        'BlinkMacSystemFont',
+        '"Segoe UI"',
+        '"Helvetica Neue"',
+        'Helvetica',
+        'Arial',
+        'sans-serif',
+        '"Apple Color Emoji"',
+        '"Segoe UI Emoji"'
+      ],
+      mono: [
+        '"SFMono-Regular"',
+        '"Menlo"',
+        '"Monaco"',
+        '"Courier New"',
+        'monospace'
+      ]
+    },
     extend: {
       colors: {
         border: "hsl(var(--border))",

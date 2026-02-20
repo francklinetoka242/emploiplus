@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { MapPin, Briefcase, Calendar, ChevronDown, ChevronUp, Clock } from "lucide-react";
+import { MapPin, Briefcase, Calendar, ChevronDown, ChevronUp, Clock, Share2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { MatchScoreBadge } from "./MatchScoreBadge";
 
@@ -152,18 +152,57 @@ export function JobListItem({
 
         {/* Action Buttons */}
         {isExpanded && (
-          <div className="flex gap-2 pt-2">
-            <Button onClick={onApply} className="flex-1" size="sm">
-              Postuler
-            </Button>
-            <Button
-              variant="outline"
-              onClick={onToggle}
-              size="sm"
-              className="flex-1"
-            >
-              Fermer
-            </Button>
+          <div className="flex flex-col gap-2 pt-2">
+            <div className="flex gap-2">
+              {/* Deadline check: support legacy job.deadline or new job.deadline_date */}
+              {(() => {
+                const dl = job.deadline_date || job.deadline || null;
+                const expired = dl ? new Date(String(dl)).getTime() < Date.now() : false;
+                if (expired) {
+                  return (
+                    <Button disabled className="flex-1 bg-gray-100 text-gray-600" size="sm">
+                      Clôturé
+                    </Button>
+                  );
+                }
+                return (
+                  <Button onClick={onApply} className="flex-1" size="sm">
+                    Postuler
+                  </Button>
+                );
+              })()}
+
+              <Button
+                variant="outline"
+                onClick={onToggle}
+                size="sm"
+                className="flex-1"
+              >
+                Fermer
+              </Button>
+            </div>
+
+            {/* Share buttons */}
+            <div className="flex gap-2">
+              {(() => {
+                const shareUrl = typeof window !== 'undefined' ? `${window.location.origin}/recrutement/postuler/${job.id}` : `/recrutement/postuler/${job.id}`;
+                const title = String(job.title || 'Offre');
+                const text = `${title} - ${String(job.company || '')}`;
+                return (
+                  <>
+                    <Button size="sm" variant="outline" onClick={() => window.open(`https://wa.me/?text=${encodeURIComponent(text + ' ' + shareUrl)}`, '_blank')}>
+                      <Share2 className="w-4 h-4 mr-2" /> WhatsApp
+                    </Button>
+                    <Button size="sm" variant="outline" onClick={() => window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`, '_blank')}>
+                      Facebook
+                    </Button>
+                    <Button size="sm" variant="outline" onClick={() => window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}`, '_blank')}>
+                      LinkedIn
+                    </Button>
+                  </>
+                );
+              })()}
+            </div>
           </div>
         )}
       </CardContent>

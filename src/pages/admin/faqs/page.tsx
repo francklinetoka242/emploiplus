@@ -19,6 +19,9 @@ export default function AdminFaqsPage() {
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState<FAQItem | null>(null);
   const [form, setForm] = useState({ question: "", answer: "" });
+  const [category, setCategory] = useState('Général');
+  const [displayOrder, setDisplayOrder] = useState<number | undefined>(undefined);
+  const [isVisible, setIsVisible] = useState(true);
 
   useEffect(() => {
     fetchFaqs();
@@ -26,7 +29,7 @@ export default function AdminFaqsPage() {
 
   const fetchFaqs = async () => {
     try {
-      const res = await fetch("/api/faqs");
+      const res = await fetch("/api/faqs?all=true");
       const data = await res.json();
       setFaqs(data);
     } catch (err) {
@@ -41,26 +44,34 @@ export default function AdminFaqsPage() {
     e?.preventDefault();
     try {
       if (editing) {
+        const payload = { ...form, category, display_order: displayOrder, is_visible: isVisible };
         const res = await fetch(`/api/faqs/${editing.id}`, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(form),
+          body: JSON.stringify(payload),
         });
         if (res.ok) {
           toast.success("FAQ mise à jour");
           setForm({ question: "", answer: "" });
+          setCategory('Général');
+          setDisplayOrder(undefined);
+          setIsVisible(true);
           setEditing(null);
           fetchFaqs();
         }
       } else {
+        const payload = { ...form, category, display_order: displayOrder, is_visible: isVisible };
         const res = await fetch(`/api/faqs`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(form),
+          body: JSON.stringify(payload),
         });
         if (res.ok) {
           toast.success("FAQ ajoutée");
           setForm({ question: "", answer: "" });
+          setCategory('Général');
+          setDisplayOrder(undefined);
+          setIsVisible(true);
           fetchFaqs();
         }
       }
@@ -73,6 +84,9 @@ export default function AdminFaqsPage() {
   const edit = (item: FAQItem) => {
     setEditing(item);
     setForm({ question: item.question, answer: item.answer });
+    setCategory((item as any).category || 'Général');
+    setDisplayOrder((item as any).display_order || undefined);
+    setIsVisible((item as any).is_visible !== false);
   };
 
   const remove = async (id: number | string) => {
@@ -107,6 +121,25 @@ export default function AdminFaqsPage() {
             <textarea className="w-full rounded-md border p-3" rows={6} value={form.answer} onChange={(e) => setForm({ ...form, answer: e.target.value })} required />
           </div>
 
+            <div>
+              <Label>Catégorie</Label>
+              <Input value={category} onChange={(e) => setCategory(e.target.value)} placeholder="Ex: Compte, Candidature, Général" />
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <Label>Ordre d'affichage</Label>
+                <Input type="number" value={displayOrder === undefined ? '' : String(displayOrder)} onChange={(e) => setDisplayOrder(e.target.value ? parseInt(e.target.value, 10) : undefined)} />
+              </div>
+              <div>
+                <Label>Visible</Label>
+                <div className="flex items-center gap-2">
+                  <input type="checkbox" checked={isVisible} onChange={(e) => setIsVisible(e.target.checked)} />
+                  <span className="text-sm text-muted-foreground">Afficher publiquement</span>
+                </div>
+              </div>
+            </div>
+
           <div className="flex gap-3">
             <Button type="submit" className="bg-green-600 hover:bg-green-700">{editing ? "Mettre à jour" : "Ajouter"}</Button>
             {editing && (
@@ -129,6 +162,7 @@ export default function AdminFaqsPage() {
               <div>
                 <h3 className="font-bold text-lg mb-1">{f.question}</h3>
                 <p className="text-sm text-muted-foreground">{f.answer}</p>
+                <div className="text-xs text-muted-foreground mt-2">Catégorie: {(f as any).category || 'Général'} • Visible: {(f as any).is_visible !== false ? 'Oui' : 'Non'}</div>
               </div>
 
               <div className="flex flex-col items-end gap-2">

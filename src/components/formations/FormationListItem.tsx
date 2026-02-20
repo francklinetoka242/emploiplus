@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { BookOpen, MapPin, Calendar, ChevronDown, ChevronUp, Award } from "lucide-react";
+import { BookOpen, MapPin, Calendar, ChevronDown, ChevronUp, Award, Share2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface FormationItemProps {
@@ -152,24 +152,47 @@ export function FormationListItem({
 
         {/* Action Buttons */}
         {isExpanded && (
-          <div className="flex gap-2 pt-2">
-            <Button
-              onClick={onEnroll}
-              disabled={isDeadlinePassed() || isEnrolled}
-              className="flex-1"
-              size="sm"
-              variant={isEnrolled ? "outline" : "default"}
-            >
-              {isEnrolled ? "✓ Inscrit" : "S'inscrire"}
-            </Button>
-            <Button
-              variant="outline"
-              onClick={onToggle}
-              size="sm"
-              className="flex-1"
-            >
-              Fermer
-            </Button>
+          <div className="flex flex-col gap-2 pt-2">
+            <div className="flex gap-2">
+              <Button
+                onClick={onEnroll}
+                disabled={isDeadlinePassed() || isEnrolled}
+                className="flex-1"
+                size="sm"
+                variant={isEnrolled ? "outline" : "default"}
+              >
+                {isEnrolled ? "✓ Inscrit" : "S'inscrire"}
+              </Button>
+              <Button
+                variant="outline"
+                onClick={onToggle}
+                size="sm"
+                className="flex-1"
+              >
+                Fermer
+              </Button>
+            </div>
+
+            <div className="flex gap-2">
+              {(() => {
+                const shareUrl = typeof window !== 'undefined' ? `${window.location.origin}/formations/${formation.id}` : `/formations/${formation.id}`;
+                const title = String(formation.title || 'Formation');
+                const text = `${title} - ${String(formation.provider || '')}`;
+                return (
+                  <>
+                    <Button size="sm" variant="outline" onClick={() => window.open(`https://wa.me/?text=${encodeURIComponent(text + ' ' + shareUrl)}`, '_blank')}>
+                      <Share2 className="w-4 h-4 mr-2" /> WhatsApp
+                    </Button>
+                    <Button size="sm" variant="outline" onClick={() => window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`, '_blank')}>
+                      Facebook
+                    </Button>
+                    <Button size="sm" variant="outline" onClick={() => window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}`, '_blank')}>
+                      LinkedIn
+                    </Button>
+                  </>
+                );
+              })()}
+            </div>
           </div>
         )}
       </CardContent>

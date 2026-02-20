@@ -53,7 +53,7 @@ async function initDatabase() {
         title TEXT NOT NULL,
         company TEXT NOT NULL,
         company_id INTEGER,
-        location TEXT NOT NULL,
+        location TEXT NOT NULL, -- format: "Ville, Pays"
         sector TEXT,
         type TEXT NOT NULL,
         salary TEXT,
@@ -62,6 +62,7 @@ async function initDatabase() {
         application_url TEXT,
         application_via_emploi BOOLEAN DEFAULT false,
         deadline TIMESTAMP,
+        deadline_date TIMESTAMP,
         is_company_owned BOOLEAN DEFAULT false,
         published BOOLEAN DEFAULT false,
         published_at TIMESTAMP NULL,
@@ -81,11 +82,43 @@ async function initDatabase() {
         price TEXT,
         description TEXT NOT NULL,
         image_url TEXT,
+        enrollment_deadline TIMESTAMP,
         published BOOLEAN DEFAULT false,
         published_at TIMESTAMP NULL,
         created_at TIMESTAMP DEFAULT NOW()
       )
     `);
+
+        // Create a new 'trainings' table to match requested schema (French: formations compatibility)
+        console.log("📝 Création de la table trainings...");
+        await pool.query(`DROP TABLE IF EXISTS trainings CASCADE`);
+        await pool.query(`
+      CREATE TABLE trainings (
+        id SERIAL PRIMARY KEY,
+        name TEXT NOT NULL,
+        provider TEXT NOT NULL,
+        modalities TEXT NOT NULL,
+        description TEXT,
+        image_url TEXT,
+        deadline_date TIMESTAMP,
+        created_at TIMESTAMP DEFAULT NOW()
+      )
+    `);
+
+        console.log("📝 Création de la table faqs...");
+        await pool.query(`DROP TABLE IF EXISTS faqs CASCADE`);
+        await pool.query(`
+      CREATE TABLE faqs (
+        id SERIAL PRIMARY KEY,
+        category TEXT NOT NULL,
+        question TEXT NOT NULL,
+        answer TEXT NOT NULL,
+        display_order INTEGER DEFAULT 0,
+        is_visible BOOLEAN DEFAULT true,
+        created_at TIMESTAMP DEFAULT NOW()
+      )
+    `);
+        console.log("✅ Table faqs créée\n");
         console.log("✅ Table formations créée\n");
         console.log("📝 Création de la table portfolios...");
         await pool.query(`DROP TABLE IF EXISTS portfolios CASCADE`);
