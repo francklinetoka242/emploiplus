@@ -38,12 +38,12 @@ export default function AdminRegister(): JSX.Element {
 
     setLoading(true);
     try {
-      const resp = await fetch(buildApiUrl('/auth/admin/register'), {
+      const resp = await fetch(buildApiUrl('/api/auth/admin/register'), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          firstName: form.firstName,
-          lastName: form.lastName,
+          first_name: form.firstName,
+          last_name: form.lastName,
           email: form.email,
           password: form.password,
         }),

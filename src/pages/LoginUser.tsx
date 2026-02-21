@@ -33,7 +33,7 @@ const LoginUser = () => {
     setLoading(true);
     
     try {
-      const response = await fetch(buildApiUrl('/auth/admin/login'), {
+      const response = await fetch(buildApiUrl('/api/auth/user/login'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password })

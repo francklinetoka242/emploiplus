@@ -33,12 +33,12 @@ export default function AdminRegister() {
     setLoading(true);
 
     try {
-      const res = await fetch(buildApiUrl("/admin/register"), {
+      const res = await fetch(buildApiUrl("/api/auth/admin/register"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          firstName: form.fullName || "",
-          lastName: "",
+          first_name: form.fullName || "",
+          last_name: "",
           email: form.email,
           password: form.password,
         }),

@@ -44,8 +44,8 @@ export default function RegisterForm({ role, title, color }: Props) {
         }
 
         const body = {
-          firstName: form.prenom,
-          lastName: form.nom,
+          first_name: form.prenom,
+          last_name: form.nom,
           email: form.email,
           password: form.password,
         };
@@ -55,7 +55,7 @@ export default function RegisterForm({ role, title, color }: Props) {
         console.log('   form.prenom:', form.prenom);
         console.log('   form.email:', form.email);
 
-        const res = await fetch(buildApiUrl('/auth/super-admin/register'), {
+        const res = await fetch(buildApiUrl('/api/auth/admin/register'), {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(body),

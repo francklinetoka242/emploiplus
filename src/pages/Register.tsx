@@ -77,29 +77,16 @@ const Register = () => {
 
     setLoading(true);
 
-    const metadata = {
-      full_name: `${candidatForm.firstName} ${candidatForm.lastName}`.trim(),
-      user_type: "candidate",
-      country: candidatForm.country,
-      ...(candidatForm.phone && { phone: candidatForm.phone }),
-      ...(candidatForm.city && { city: candidatForm.city }),
-      ...(candidatForm.gender && { gender: candidatForm.gender }),
-      ...(candidatForm.birthdate && { birthdate: candidatForm.birthdate }),
-    };
-
     try {
-      const resp = await fetch(buildApiUrl('/auth/admin/register'), {
+      const resp = await fetch(buildApiUrl('/api/auth/user/register'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          first_name: candidatForm.firstName,
+          last_name: candidatForm.lastName,
           email: candidatForm.email,
           password: candidatForm.password,
-          full_name: `${candidatForm.firstName} ${candidatForm.lastName}`.trim(),
-          country: candidatForm.country,
-          city: candidatForm.city,
-          phone: candidatForm.phone,
-          metadata,
-          role: 'admin'
+          user_type: 'candidate'
         })
       });
 
@@ -150,27 +137,16 @@ const Register = () => {
 
     setLoading(true);
 
-    const metadata = {
-      full_name: entrepriseForm.representative || entrepriseForm.companyName,
-      user_type: "company",
-      company_name: entrepriseForm.companyName,
-      company_address: entrepriseForm.address,
-      country: 'congo'
-    };
-
     try {
-      const resp = await fetch(buildApiUrl('/auth/admin/register'), {
+      const resp = await fetch(buildApiUrl('/api/auth/user/register'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          first_name: entrepriseForm.representative || entrepriseForm.companyName,
+          last_name: entrepriseForm.companyName,
           email: entrepriseForm.email,
           password: entrepriseForm.password,
-          full_name: entrepriseForm.representative || entrepriseForm.companyName,
-          country: 'congo',
-          company_name: entrepriseForm.companyName,
-          company_address: entrepriseForm.address,
-          role: 'admin',
-          metadata,
+          user_type: 'company'
         })
       });
 
