@@ -35,7 +35,7 @@ router.get('/status', authenticateToken, async (req: Request, res: Response) => 
 
     // Chercher dans les admins ou les users selon le rôle
     let userData;
-    if (userRole === 'admin' || userRole === 'super_admin') {
+    if ((userRole as any) === 'admin' || (userRole as any) === 'super_admin') {
       const { rows } = await pool.query('SELECT id, email, first_name, last_name, role FROM admins WHERE id = $1', [userId]);
       userData = rows[0];
     } else {
