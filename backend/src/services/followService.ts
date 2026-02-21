@@ -369,7 +369,7 @@ export async function isFollowing(
 // Get followed users
 export async function getFollowingUsers(user_id: string): Promise<UserProfile[]> {
   const result = await pool.query(
-    `SELECT u.id, u.full_name, u.profile_image_url, u.bio, u.profession, u.user_type, u.company_name, u.skills, u.experience_years
+    `SELECT u.id, u.first_name, u.last_name, u.profile_image_url, u.bio, u.profession, u.user_type, u.company_name, u.skills, u.experience_years
      FROM users u
      INNER JOIN follows f ON u.id = f.following_id
      WHERE f.follower_id = $1 AND u.is_deleted = false
@@ -377,13 +377,16 @@ export async function getFollowingUsers(user_id: string): Promise<UserProfile[]>
     [user_id]
   );
 
-  return result.rows;
+  return result.rows.map((r: any) => ({
+    ...r,
+    full_name: `${(r.first_name || '').trim()} ${(r.last_name || '').trim()}`.trim()
+  }));
 }
 
 // Get follower users
 export async function getFollowerUsers(user_id: string): Promise<UserProfile[]> {
   const result = await pool.query(
-    `SELECT u.id, u.full_name, u.profile_image_url, u.bio, u.profession, u.user_type, u.company_name, u.skills, u.experience_years
+    `SELECT u.id, u.first_name, u.last_name, u.profile_image_url, u.bio, u.profession, u.user_type, u.company_name, u.skills, u.experience_years
      FROM users u
      INNER JOIN follows f ON u.id = f.follower_id
      WHERE f.following_id = $1 AND u.is_deleted = false
@@ -391,5 +394,8 @@ export async function getFollowerUsers(user_id: string): Promise<UserProfile[]> 
     [user_id]
   );
 
-  return result.rows;
+  return result.rows.map((r: any) => ({
+    ...r,
+    full_name: `${(r.first_name || '').trim()} ${(r.last_name || '').trim()}`.trim()
+  }));
 }
