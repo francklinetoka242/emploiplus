@@ -108,7 +108,7 @@ const server = app.listen(Number(PORT), '0.0.0.0', () => {
   const rawApiBase = (process.env.API_BASE_URL || process.env.VITE_API_URL || 'https://emploiplus-group.com').toString();
   const apiDisplay = rawApiBase.replace(/\/+$/g, '').replace(/\/api$/g, '') + '/api';
   console.log(`📡 URL API : ${apiDisplay}`);
-  console.log(`🏠 Frontend autorisé : ${allowedOrigin}`);
+  
   console.log(`🛠️  Mode : ${process.env.NODE_ENV || 'production'}`);
   console.log('==============================================');
 });
