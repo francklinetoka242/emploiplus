@@ -128,7 +128,8 @@ export class NewsfeedService {
           p.comments_count,
           p.moderation_status,
           p.contains_unmoderated_profanity,
-          u.full_name,
+          u.first_name,
+          u.last_name,
           u.company_name,
           u.profile_image_url,
           u.user_type,
@@ -211,6 +212,8 @@ export class NewsfeedService {
 
         // FILTRE 4: Appliquer le masquage par discreet mode (anonymisation)
         if (discreetModeResult.shouldMask) {
+          pub.first_name = 'Utilisateur';
+          pub.last_name = 'anonyme';
           pub.full_name = 'Utilisateur anonyme';
           pub.profile_image_url = null;
           pub.user_type = 'candidate'; // Ne pas révéler le type d'utilisateur

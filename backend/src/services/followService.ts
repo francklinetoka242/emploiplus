@@ -24,7 +24,9 @@ export interface Block {
 
 export interface UserProfile {
   id: string;
-  full_name: string;
+  first_name?: string;
+  last_name?: string;
+  full_name?: string;
   profile_image_url?: string;
   bio?: string;
   profession?: string;
@@ -135,7 +137,7 @@ export async function getSuggestions(
   try {
     // Get user profile
     const userResult = await pool.query(
-      'SELECT id, full_name, profile_image_url, bio, profession, user_type, company_name, skills, experience_years FROM users WHERE id = $1',
+      'SELECT id, first_name, last_name, profile_image_url, bio, profession, user_type, company_name, skills, experience_years FROM users WHERE id = $1',
       [user_id]
     );
 
@@ -159,7 +161,7 @@ export async function getSuggestions(
     const blockedIds = blockedResult.rows.map((r) => r.blocked_user_id);
 
     const allUsersResult = await pool.query(
-      `SELECT id, full_name, profile_image_url, bio, profession, user_type, company_name, skills, experience_years
+      `SELECT id, first_name, last_name, profile_image_url, bio, profession, user_type, company_name, skills, experience_years
        FROM users
        WHERE id != $1 AND is_deleted = false AND is_blocked = false
        ORDER BY created_at DESC
@@ -213,7 +215,9 @@ export async function getSuggestions(
         suggestions.push({
           user: {
             id: candidate.id,
-            full_name: candidate.full_name,
+            first_name: candidate.first_name,
+            last_name: candidate.last_name,
+            full_name: `${(candidate.first_name||'').trim()} ${(candidate.last_name||'').trim()}`.trim(),
             profile_image_url: candidate.profile_image_url,
             bio: candidate.bio,
             profession: candidate.profession,
@@ -264,7 +268,8 @@ export async function getNetworkActivity(
         'publication' as type,
         p.id::text,
         p.author_id,
-        u.full_name,
+        u.first_name,
+        u.last_name,
         u.profile_image_url,
         u.profession,
         u.user_type,
@@ -283,7 +288,9 @@ export async function getNetworkActivity(
       type: row.type,
       actor: {
         id: row.author_id,
-        full_name: row.full_name,
+        first_name: row.first_name,
+        last_name: row.last_name,
+        full_name: `${(row.first_name||'').trim()} ${(row.last_name||'').trim()}`.trim(),
         profile_image_url: row.profile_image_url,
         profession: row.profession,
         user_type: row.user_type,

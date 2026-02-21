@@ -237,23 +237,15 @@ export async function deleteTraining(req: Request, res: Response) {
 
 export async function listFAQs(req: Request, res: Response) {
   try {
-    const { category, is_active } = req.query;
-
-    let query = 'SELECT id, category, question, answer, order_position, is_active, created_at, updated_at FROM faqs WHERE 1=1';
-    const values = [];
-
-    if (category) {
-      query += ` AND category = $${values.length + 1}`;
-      values.push(category);
+    // FAQ schema is now strict: id, question, answer, published
+    const { published } = req.query;
+    const values: any[] = [];
+    let query = 'SELECT id, question, answer, published, created_at, updated_at FROM faqs WHERE 1=1';
+    if (published !== undefined) {
+      values.push(published === 'true');
+      query += ` AND published = $${values.length}`;
     }
-
-    if (is_active !== undefined) {
-      query += ` AND is_active = $${values.length + 1}`;
-      values.push(is_active === 'true');
-    }
-
-    query += ` ORDER BY category, order_position`;
-
+    query += ' ORDER BY id ASC';
     const result = await pool.query(query, values);
     res.json(result.rows || []);
   } catch (error) {
@@ -264,13 +256,13 @@ export async function listFAQs(req: Request, res: Response) {
 
 export async function createFAQ(req: Request, res: Response) {
   try {
-    const { category, question, answer, order_position } = req.body;
+    const { question, answer, published = true } = req.body;
 
     const result = await pool.query(
-      `INSERT INTO faqs (category, question, answer, order_position, created_at, updated_at)
-       VALUES ($1, $2, $3, $4, NOW(), NOW())
-       RETURNING *`,
-      [category, question, answer, order_position || 0]
+      `INSERT INTO faqs (question, answer, published, created_at, updated_at)
+       VALUES ($1, $2, $3, NOW(), NOW())
+       RETURNING id, question, answer, published`,
+      [question, answer, published]
     );
 
     if (req.admin) {
@@ -287,14 +279,13 @@ export async function createFAQ(req: Request, res: Response) {
 export async function updateFAQ(req: Request, res: Response) {
   try {
     const { id } = req.params;
-    const { category, question, answer, order_position, is_active } = req.body;
+    const { question, answer, published } = req.body;
 
     const result = await pool.query(
-      `UPDATE faqs SET category = COALESCE($1, category), question = COALESCE($2, question),
-                       answer = COALESCE($3, answer), order_position = COALESCE($4, order_position),
-                       is_active = COALESCE($5, is_active), updated_at = NOW()
-       WHERE id = $6 RETURNING *`,
-      [category, question, answer, order_position, is_active, id]
+      `UPDATE faqs SET question = COALESCE($1, question), answer = COALESCE($2, answer),
+                       published = COALESCE($3, published), updated_at = NOW()
+       WHERE id = $4 RETURNING id, question, answer, published`,
+      [question, answer, published, id]
     );
 
     if (result.rows.length === 0) {

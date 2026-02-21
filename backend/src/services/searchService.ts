@@ -40,7 +40,7 @@ export class SearchService {
           ts_rank(search_vector, to_tsquery('french', $1)) as rank
         FROM jobs
         WHERE search_vector @@ to_tsquery('french', $1)
-          AND is_active = true
+          AND published = true
         ORDER BY rank DESC, created_at DESC
         LIMIT $2`,
         [tsQuery, limit]
@@ -63,7 +63,7 @@ export class SearchService {
       `SELECT id, title, description, company_name
        FROM jobs
        WHERE (title ILIKE $1 OR description ILIKE $1 OR company_name ILIKE $1)
-         AND is_active = true
+         AND published = true
        LIMIT $2`,
       [pattern, limit]
     );
@@ -126,7 +126,8 @@ export class SearchService {
       const result = await this.pool.query(
         `SELECT 
           id, 
-          full_name, 
+          first_name,
+          last_name,
           company_name, 
           profession,
           profile_image_url,
@@ -141,7 +142,8 @@ export class SearchService {
         [tsQuery, limit]
       );
 
-      return result.rows;
+      // Map to include a compatible `full_name` for consumers
+      return result.rows.map((r: any) => ({ ...r, full_name: `${(r.first_name||'').trim()} ${(r.last_name||'').trim()}`.trim() }));
     } catch (error) {
       console.error('searchUsers error:', error);
       // Fallback sur LIKE
@@ -155,14 +157,15 @@ export class SearchService {
   private async searchUsersLike(query: string, limit: number) {
     const pattern = `%${query}%`;
     const result = await this.pool.query(
-      `SELECT id, full_name, company_name, profession, profile_image_url, user_type, city
+      `SELECT id, first_name, last_name, company_name, profession, profile_image_url, user_type, city
        FROM users
-       WHERE (full_name ILIKE $1 OR company_name ILIKE $1 OR profession ILIKE $1 OR job_title ILIKE $1)
+       WHERE ((first_name || ' ' || COALESCE(last_name,'')) ILIKE $1 OR company_name ILIKE $1 OR profession ILIKE $1 OR job_title ILIKE $1)
          AND is_deleted = false
        LIMIT $2`,
       [pattern, limit]
     );
-    return result.rows;
+
+    return result.rows.map((r: any) => ({ ...r, full_name: `${(r.first_name||'').trim()} ${(r.last_name||'').trim()}`.trim() }));
   }
 
   /**

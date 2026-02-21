@@ -95,8 +95,8 @@ export async function getConversations(
   try {
     const result = await pool.query(
       `SELECT c.*, 
-        u1.id as participant1_id, u1.full_name as p1_name, u1.profile_image_url as p1_image, u1.user_type as p1_type,
-        u2.id as participant2_id, u2.full_name as p2_name, u2.profile_image_url as p2_image, u2.user_type as p2_type
+        u1.id as participant1_id, u1.first_name as p1_first, u1.last_name as p1_last, u1.profile_image_url as p1_image, u1.user_type as p1_type,
+        u2.id as participant2_id, u2.first_name as p2_first, u2.last_name as p2_last, u2.profile_image_url as p2_image, u2.user_type as p2_type
        FROM conversations c
        LEFT JOIN users u1 ON c.participant1_id = u1.id
        LEFT JOIN users u2 ON c.participant2_id = u2.id
@@ -115,13 +115,17 @@ export async function getConversations(
       last_message_at: row.last_message_at,
       participant1: {
         id: row.participant1_id,
-        full_name: row.p1_name,
+        first_name: row.p1_first,
+        last_name: row.p1_last,
+        full_name: `${(row.p1_first||'').trim()} ${(row.p1_last||'').trim()}`.trim(),
         profile_image_url: row.p1_image,
         user_type: row.p1_type,
       },
       participant2: {
         id: row.participant2_id,
-        full_name: row.p2_name,
+        first_name: row.p2_first,
+        last_name: row.p2_last,
+        full_name: `${(row.p2_first||'').trim()} ${(row.p2_last||'').trim()}`.trim(),
         profile_image_url: row.p2_image,
         user_type: row.p2_type,
       },
@@ -140,7 +144,7 @@ export async function getMessages(
 ): Promise<Message[]> {
   try {
     const result = await pool.query(
-      `SELECT m.*, u.full_name, u.profile_image_url
+      `SELECT m.*, u.first_name, u.last_name, u.profile_image_url
        FROM messages m
        LEFT JOIN users u ON m.sender_id = u.id
        WHERE m.conversation_id = $1 AND m.is_deleted = false
@@ -163,7 +167,9 @@ export async function getMessages(
       updated_at: row.updated_at,
       sender: {
         id: row.sender_id,
-        full_name: row.full_name,
+        first_name: row.first_name,
+        last_name: row.last_name,
+        full_name: `${(row.first_name||'').trim()} ${(row.last_name||'').trim()}`.trim(),
         profile_image_url: row.profile_image_url,
       },
     }));
