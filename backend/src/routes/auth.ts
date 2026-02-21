@@ -232,12 +232,12 @@ router.post('/admin/login', async (req: Request, res: Response) => {
  */
 router.post('/user/register', async (req: Request, res: Response) => {
   try {
-    const { full_name, email, password, user_type = 'candidate' } = req.body;
+    const { first_name, last_name, email, password, user_type = 'candidate' } = req.body;
 
-    if (!full_name || !email || !password) {
+    if (!first_name || !last_name || !email || !password) {
       return res.status(400).json({
         success: false,
-        message: 'Tous les champs sont requis',
+        message: 'Prénom, nom, email et mot de passe sont requis',
       });
     }
 
@@ -246,7 +246,7 @@ router.post('/user/register', async (req: Request, res: Response) => {
     }
 
     // Check if user already exists
-    const { rows: existing } = await pool.query('SELECT id, email FROM users WHERE email = $1', [email]);
+    const { rows: existing } = await pool.query('SELECT id, email FROM users WHERE email = $1', [email.toLowerCase()]);
     if (existing.length > 0) {
       return res.status(400).json({ success: false, message: 'Cet email est déjà utilisé' });
     }
@@ -254,14 +254,14 @@ router.post('/user/register', async (req: Request, res: Response) => {
     // Hash password
     const hashed = await hashPassword(password);
 
-    // Insert user
+    // Insert user with first_name/last_name columns
     const insertQuery = `
-      INSERT INTO users (full_name, email, password, user_type, created_at, updated_at)
-      VALUES ($1, $2, $3, $4, NOW(), NOW())
-      RETURNING id, full_name, email, user_type, created_at, updated_at
+      INSERT INTO users (first_name, last_name, email, password, user_type, created_at, updated_at)
+      VALUES ($1, $2, $3, $4, $5, NOW(), NOW())
+      RETURNING id, first_name, last_name, email, user_type, created_at, updated_at
     `;
 
-    const { rows } = await pool.query(insertQuery, [full_name, email, hashed, user_type]);
+    const { rows } = await pool.query(insertQuery, [first_name, last_name, email.toLowerCase(), hashed, user_type]);
     const user = rows[0];
 
     // Generate JWT
@@ -329,7 +329,7 @@ router.post('/user/login', async (req: Request, res: Response) => {
  */
 router.post('/sync-google', async (req: Request, res: Response) => {
   try {
-    const { id, email, full_name, profile_image_url, user_type = 'candidate' } = req.body;
+    const { id, email, full_name, first_name, last_name, profile_image_url, user_type = 'candidate' } = req.body;
 
     if (!id || !email) {
       return res.status(400).json({
@@ -355,25 +355,33 @@ router.post('/sync-google', async (req: Request, res: Response) => {
     if (existing.length > 0) {
       // Update existing user with new info but preserve user_type if already set
       const existingUserType = existing[0].user_type || normalizedUserType;
-      
+      // Prefer explicit first_name/last_name when provided, otherwise try to split full_name
+      const fn = first_name || (full_name ? full_name.split(' ')[0] : existing[0].first_name);
+      const ln = last_name || (full_name ? full_name.split(' ').slice(1).join(' ') : existing[0].last_name);
+
       const { rows: updatedUser } = await pool.query(
         `UPDATE users 
-         SET full_name = COALESCE($1, full_name),
-             profile_image_url = COALESCE($2, profile_image_url),
+         SET first_name = COALESCE($1, first_name),
+             last_name = COALESCE($2, last_name),
+             profile_image_url = COALESCE($3, profile_image_url),
              last_login = NOW()
-         WHERE email = $3
-         RETURNING id, email, full_name, user_type, profile_image_url`,
-        [full_name || existing[0].full_name, profile_image_url, email]
+         WHERE email = $4
+         RETURNING id, email, first_name, last_name, user_type, profile_image_url`,
+        [fn, ln, profile_image_url, email]
       );
       user = updatedUser[0];
       console.log(`[Google Sync] ✅ Updated existing user: ${email}`);
     } else {
       // Create new user from Google OAuth
+      // Determine first and last names
+      const fn = first_name || (full_name ? full_name.split(' ')[0] : email.split('@')[0]);
+      const ln = last_name || (full_name ? full_name.split(' ').slice(1).join(' ') : '');
+
       const { rows: newUser } = await pool.query(
-        `INSERT INTO users (id, email, full_name, user_type, profile_image_url, created_at)
-         VALUES ($1, $2, $3, $4, $5, NOW())
-         RETURNING id, email, full_name, user_type, profile_image_url`,
-        [id, email, full_name || email.split('@')[0], normalizedUserType, profile_image_url]
+        `INSERT INTO users (id, email, first_name, last_name, user_type, profile_image_url, created_at)
+         VALUES ($1, $2, $3, $4, $5, $6, NOW())
+         RETURNING id, email, first_name, last_name, user_type, profile_image_url`,
+        [id, email, fn, ln, normalizedUserType, profile_image_url]
       );
       user = newUser[0];
       console.log(`[Google Sync] ✅ Created new user: ${email} as ${normalizedUserType}`);

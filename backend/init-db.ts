@@ -12,7 +12,8 @@ async function initDatabase() {
     await pool.query(`
       CREATE TABLE users (
         id SERIAL PRIMARY KEY,
-        full_name TEXT NOT NULL,
+        first_name TEXT NOT NULL,
+        last_name TEXT NOT NULL,
         email TEXT UNIQUE NOT NULL,
         password TEXT NOT NULL,
         user_type TEXT NOT NULL DEFAULT 'candidate',
@@ -54,7 +55,8 @@ async function initDatabase() {
         id SERIAL PRIMARY KEY,
         email TEXT UNIQUE NOT NULL,
         password TEXT NOT NULL,
-        full_name TEXT NOT NULL,
+        first_name TEXT NOT NULL,
+        last_name TEXT NOT NULL,
         role TEXT DEFAULT 'admin',
         created_at TIMESTAMP DEFAULT NOW()
       )
@@ -331,15 +333,15 @@ async function initDatabase() {
     // Super Admin
     const adminPassword = bcrypt.hashSync("admin123", 10);
     await pool.query(
-      `INSERT INTO admins (email, password, full_name, role) VALUES ($1, $2, $3, $4)`,
-      ["admin@emploi.cg", adminPassword, "Administrateur Principal", "super_admin"]
+      `INSERT INTO admins (email, password, first_name, last_name, role) VALUES ($1, $2, $3, $4, $5)`,
+      ["admin@emploi.cg", adminPassword, "Administrateur", "Principal", "super_admin"]
     );
     console.log("✅ Super Admin créé (admin@emploi.cg / admin123)");
 
     // Admin contenu
     await pool.query(
-      `INSERT INTO admins (email, password, full_name, role) VALUES ($1, $2, $3, $4)`,
-      ["contenu@emploi.cg", bcrypt.hashSync("contenu123", 10), "Admin Contenu", "admin_content"]
+      `INSERT INTO admins (email, password, first_name, last_name, role) VALUES ($1, $2, $3, $4, $5)`,
+      ["contenu@emploi.cg", bcrypt.hashSync("contenu123", 10), "Admin", "Contenu", "admin_content"]
     );
     console.log("✅ Admin Contenu créé (contenu@emploi.cg / contenu123)");
 
@@ -348,17 +350,17 @@ async function initDatabase() {
     
     // Candidat
     await pool.query(
-      `INSERT INTO users (full_name, email, password, user_type, phone, profession) 
-       VALUES ($1, $2, $3, $4, $5, $6)`,
-      ["Jean Dupont", "jean@example.com", userPassword, "candidate", "+242 06 123 45 67", "Développeur Full Stack"]
+      `INSERT INTO users (first_name, last_name, email, password, user_type, phone, profession) 
+       VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+      ["Jean", "Dupont", "jean@example.com", userPassword, "candidate", "+242 06 123 45 67", "Développeur Full Stack"]
     );
     console.log("✅ Candidat créé (jean@example.com / user123)");
 
     // Entreprise
     await pool.query(
-      `INSERT INTO users (full_name, email, password, user_type, phone, company_name, company_address) 
-       VALUES ($1, $2, $3, $4, $5, $6, $7)`,
-      ["Tech Solutions", "contact@techsolutions.com", userPassword, "company", "+242 06 987 65 43", "Tech Solutions SARL", "Brazzaville, Congo"]
+      `INSERT INTO users (first_name, last_name, email, password, user_type, phone, company_name, company_address) 
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
+      ["Tech", "Solutions", "contact@techsolutions.com", userPassword, "company", "+242 06 987 65 43", "Tech Solutions SARL", "Brazzaville, Congo"]
     );
     console.log("✅ Entreprise créée (contact@techsolutions.com / user123)");
 

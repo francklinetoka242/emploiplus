@@ -44,10 +44,10 @@ export const registerAdmin = async (req: Request, res: Response) => {
     const verificationToken = crypto.randomBytes(32).toString('hex');
 
     const { rows } = await pool.query(`
-        INSERT INTO admins (email, password, nom, prenom, telephone, pays, ville, date_naissance, avatar_url, role, verification_token, is_verified, created_at)
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, false, NOW())
-        RETURNING id, email, nom, prenom, role, created_at`, 
-    [email.toLowerCase(), hashed, nom || '', prenom || '', telephone, pays, ville, date_naissance, avatar_url, role, verificationToken]);
+      INSERT INTO admins (email, password, first_name, last_name, telephone, pays, ville, date_naissance, avatar_url, role, verification_token, is_verified, created_at)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, false, NOW())
+      RETURNING id, email, first_name, last_name, role, created_at`, 
+    [email.toLowerCase(), hashed, prenom || '', nom || '', telephone, pays, ville, date_naissance, avatar_url, role, verificationToken]);
 
     const admin = rows[0];
 
@@ -83,7 +83,7 @@ export const registerAdmin = async (req: Request, res: Response) => {
     return res.status(201).json({
       success: true,
       message: 'Admin créé. Un email de vérification a été envoyé.',
-      admin: { id: admin.id, email: admin.email, role: admin.role }
+      admin: { id: admin.id, email: admin.email, first_name: admin.first_name, last_name: admin.last_name, role: admin.role }
     });
   } catch (err) {
     console.error('Register admin error:', err);
@@ -119,9 +119,9 @@ export const loginAdmin = async (req: Request, res: Response) => {
  */
 export const registerUser = async (req: Request, res: Response) => {
   try {
-    const { full_name, email, password, user_type = 'candidate', company_name = null } = req.body;
+    const { first_name, last_name, email, password, user_type = 'candidate', company_name = null } = req.body;
 
-    if (!full_name || !email || !password) {
+    if (!first_name || !last_name || !email || !password) {
       return res.status(400).json({ success: false, message: 'Champs obligatoires manquants' });
     }
 
@@ -132,10 +132,10 @@ export const registerUser = async (req: Request, res: Response) => {
 
     const hashed = await hashPassword(password);
     const { rows } = await pool.query(`
-        INSERT INTO users (full_name, email, password, user_type, company_name, created_at)
-        VALUES ($1, $2, $3, $4, $5, NOW())
-        RETURNING id, full_name, email, user_type`, 
-    [full_name, email.toLowerCase(), hashed, user_type, company_name]);
+      INSERT INTO users (first_name, last_name, email, password, user_type, company_name, created_at)
+      VALUES ($1, $2, $3, $4, $5, $6, NOW())
+      RETURNING id, first_name, last_name, email, user_type`, 
+    [first_name, last_name, email.toLowerCase(), hashed, user_type, company_name]);
 
     const user = rows[0];
     const token = generateToken(user.id, user.user_type);

@@ -7,10 +7,11 @@ async function initDatabase() {
         // 1. Créer/recréer la table users correctement
         console.log("📝 Création de la table users...");
         await pool.query(`DROP TABLE IF EXISTS users CASCADE`);
-        await pool.query(`
-      CREATE TABLE users (
-        id SERIAL PRIMARY KEY,
-        full_name TEXT NOT NULL,
+        await pool.query(
+          `INSERT INTO admins (email, password, first_name, last_name, role) VALUES ($1, $2, $3, $4, $5)`,
+          ["admin@emploi.cg", adminPassword, "Administrateur", "Principal", "super_admin"]
+        );
+        last_name TEXT NOT NULL,
         email TEXT UNIQUE NOT NULL,
         password TEXT NOT NULL,
         user_type TEXT NOT NULL DEFAULT 'candidate',
@@ -33,12 +34,13 @@ async function initDatabase() {
         // 2. Créer/recréer la table admins
         console.log("📝 Création de la table admins...");
         await pool.query(`DROP TABLE IF EXISTS admins CASCADE`);
-        await pool.query(`
-      CREATE TABLE admins (
-        id SERIAL PRIMARY KEY,
-        email TEXT UNIQUE NOT NULL,
+        await pool.query(
+          `INSERT INTO admins (email, password, first_name, last_name, role) VALUES ($1, $2, $3, $4, $5)`,
+          ["contenu@emploi.cg", bcrypt.hashSync("contenu123", 10), "Admin", "Contenu", "admin_content"]
+        );
         password TEXT NOT NULL,
-        full_name TEXT NOT NULL,
+        first_name TEXT NOT NULL,
+        last_name TEXT NOT NULL,
         role TEXT DEFAULT 'admin',
         created_at TIMESTAMP DEFAULT NOW()
       )
@@ -47,11 +49,11 @@ async function initDatabase() {
         // 3. Créer les autres tables si elles n'existent pas
         console.log("📝 Création de la table jobs...");
         await pool.query(`DROP TABLE IF EXISTS jobs CASCADE`);
-        await pool.query(`
-      CREATE TABLE jobs (
-        id SERIAL PRIMARY KEY,
-        title TEXT NOT NULL,
-        company TEXT NOT NULL,
+        await pool.query(
+          `INSERT INTO users (first_name, last_name, email, password, user_type, phone, profession) 
+           VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+          ["Jean", "Dupont", "jean@example.com", userPassword, "candidate", "+242 06 123 45 67", "Développeur Full Stack"]
+        );
         company_id INTEGER,
         location TEXT NOT NULL, -- format: "Ville, Pays"
         sector TEXT,
@@ -72,11 +74,11 @@ async function initDatabase() {
         console.log("✅ Table jobs créée\n");
         console.log("📝 Création de la table formations...");
         await pool.query(`DROP TABLE IF EXISTS formations CASCADE`);
-        await pool.query(`
-      CREATE TABLE formations (
-        id SERIAL PRIMARY KEY,
-        title TEXT NOT NULL,
-        category TEXT NOT NULL,
+        await pool.query(
+          `INSERT INTO users (first_name, last_name, email, password, user_type, phone, company_name, company_address) 
+           VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
+          ["Tech", "Solutions", "contact@techsolutions.com", userPassword, "company", "+242 06 987 65 43", "Tech Solutions SARL", "Brazzaville, Congo"]
+        );
         level TEXT NOT NULL,
         duration TEXT NOT NULL,
         price TEXT,

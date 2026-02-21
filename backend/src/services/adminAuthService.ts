@@ -37,9 +37,9 @@ export const registerAdmin = async (data: any, isCreatedBySuper = false) => {
 
     // Insertion DB
     const { rows } = await pool.query(
-      `INSERT INTO public.admins (last_name, first_name, email, password, role, verification_token, is_verified)
-       VALUES ($1, $2, $3, $4, $5, $6, false) RETURNING id, email, last_name, first_name, role`,
-      [data.nom, data.prenom, data.email.toLowerCase(), hashedPassword, data.role, token]
+      `INSERT INTO public.admins (first_name, last_name, email, password, role, verification_token, is_verified)
+       VALUES ($1, $2, $3, $4, $5, $6, false) RETURNING id, email, first_name, last_name, role`,
+      [data.prenom, data.nom, data.email.toLowerCase(), hashedPassword, data.role, token]
     );
 
     const admin = rows[0];
