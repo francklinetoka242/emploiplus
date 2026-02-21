@@ -132,7 +132,7 @@ router.delete('/jobs/:id',
   checkPermission('perm_jobs'),
   jobsController.deleteJob
 );
-);
+
 
 // ============================================================================
 // TRAININGS MANAGEMENT
