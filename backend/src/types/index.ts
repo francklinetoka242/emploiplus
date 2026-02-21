@@ -93,53 +93,59 @@ export interface AuditLog {
 
 export interface Job {
   id: number;
-  company_id: number;
   title: string;
-  description: string;
+  description?: string;
+  created_at?: string;
+  updated_at?: string;
+  
+  // Admin Panel Fields (new columns from migration)
+  company_id?: number;
   requirements?: string;
   location?: string;
   salary_min?: number;
   salary_max?: number;
-  job_type?: 'CDI' | 'CDD' | 'Stage' | 'Freelance';
-  experience_level?: 'Junior' | 'Confirmed' | 'Senior';
-  contract_type?: string;
-  posted_date: string;
+  job_type?: string;
+  experience_level?: string;
   deadline_date?: string;
-  is_closed: boolean;
-  is_featured: boolean;
-  view_count: number;
-  created_at: string;
-  updated_at: string;
+  is_closed?: boolean;
+  
+  // Public API Fields (existing columns, kept for compatibility)
+  company?: string;
+  type?: string;
+  salary?: string;
+  sector?: string;
+  image_url?: string;
+  application_url?: string;
+  application_via_emploi?: boolean;
+  deadline?: string;
+  published?: boolean;
+  published_at?: string;
 }
 
 export interface Training {
   id: number;
   title: string;
-  description: string;
+  description?: string;
   provider?: string;
   duration?: string;
-  level?: 'Beginner' | 'Intermediate' | 'Advanced';
+  level?: string;
   category?: string;
-  posted_date: string;
   deadline_date?: string;
-  is_closed: boolean;
-  is_featured: boolean;
-  certification: boolean;
-  cost: number;
-  view_count: number;
-  created_at: string;
-  updated_at: string;
+  certification?: string;
+  cost?: number;
+  is_closed?: boolean;
+  created_at?: string;
+  updated_at?: string;
 }
 
 export interface FAQ {
   id: number;
-  category: string;
   question: string;
   answer: string;
-  order_position: number;
-  is_active: boolean;
-  created_at: string;
-  updated_at: string;
+  published?: boolean;
+  category?: string;
+  created_at?: string;
+  updated_at?: string;
 }
 
 export interface StaticPage {
