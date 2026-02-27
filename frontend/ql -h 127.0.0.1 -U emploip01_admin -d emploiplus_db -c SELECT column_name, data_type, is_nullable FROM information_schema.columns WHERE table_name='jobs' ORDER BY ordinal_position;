@@ -1,0 +1,32 @@
+                                                                      Table "public.jobs"
+      Column      |            Type             | Collation | Nullable |             Default              | Storage  | Compression | Stats target | Description 
+------------------+-----------------------------+-----------+----------+----------------------------------+----------+-------------+--------------+-------------
+ id               | integer                     |           | not null | nextval('jobs_id_seq'::regclass) | plain    |             |              | 
+ title            | text                        |           | not null |                                  | extended |             |              | 
+ company          | text                        |           |          |                                  | extended |             |              | 
+ location         | text                        |           |          |                                  | extended |             |              | 
+ sector           | text                        |           |          |                                  | extended |             |              | 
+ type             | text                        |           |          |                                  | extended |             |              | 
+ salary           | text                        |           |          |                                  | extended |             |              | 
+ description      | text                        |           |          |                                  | extended |             |              | 
+ image_url        | text                        |           |          |                                  | extended |             |              | 
+ application_url  | text                        |           |          |                                  | extended |             |              | 
+ deadline         | timestamp without time zone |           |          |                                  | plain    |             |              | 
+ published        | boolean                     |           |          | false                            | plain    |             |              | 
+ published_at     | timestamp without time zone |           |          |                                  | plain    |             |              | 
+ created_at       | timestamp without time zone |           |          | now()                            | plain    |             |              | 
+ company_id       | integer                     |           |          |                                  | plain    |             |              | 
+ requirements     | text                        |           |          |                                  | extended |             |              | 
+ salary_min       | numeric(12,2)               |           |          |                                  | main     |             |              | 
+ salary_max       | numeric(12,2)               |           |          |                                  | main     |             |              | 
+ job_type         | character varying(100)      |           |          |                                  | extended |             |              | 
+ experience_level | character varying(100)      |           |          |                                  | extended |             |              | 
+ is_closed        | boolean                     |           |          | false                            | plain    |             |              | 
+ updated_at       | timestamp without time zone |           |          | CURRENT_TIMESTAMP                | plain    |             |              | 
+ deadline_date    | timestamp without time zone |           |          |                                  | plain    |             |              | 
+Indexes:
+    "jobs_pkey" PRIMARY KEY, btree (id)
+Triggers:
+    trigger_jobs_updated_at BEFORE UPDATE ON jobs FOR EACH ROW EXECUTE FUNCTION update_timestamp_column()
+Access method: heap
+

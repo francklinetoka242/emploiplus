@@ -1,0 +1,79 @@
+// src/lib/db.ts
+import { Pool } from 'pg';
+
+const pool = new Pool({
+  host: 'localhost',
+  port: 5432,
+  database: 'emploi_plus_db_cg',
+  user: 'postgres',
+  password: '1414',
+  max: 20,
+  idleTimeoutMillis: 30000,
+  connectionTimeoutMillis: 2000,
+});
+
+const db = {
+  // Fonction générique
+  query: (text: string, params?: any[]) => pool.query(text, params),
+
+  // Récupérer les offres
+  getJobs: async () => {
+    const { rows } = await pool.query(
+      `SELECT * FROM jobs WHERE published = true ORDER BY created_at DESC`
+    );
+    return rows;
+  },
+
+  // Récupérer les formations
+  getFormations: async () => {
+    const { rows } = await pool.query(
+      `SELECT * FROM formations WHERE published = true ORDER BY created_at DESC`
+    );
+    return rows;
+  },
+
+  // Créer une offre
+  createJob: async (data: any) => {
+    const { rows } = await pool.query(
+      `INSERT INTO jobs (title, company, location, type, sector, description, salary)
+       VALUES ($1, $2, $3, $4, $5, $6, $7)
+       RETURNING *`,
+      [
+        data.title,
+        data.company,
+        data.location,
+        data.type,
+        data.sector,
+        data.description || null,
+        data.salary || null,
+      ]
+    );
+    return rows[0];
+  },
+
+  // Créer une formation (correction : duration en double → supprimé)
+  createFormation: async (data: any) => {
+    const { rows } = await pool.query(
+      `INSERT INTO formations (title, category, level, duration, description, price)
+       VALUES ($1, $2, $3, $4, $5, $6)
+       RETURNING *`,
+      [
+        data.title,
+        data.category,
+        data.level,
+        data.duration,
+        data.description || null,
+        data.price || null,
+      ]
+    );
+    return rows[0];
+  },
+
+  // Login admin
+  getAdminByEmail: async (email: string) => {
+    const { rows } = await pool.query(`SELECT * FROM admins WHERE email = $1`, [email]);
+    return rows[0] || null;
+  },
+};
+
+export default db;

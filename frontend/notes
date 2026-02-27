@@ -1,0 +1,5 @@
+dans le compte admin, ajoute une section pour insrer les notifications.
+
+il y'aura les notifications qui seront afficher dans le compte candidats, et des notifications pour le comptes entreprise. 
+
+L'ajout se fera depuis le compte administrateur. Pour l'insertion d'une notification, on aura une image (facultative), lien (facultatif), rubrique (notifications,communiqué, annones,alerte, et tout ce qui est necessaire )
