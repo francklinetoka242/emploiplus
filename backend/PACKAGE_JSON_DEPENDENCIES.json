@@ -1,0 +1,103 @@
+/**
+ * ============================================================================
+ * Package.json Dependencies for Backend Refactoring
+ * ============================================================================
+ * 
+ * À MERGE avec votre package.json existant
+ * 
+ * Installation:
+ * npm install --save socket.io bullmq redis @socket.io/redis-adapter
+ */
+
+{
+  "name": "emploi-plus-backend",
+  "version": "2.0.0",
+  "description": "Emploi+ Backend - LinkedIn-scale Microservices",
+  "type": "module",
+  "main": "src/server.ts",
+  "scripts": {
+    "dev": "tsx --watch src/server.ts",
+    "start": "node dist/server.js",
+    "build": "tsc",
+    "seed": "ts-node seed.ts",
+    "test": "vitest",
+    "test:integration": "vitest --include '**/*.integration.test.ts'",
+    "lint": "eslint src --ext .ts",
+    "lint:fix": "eslint src --ext .ts --fix",
+    "format": "prettier --write 'src/**/*.ts'",
+    "migrate": "node src/migrations/migrate.js",
+    "worker:notifications": "node dist/workers/notificationWorker.js",
+    "worker:emails": "node dist/workers/emailWorker.js",
+    "worker:all": "concurrently 'npm run worker:notifications' 'npm run worker:emails'",
+    "health:check": "node dist/health/healthCheck.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "cors": "^2.8.5",
+    "helmet": "^7.1.0",
+    "express-rate-limit": "^7.1.5",
+    "dotenv": "^16.3.1",
+    
+    "bcryptjs": "^2.4.3",
+    "jsonwebtoken": "^9.1.2",
+    "crypto": "^1.0.1",
+    
+    "@supabase/supabase-js": "^2.38.4",
+    
+    "socket.io": "^4.7.2",
+    "socket.io-client": "^4.7.2",
+    "@socket.io/redis-adapter": "^8.2.1",
+    
+    "bullmq": "^5.2.0",
+    "redis": "^4.6.10",
+    
+    "pg": "^8.11.3",
+    "pg-query-stream": "^4.5.3",
+    
+    "axios": "^1.6.0",
+    "node-fetch": "^3.3.2",
+    
+    "pino": "^8.16.2",
+    "pino-pretty": "^10.2.3",
+    
+    "uuid": "^9.0.1",
+    "date-fns": "^2.30.0"
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.21",
+    "@types/node": "^20.10.5",
+    "@types/bcryptjs": "^2.4.6",
+    "@types/jsonwebtoken": "^9.0.7",
+    "@types/uuid": "^9.0.7",
+    
+    "typescript": "^5.3.3",
+    "ts-node": "^10.9.2",
+    "tsx": "^4.7.0",
+    
+    "eslint": "^8.56.0",
+    "@typescript-eslint/eslint-plugin": "^6.15.0",
+    "@typescript-eslint/parser": "^6.15.0",
+    
+    "prettier": "^3.1.1",
+    
+    "vitest": "^1.1.0",
+    "@vitest/ui": "^1.1.0",
+    
+    "concurrently": "^8.2.2"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  },
+  "keywords": [
+    "employment",
+    "jobs",
+    "microservices",
+    "socket.io",
+    "realtime",
+    "notifications",
+    "websocket"
+  ],
+  "author": "Emploi+ Team",
+  "license": "MIT"
+}

@@ -1,0 +1,175 @@
+base de donnee : emploi_plus_db_cg
+
+-- Extension pour les UUID
+
+CREATE EXTENSION IF NOT EXISTS "pgcrypto";
+
+-- Table des administrateurs (super_admin inclus)
+
+CREATE TABLE admins (
+
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+
+  email TEXT UNIQUE NOT NULL,
+
+  password TEXT NOT NULL,
+
+  full_name TEXT,
+
+  role TEXT DEFAULT 'admin' CHECK (role IN ('super_admin', 'admin_offers', 'admin_users')),
+
+  is_blocked BOOLEAN DEFAULT false,
+
+  created_at TIMESTAMPTZ DEFAULT NOW()
+
+);
+
+-- Table utilisateurs (candidats + entreprises)
+
+CREATE TABLE users (
+
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+
+  email TEXT UNIQUE NOT NULL,
+
+  full_name TEXT,
+
+  user_type TEXT CHECK (user_type IN ('candidat', 'entreprise')),
+
+  is_blocked BOOLEAN DEFAULT false,
+
+  created_at TIMESTAMPTZ DEFAULT NOW()
+
+);
+
+-- Table offres d'emploi
+
+CREATE TABLE jobs (
+
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+
+  title TEXT NOT NULL,
+
+  company TEXT NOT NULL,
+
+  location TEXT NOT NULL,
+
+  type TEXT NOT NULL,
+
+  sector TEXT NOT NULL,
+
+  description TEXT,
+
+  salary TEXT,
+
+  published BOOLEAN DEFAULT true,
+
+  created_at TIMESTAMPTZ DEFAULT NOW()
+
+);
+
+-- Table formations
+
+CREATE TABLE formations (
+
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+
+  title TEXT NOT NULL,
+
+  category TEXT NOT NULL,
+
+  level TEXT NOT NULL,
+
+  duration TEXT NOT NULL,
+
+  description TEXT,
+
+  price TEXT,
+
+  published BOOLEAN DEFAULT true,
+
+  created_at TIMESTAMPTZ DEFAULT NOW()
+
+);
+
+-- Compte Super Admin prêt à l’emploi
+
+INSERT INTO admins (email, password, full_name, role)
+
+VALUES (
+
+  'super@emploi.cg',
+
+  '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', -- mot de passe = 1414
+
+  'Super Administrateur',
+
+  'super_admin'
+
+) ON CONFLICT (email) DO NOTHING;
+
+
+
+-- Exécute ça dans psql
+
+CREATE TABLE IF NOT EXISTS jobs (
+
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+
+  title TEXT NOT NULL,
+
+  company TEXT NOT NULL,
+
+  location TEXT NOT NULL,
+
+  type TEXT DEFAULT 'CDI',
+
+  salary TEXT,
+
+  description TEXT,
+
+  published BOOLEAN DEFAULT true,
+
+  created_at TIMESTAMP DEFAULT NOW()
+
+);
+
+CREATE TABLE IF NOT EXISTS formations (
+
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+
+  title TEXT NOT NULL,
+
+  category TEXT NOT NULL,
+
+  level TEXT DEFAULT 'Débutant',
+
+  duration TEXT,
+
+  price TEXT,
+
+  description TEXT,
+
+  published BOOLEAN DEFAULT true,
+
+  created_at TIMESTAMP DEFAULT NOW()
+
+);
+
+-- Si tu n’as pas encore la table admins
+
+CREATE TABLE IF NOT EXISTS admins (
+
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+
+  email TEXT UNIQUE NOT NULL,
+
+  password TEXT NOT NULL,
+
+  full_name TEXT,
+
+  role TEXT NOT NULL DEFAULT 'admin',
+
+  created_at TIMESTAMP DEFAULT NOW()
+
+);
