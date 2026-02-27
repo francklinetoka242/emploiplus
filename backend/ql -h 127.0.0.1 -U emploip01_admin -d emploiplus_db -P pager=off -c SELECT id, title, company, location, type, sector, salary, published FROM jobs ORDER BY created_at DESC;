@@ -1,0 +1,10 @@
+ id |                        title                         |        company         |      location      |     type      |           sector           |           salary           | published 
+----+------------------------------------------------------+------------------------+--------------------+---------------+----------------------------+----------------------------+-----------
+  6 | Développeur TypeScript Senior (TEST - 1771883418282) | Emploiplus Group       | Brazzaville, Congo | Développement | Informatique & Technologie | 150 000 - 200 000 XAF      | t
+  5 | Développeur TypeScript Senior (TEST - 1771883181761) | Emploiplus Group       | Brazzaville, Congo | Développement | Informatique & Technologie | 150 000 - 200 000 XAF      | t
+  4 | Senior Developer - Full Stack (TEST)                 | TechVision Solutions   | Brazzaville, Congo | CDI           | Informatique               | 1,500,000 - 2,500,000 FCFA | t
+  3 | Senior Developer - Full Stack (TEST)                 | TechVision Solutions   | Brazzaville, Congo | CDI           | Informatique               | 1,500,000 - 2,500,000 FCFA | t
+  2 | Développeur Full Stack - Test Réel                   | Test Company Real Inc. | Paris, France      | CDI           | Informatique               | 45000 - 65000 EUR          | f
+  1 | Développeur Full Stack - Test Réel                   | Test Company Real Inc. | Paris, France      | CDI           | Informatique               | 45000 - 65000 EUR          | f
+(6 rows)
+

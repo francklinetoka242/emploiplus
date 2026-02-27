@@ -1,0 +1,353 @@
+/**
+ * AdminExport Component Styles
+ * Styles for export statistics and buttons
+ */
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  min-height: 100vh;
+}
+
+.header {
+  color: white;
+  margin-bottom: 3rem;
+  text-align: center;
+}
+
+.header h1 {
+  font-size: 2.5rem;
+  margin: 0 0 0.5rem 0;
+  font-weight: bold;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.header p {
+  font-size: 1.1rem;
+  opacity: 0.95;
+  margin: 0;
+}
+
+/* Access Denied */
+.accessDenied {
+  background: white;
+  border-radius: 12px;
+  padding: 3rem;
+  text-align: center;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+.accessDenied h2 {
+  color: #e74c3c;
+  margin-top: 0;
+}
+
+.accessDenied p {
+  color: #7f8c8d;
+  font-size: 1.1rem;
+}
+
+/* Messages */
+.error {
+  background: #ffe6e6;
+  border-left: 4px solid #e74c3c;
+  color: #c0392b;
+  padding: 1rem;
+  border-radius: 4px;
+  margin-bottom: 1.5rem;
+  font-weight: 500;
+}
+
+.success {
+  background: #e6ffe6;
+  border-left: 4px solid #27ae60;
+  color: #229954;
+  padding: 1rem;
+  border-radius: 4px;
+  margin-bottom: 1.5rem;
+  font-weight: 500;
+  animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.loading {
+  color: white;
+  text-align: center;
+  padding: 2rem;
+  font-size: 1.1rem;
+}
+
+.empty {
+  background: white;
+  border-radius: 12px;
+  padding: 2rem;
+  text-align: center;
+  color: #7f8c8d;
+}
+
+/* Statistics Grid */
+.statsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.statCard {
+  background: white;
+  border-radius: 12px;
+  padding: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.statCard:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+.statIcon {
+  font-size: 2.5rem;
+  min-width: 60px;
+  text-align: center;
+}
+
+.statContent {
+  flex: 1;
+}
+
+.statValue {
+  font-size: 2rem;
+  font-weight: bold;
+  color: #2c3e50;
+  margin: 0;
+}
+
+.statLabel {
+  font-size: 0.9rem;
+  color: #7f8c8d;
+  margin: 0.25rem 0 0 0;
+}
+
+/* Role Breakdown */
+.roleBreakdown {
+  background: white;
+  border-radius: 12px;
+  padding: 2rem;
+  margin-bottom: 2rem;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.roleBreakdown h3 {
+  color: #2c3e50;
+  margin-top: 0;
+  font-size: 1.3rem;
+}
+
+.roleGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+}
+
+.roleItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  background: #f8f9fa;
+  border-radius: 8px;
+  border-left: 4px solid #667eea;
+}
+
+.roleItem span {
+  color: #7f8c8d;
+  font-size: 0.95rem;
+}
+
+.roleItem strong {
+  color: #667eea;
+  font-size: 1.5rem;
+}
+
+/* Export Section */
+.exportSection {
+  background: white;
+  border-radius: 12px;
+  padding: 2rem;
+  margin-bottom: 2rem;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.exportSection h3 {
+  color: #2c3e50;
+  margin-top: 0;
+  font-size: 1.3rem;
+}
+
+.exportSection p {
+  color: #7f8c8d;
+  margin-bottom: 1.5rem;
+}
+
+.exportButtons {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 1rem;
+}
+
+.exportBtn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 1.5rem;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  background: #f8f9fa;
+  color: #2c3e50;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.exportBtn:hover:not(:disabled) {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+}
+
+.exportBtn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.exportBtn.btnJSON {
+  border-color: #3498db;
+  color: #3498db;
+}
+
+.exportBtn.btnJSON .icon {
+  font-size: 1.8rem;
+}
+
+.exportBtn.btnJSON:hover:not(:disabled) {
+  background: #ebf5fb;
+}
+
+.exportBtn.btnPDF {
+  border-color: #e74c3c;
+  color: #e74c3c;
+}
+
+.exportBtn.btnPDF .icon {
+  font-size: 1.8rem;
+}
+
+.exportBtn.btnPDF:hover:not(:disabled) {
+  background: #fadbd8;
+}
+
+.exportBtn.btnExcel {
+  border-color: #27ae60;
+  color: #27ae60;
+}
+
+.exportBtn.btnExcel .icon {
+  font-size: 1.8rem;
+}
+
+.exportBtn.btnExcel:hover:not(:disabled) {
+  background: #d5f4e6;
+}
+
+.icon {
+  display: block;
+}
+
+.spinner {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  animation: rotate 1s linear infinite;
+}
+
+@keyframes rotate {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Info Section */
+.infoSection {
+  background: white;
+  border-radius: 12px;
+  padding: 2rem;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.infoSection h4 {
+  color: #2c3e50;
+  margin-top: 0;
+  font-size: 1.1rem;
+}
+
+.infoSection ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.infoSection li {
+  color: #7f8c8d;
+  padding: 0.75rem 0;
+  border-bottom: 1px solid #ecf0f1;
+}
+
+.infoSection li:last-child {
+  border-bottom: none;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .container {
+    padding: 1rem;
+  }
+
+  .header h1 {
+    font-size: 1.8rem;
+  }
+
+  .statsGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .exportButtons {
+    grid-template-columns: 1fr;
+  }
+
+  .statCard {
+    flex-direction: column;
+    text-align: center;
+  }
+}
