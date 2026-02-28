@@ -3,7 +3,7 @@ name: Deploy to VPS
 on:
   push:
     branches:
-      - main  # Se déclenche quand tu pousses sur la branche main
+      - main
 
 jobs:
   deploy:
@@ -17,10 +17,12 @@ jobs:
         with:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USER }}
-          password: ${{ secrets.SSH_PASSWORD }}
-          port: ${{ secrets.SSH_PORT }}
+          # 💡 Utilisez la clé privée au lieu du mot de passe
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: ${{ secrets.SSH_PORT }} # Assurez-vous que ce secret existe
           script: |
-            cd ~/public_html
+            # 💡 Vérifiez bien ce chemin !
+            cd /var/www/emploi-connect 
             git pull origin main
             
             # Mise à jour du Backend
