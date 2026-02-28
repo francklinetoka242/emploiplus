@@ -69,10 +69,27 @@ export default function Formations() {
     }
   }, []);
 
-  // Reset pagination when filters change
+  // Reset pagination when filters change but don't clear on default state
   useEffect(() => {
     // Do not reset if user types a short search (<3 chars)
     if (filters.search && filters.search.length > 0 && filters.search.length < 3) return;
+
+    const defaultFilters = {
+      search: "",
+      category: "",
+      level: "",
+      priceRange: "",
+      provider: "",
+      country: "",
+      recent: true,
+    };
+    const isDefault = Object.keys(defaultFilters).every(
+      (k) => (filters as any)[k] === (defaultFilters as any)[k]
+    );
+    if (isDefault) {
+      return;
+    }
+
     setAllFormations([]);
     setPage(1);
     setHasMore(true);

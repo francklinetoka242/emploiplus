@@ -259,7 +259,10 @@ export default function BusinessCardModels() {
     ) as HTMLElement;
     if (!element) return;
 
-    const html2pdf = require('html2pdf.js');
+    // Dynamic import for html2pdf (ESM)
+    const html2pdfModule = await import('html2pdf.js');
+    const html2pdf = html2pdfModule.default || html2pdfModule;
+    
     const options = {
       margin: 5,
       filename: `${card.candidateName}-business-card.pdf`,

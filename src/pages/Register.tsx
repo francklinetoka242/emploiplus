@@ -14,7 +14,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-// Replaced Supabase auth with direct API calls
+// 
 import { toast } from "sonner";
 import { COUNTRIES, CONGO_CITIES } from '@/lib/options';
 import { GoogleLoginButton } from "@/components/auth/GoogleLoginButton";
@@ -53,7 +53,7 @@ const Register = () => {
     confirmPassword: "",
   });
 
-  // No Supabase: we call the backend registration endpoint directly
+  //
 
   const handleCandidatSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

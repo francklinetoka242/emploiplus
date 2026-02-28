@@ -161,7 +161,6 @@ const Home = () => {
           </div>
         </div>
       </section>
-
       {/* Partners */}
       <section className="py-16 bg-background">
         <div className="w-full px-4">

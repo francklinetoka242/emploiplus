@@ -1,143 +1,114 @@
-/**
- * Utilitaire pour gérer les uploads de documents PDF
- * Avec enregistrement automatique en base de données
- */
-
-import { uploadCandidateDocument, uploadCompanyDocument } from '@/lib/upload';
-import { authHeaders } from '@/lib/headers';
-import { toast } from 'sonner';
+import { buildApiUrl, authHeaders } from './headers';
 
 interface UploadResult {
   success: boolean;
-  url?: string;
-  error?: string;
+  url?: string | null;
+  message?: string;
 }
 
-/**
- * Upload un document candidat et enregistre l'URL en base
- */
+// Upload candidate document and save reference to user profile
 export async function uploadCandidateDocAndSave(
   file: File,
-  docType: string,
-  userId: string,
+  docKey: string,
+  userId: string | undefined,
   dbColumn: string
 ): Promise<UploadResult> {
   try {
-    // Validation
-    if (file.type !== 'application/pdf') {
-      return {
-        success: false,
-        error: 'Seuls les fichiers PDF sont acceptés'
-      };
-    }
+    const form = new FormData();
+    form.append('file', file);
+    form.append('docKey', docKey);
+    form.append('dbColumn', dbColumn);
+    if (userId) form.append('userId', userId);
 
-    if (file.size > 5 * 1024 * 1024) {
-      return {
-        success: false,
-        error: 'Le fichier ne doit pas dépasser 5 MB'
-      };
-    }
+    // build API URL (/api/uploads/candidate)
+    const url = buildApiUrl('/uploads/candidate');
 
-    // Upload vers Supabase
-    const url = await uploadCandidateDocument(file, userId, docType);
+    // authHeaders may add Authorization when available; do NOT set Content-Type when sending FormData
+    const headers = authHeaders();
+    if (headers['Content-Type']) delete headers['Content-Type'];
 
-    // Enregistrer l'URL en base de données
-    const headers: Record<string, string> = authHeaders('application/json');
-    const updateRes = await fetch('/api/users/me', {
-      method: 'PUT',
+    const res = await fetch(url, {
+      method: 'POST',
       headers,
-      body: JSON.stringify({
-        [dbColumn]: url
-      })
+      body: form,
+      credentials: 'include',
     });
 
-    if (!updateRes.ok) {
-      throw new Error('Erreur lors de l\'enregistrement du document');
-    }
-
-    toast.success('Document téléchargé avec succès');
-    return { success: true, url };
-  } catch (error) {
-    const message = error instanceof Error ? error.message : 'Erreur lors de l\'upload';
-    toast.error(message);
-    return { success: false, error: message };
-  }
-}
-
-/**
- * Upload un document entreprise et enregistre l'URL en base
- */
-export async function uploadCompanyDocAndSave(
-  file: File,
-  docType: string,
-  userId: string,
-  dbColumn: string
-): Promise<UploadResult> {
-  try {
-    // Validation
-    if (file.type !== 'application/pdf') {
-      return {
-        success: false,
-        error: 'Seuls les fichiers PDF sont acceptés'
-      };
-    }
-
-    if (file.size > 5 * 1024 * 1024) {
-      return {
-        success: false,
-        error: 'Le fichier ne doit pas dépasser 5 MB'
-      };
-    }
-
-    // Upload vers Supabase
-    const url = await uploadCompanyDocument(file, userId, docType);
-
-    // Enregistrer l'URL en base de données
-    const headers: Record<string, string> = authHeaders('application/json');
-    const updateRes = await fetch('/api/users/me', {
-      method: 'PUT',
-      headers,
-      body: JSON.stringify({
-        [dbColumn]: url
-      })
-    });
-
-    if (!updateRes.ok) {
-      throw new Error('Erreur lors de l\'enregistrement du document');
-    }
-
-    toast.success('Document téléchargé avec succès');
-    return { success: true, url };
-  } catch (error) {
-    const message = error instanceof Error ? error.message : 'Erreur lors de l\'upload';
-    toast.error(message);
-    return { success: false, error: message };
-  }
-}
-
-/**
- * Supprimer un document (mettre l'URL à null)
- */
-export async function deleteDocument(dbColumn: string): Promise<boolean> {
-  try {
-    const headers: Record<string, string> = authHeaders('application/json');
-    const res = await fetch('/api/users/me', {
-      method: 'PUT',
-      headers,
-      body: JSON.stringify({
-        [dbColumn]: null
-      })
-    });
+    const json = await res.json().catch(() => ({} as any));
 
     if (!res.ok) {
-      throw new Error('Erreur lors de la suppression');
+      return { success: false, message: json?.message || 'Upload failed' };
     }
 
-    toast.success('Document supprimé');
+    // expect backend to return { data: { url } }
+    const urlResult = json?.data?.url ?? json?.url ?? null;
+    return { success: true, url: urlResult };
+  } catch (err: any) {
+    return { success: false, message: err?.message || 'Upload error' };
+  }
+}
+
+// Upload company document and save reference to company profile
+export async function uploadCompanyDocAndSave(
+  file: File,
+  docKey: string,
+  companyId: string | undefined,
+  dbColumn: string
+): Promise<UploadResult> {
+  try {
+    const form = new FormData();
+    form.append('file', file);
+    form.append('docKey', docKey);
+    form.append('dbColumn', dbColumn);
+    if (companyId) form.append('companyId', companyId);
+
+    // build API URL (/api/uploads/company)
+    const url = buildApiUrl('/uploads/company');
+
+    const headers = authHeaders();
+    if (headers['Content-Type']) delete headers['Content-Type'];
+
+    const res = await fetch(url, {
+      method: 'POST',
+      headers,
+      body: form,
+      credentials: 'include',
+    });
+
+    const json = await res.json().catch(() => ({} as any));
+
+    if (!res.ok) {
+      return { success: false, message: json?.message || 'Upload failed' };
+    }
+
+    const urlResult = json?.data?.url ?? json?.url ?? null;
+    return { success: true, url: urlResult };
+  } catch (err: any) {
+    return { success: false, message: err?.message || 'Upload error' };
+  }
+}
+
+// Delete document by clearing the corresponding user profile column
+export async function deleteDocument(dbColumn: string): Promise<boolean> {
+  try {
+    // build API URL for updating current user
+    const url = buildApiUrl('/users/me');
+
+    const headers = authHeaders('application/json');
+
+    // send PUT to update the profile field to null
+    const res = await fetch(url, {
+      method: 'PUT',
+      headers,
+      body: JSON.stringify({ [dbColumn]: null }),
+      credentials: 'include',
+    });
+
+    if (!res.ok) return false;
+
     return true;
-  } catch (error) {
-    const message = error instanceof Error ? error.message : 'Erreur lors de la suppression';
-    toast.error(message);
+  } catch (err) {
+    console.error('deleteDocument error', err);
     return false;
   }
 }

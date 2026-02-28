@@ -75,10 +75,29 @@ const Jobs = () => {
     setFilters((prev) => ({ ...prev, search: debouncedSearch }));
   }, [debouncedSearch]);
 
-  // Reset pagination when filters change
+  // Reset pagination when filters change (but keep default filters intact)
   useEffect(() => {
     // Block resets while user types a short search (<3 chars)
     if (filters.search && filters.search.length > 0 && filters.search.length < 3) return;
+
+    // if filters are unchanged from their initial default values, don't wipe the list
+    const defaultFilters = {
+      search: "",
+      location: "",
+      country: "",
+      company: "",
+      sector: "",
+      type: "all",
+      recent: true,
+    };
+    const isDefault = Object.keys(defaultFilters).every(
+      (k) => (filters as any)[k] === (defaultFilters as any)[k]
+    );
+    if (isDefault) {
+      // nothing to reset; the query hook will load the jobs on its own
+      return;
+    }
+
     setAllJobs([]);
     setPage(1);
     setHasMore(true);
@@ -92,25 +111,11 @@ const Jobs = () => {
     }
   }, [user]);
 
-  // Ensure initial jobs are loaded on mount (show all by default)
-  useEffect(() => {
-    if (initialJobsLoadedRef.current) return;
-    initialJobsLoadedRef.current = true;
-    (async () => {
-      try {
-        const res = await api.getJobs({ page: 1, sortBy: 'created_at', sortOrder: filters.recent ? 'DESC' : 'ASC', limit: 10 });
-        const unwrap = (r: any) => Array.isArray(r) ? r : (r?.data?.data ?? r?.data ?? r);
-        const newJobs = Array.isArray(unwrap(res)) ? unwrap(res) : [];
-        if (newJobs.length > 0) {
-          setAllJobs(newJobs);
-          const pagination = res?.pagination || {};
-          setHasMore(pagination.hasNextPage || false);
-        }
-      } catch (e) {
-        console.error('Initial jobs load failed:', e);
-      }
-    })();
-  }, []);
+  // NOTE: we removed the manual initial-fetch hook since the
+  // react-query call below already loads jobs on mount.  Keeping a
+  // separate effect previously could race with the query and leave the
+  // list blank until the user interacted.  The query results are now the
+  // single source of truth.
 
   const fetchFormations = async () => {
     try {

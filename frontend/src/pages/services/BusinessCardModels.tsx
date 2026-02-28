@@ -253,13 +253,13 @@ export default function BusinessCardModels() {
     [editingCard, updateCard, addCard]
   );
 
-  const handleExportPDF = (card: PreviewCard) => {
+  const handleExportPDF = async (card: PreviewCard) => {
     const element = document.querySelector(
       `.card-preview-${card.id}`
     ) as HTMLElement;
     if (!element) return;
-
-    const html2pdf = require('html2pdf.js');
+    const html2pdfModule = await import('html2pdf.js');
+    const html2pdf = html2pdfModule.default || html2pdfModule;
     const options = {
       margin: 5,
       filename: `${card.candidateName}-business-card.pdf`,

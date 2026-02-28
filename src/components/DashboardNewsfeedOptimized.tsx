@@ -1,11 +1,5 @@
 /**
- * ============================================================================
- * Optimized Newsfeed Component - LinkedIn Scale
- * ============================================================================
- * 
- * ⚠️ TEMPORARILY DISABLED: This component depends on Supabase which has been
- * removed from the frontend. Will be re-enabled when backend newsfeed API is ready.
- * ============================================================================
+ ============================================================================
  */
 
 import React from 'react';
@@ -117,10 +111,6 @@ const PublicationCard: React.FC<PublicationCardProps> = ({
       setLiked(!liked);
       setLikesCount((prev) => (liked ? prev - 1 : prev + 1));
 
-      // TODO: Implémenter l'appel API pour sauvegarder le like
-      // const response = await supabase
-      //   .from('publication_likes')
-      //   .insert({ publication_id: publication.id, user_id: currentUserId });
     } catch (error) {
       console.error('Error liking publication:', error);
       setLiked(!liked);

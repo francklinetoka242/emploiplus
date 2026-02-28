@@ -2,10 +2,9 @@ import React, { useState, useEffect } from 'react';
 import dynamic from 'next/dynamic';
 import { useQueryClient } from '@tanstack/react-query';
 import './LegalEditor.css';
-
-// react-quill sometimes requires dynamic import; this is plain usage assuming bundler supports it
-const ReactQuill = require('react-quill');
 import 'react-quill/dist/quill.snow.css';
+
+const ReactQuill = dynamic(() => import('react-quill'), { ssr: false, loading: () => <div>Chargement éditeur...</div> });
 
 export const LegalEditor: React.FC = () => {
   const [slug, setSlug] = useState('mentions-legales');

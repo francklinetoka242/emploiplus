@@ -1,9 +1,12 @@
 import React, { useEffect, useState } from 'react';
 // Note: this component uses `react-quill`. Install with: `npm install react-quill quill`
 import dynamic from 'next/dynamic';
-
-const ReactQuill = (typeof window === 'object') ? require('react-quill') : null;
 import 'react-quill/dist/quill.snow.css';
+
+const ReactQuill = dynamic(() => import('react-quill'), {
+  ssr: false,
+  loading: () => <div>Chargement éditeur...</div>,
+});
 
 type Props = {
   slug: 'politique_confidentialite' | 'mentions_legales' | 'guide_utilisateur' | 'cgu';

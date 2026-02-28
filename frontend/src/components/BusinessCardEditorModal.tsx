@@ -197,11 +197,11 @@ const BusinessCardEditorModal: React.FC<BusinessCardEditorModalProps> = ({
     });
   };
 
-  const handleExportPDF = () => {
+  const handleExportPDF = async () => {
     const element = document.querySelector('.business-card-preview') as HTMLElement;
     if (!element) return;
-
-    const html2pdf = require('html2pdf.js');
+    const html2pdfModule = await import('html2pdf.js');
+    const html2pdf = html2pdfModule.default || html2pdfModule;
     const options = {
       margin: 5,
       filename: `${formData.candidateName}-business-card.pdf`,
