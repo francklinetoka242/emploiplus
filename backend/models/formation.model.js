@@ -1,15 +1,35 @@
-const pool = require('../config/db');
+import pool from '../config/db.js';
 
-// retrieve all formations with pagination
-async function getAllFormations(limit = 20, offset = 0) {
+// retrieve all formations with pagination and optional publication filter
+// `published` may be true/false or undefined (no filter).
+async function getAllFormations(limit = 20, offset = 0, published) {
   try {
-    const query = `
-      SELECT id, title, description, duration, level, price, image_url, created_at, updated_at
+    // build dynamic WHERE clause
+    const conditions = [];
+    const params = [];
+
+    if (published !== undefined) {
+      conditions.push(`published = $${params.length + 1}`);
+      params.push(published);
+    }
+
+    let query = `
+      SELECT id, title, description, duration, level, price, image_url, published, created_at, updated_at
       FROM formations
-      ORDER BY created_at DESC
-      LIMIT $1 OFFSET $2
     `;
-    const result = await pool.query(query, [limit, offset]);
+
+    if (conditions.length > 0) {
+      query += ` WHERE ${conditions.join(' AND ')}`;
+    }
+
+    query += `
+      ORDER BY created_at DESC
+      LIMIT $${params.length + 1} OFFSET $${params.length + 2}
+    `;
+
+    params.push(limit, offset);
+
+    const result = await pool.query(query, params);
     return result.rows;
   } catch (err) {
     console.error('getAllFormations query error:', err);
@@ -33,15 +53,39 @@ async function getFormationById(formationId) {
   }
 }
 
-// create a new formation
-async function createFormation(title, description, duration, level, price, imageUrl) {
+// create a new formation using a flexible payload object (only provided fields will be inserted)
+async function createFormation(data) {
   try {
+    // build dynamic column list and parameter placeholders
+    const columns = [];
+    const placeholders = [];
+    const values = [];
+    let idx = 1;
+
+    for (const [key, value] of Object.entries(data)) {
+      columns.push(key);
+      placeholders.push(`$${idx}`);
+      values.push(value);
+      idx += 1;
+    }
+
+    // always set timestamps if not provided
+    if (!columns.includes('created_at')) {
+      columns.push('created_at');
+      placeholders.push('NOW()');
+    }
+    if (!columns.includes('updated_at')) {
+      columns.push('updated_at');
+      placeholders.push('NOW()');
+    }
+
     const query = `
-      INSERT INTO formations (title, description, duration, level, price, image_url, created_at, updated_at)
-      VALUES ($1, $2, $3, $4, $5, $6, NOW(), NOW())
-      RETURNING id, title, description, duration, level, price, image_url, created_at, updated_at
+      INSERT INTO formations (${columns.join(', ')})
+      VALUES (${placeholders.join(', ')})
+      RETURNING *
     `;
-    const result = await pool.query(query, [title, description, duration, level, price, imageUrl]);
+
+    const result = await pool.query(query, values);
     return result.rows[0];
   } catch (err) {
     console.error('createFormation query error:', err);
@@ -157,7 +201,7 @@ async function removeUserFromFormation(userId, formationId) {
   }
 }
 
-module.exports = {
+export default {
   getAllFormations,
   getFormationById,
   createFormation,

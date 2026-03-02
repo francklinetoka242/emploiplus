@@ -1,0 +1,84 @@
+# .htaccess - SPA Routing Configuration
+# This file enables React Router SPA routing by redirecting all requests to index.html
+# Place this file at the root of your deployed project (same level as index.html and public folder)
+
+<IfModule mod_rewrite.c>
+  # Enable RewriteEngine
+  RewriteEngine On
+
+  # Remove index.html from browser address bar
+  RewriteCond %{THE_REQUEST} ^GET.*index\.html [NC]
+  RewriteRule (.*?)index\.html(.*) /$1$2 [R=301,NE,L]
+
+  # Protect files and dirs from web access
+  RewriteRule "^\." - [F]
+
+  # An existing file or directory is accessed directly
+  RewriteCond %{REQUEST_FILENAME} -f [OR]
+  RewriteCond %{REQUEST_FILENAME} -d [OR]
+  RewriteCond %{REQUEST_FILENAME} -l
+  RewriteRule ^ - [L]
+
+  # If the request is not for a valid file or directory, 
+  # forward the request info index.html, which will be
+  # distributed by the Router in the application code.
+  RewriteRule ^ index.html [QSA,L]
+</IfModule>
+
+# Proper MIME types
+<IfModule mod_mime.c>
+  AddType application/javascript js
+  AddType application/json json
+  AddType text/css css
+  AddType image/svg+xml svg svgz
+  AddEncoding gzip svgz
+  AddType image/x-icon ico
+  AddType font/ttf ttf
+  AddType font/otf otf
+  AddType font/woff woff
+  AddType font/woff2 woff2
+</IfModule>
+
+# Enable compression
+<IfModule mod_deflate.c>
+  AddOutputFilterByType DEFLATE text/html text/xml text/css text/javascript application/javascript application/json
+</IfModule>
+
+# Set proper cache headers for better performance
+<IfModule mod_expires.c>
+  ExpiresActive On
+  
+  # Cache busting for assets with hash in filename
+  ExpiresByType application/javascript "access plus 1 year"
+  ExpiresByType text/css "access plus 1 year"
+  ExpiresByType image/png "access plus 1 year"
+  ExpiresByType image/jpeg "access plus 1 year"
+  ExpiresByType image/gif "access plus 1 year"
+  ExpiresByType image/svg+xml "access plus 1 year"
+  ExpiresByType image/x-icon "access plus 1 year"
+  ExpiresByType font/ttf "access plus 1 year"
+  ExpiresByType font/otf "access plus 1 year"
+  ExpiresByType font/woff "access plus 1 year"
+  ExpiresByType font/woff2 "access plus 1 year"
+  
+  # Don't cache index.html and other non-hashed HTML files
+  ExpiresByType text/html "access plus 0 seconds"
+</IfModule>
+
+# Security headers
+<IfModule mod_headers.c>
+  # Prevent MIME sniffing
+  Header always set X-Content-Type-Options "nosniff"
+  
+  # Enable XSS protection
+  Header always set X-XSS-Protection "1; mode=block"
+  
+  # Clickjacking protection (adjust for your needs)
+  Header always set X-Frame-Options "SAMEORIGIN"
+  
+  # Referrer Policy
+  Header always set Referrer-Policy "strict-origin-when-cross-origin"
+</IfModule>
+
+# Disable directory listing
+Options -Indexes

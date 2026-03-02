@@ -1,4 +1,5 @@
-const JobModel = require('../models/job.model');
+import JobModel from '../models/job.model.js';
+import CompanyModel from '../models/company.model.js';
 
 // validate job payload data
 function validateJobData(data, isUpdate = false) {
@@ -17,8 +18,9 @@ function validateJobData(data, isUpdate = false) {
     if (!data.location || typeof data.location !== 'string') {
       throw new Error('Job location is required');
     }
-    if (!data.company_id) {
-      throw new Error('Company ID is required');
+    // company can be passed either as numeric ID or name string
+    if (!data.company_id && !data.company) {
+      throw new Error('Company ID or name is required');
     }
   }
 
@@ -31,6 +33,9 @@ function validateJobData(data, isUpdate = false) {
 }
 
 // retrieve all jobs with optional filtering and pagination
+// query may include: limit, offset, published (boolean/string)
+// filters such as search/company/sector are intentionally ignored for now;
+// client-side filtering is handled in the frontend.
 async function getJobs(query = {}) {
   try {
     const limit = parseInt(query.limit) || 20;
@@ -44,7 +49,14 @@ async function getJobs(query = {}) {
     }
 
     // fetch all jobs with company info via JOIN
-    const jobs = await JobModel.getAllJobs(limit, offset);
+    let jobs = await JobModel.getAllJobs(limit, offset);
+
+    // filter by publication status if requested (default for public routes)
+    if (query.published !== undefined) {
+      const want = query.published === true || String(query.published).toLowerCase() === 'true';
+      jobs = jobs.filter((j) => !!j.published === want);
+    }
+
     return jobs;
   } catch (err) {
     console.error('getJobs service error:', err);
@@ -75,13 +87,29 @@ async function getJobById(jobId) {
 // create a new job posting
 async function createJob(jobData) {
   try {
-    // validate all required fields before insertion
+    // validate the minimal required fields
     validateJobData(jobData, false);
 
-    const { title, description, location, salary, job_type, company_id } = jobData;
+    // if company name provided, translate to ID (same logic as before)
+    let companyId = jobData.company_id;
+    if (!companyId && jobData.company) {
+      const name = String(jobData.company).trim();
+      const existing = await CompanyModel.getCompanyByName(name);
+      if (existing) {
+        companyId = existing.id;
+      } else {
+        const created = await CompanyModel.createCompany(name, null, null, null, null);
+        companyId = created.id;
+      }
+    }
 
-    // insert job into database
-    const newJob = await JobModel.createJob(title, description, location, salary, job_type, company_id);
+    // prepare payload for model (spread all fields, override company_id)
+    const payload = { ...jobData, company_id: companyId };
+    if (payload.published && !payload.published_at) {
+      payload.published_at = new Date();
+    }
+
+    const newJob = await JobModel.createJob(payload);
     return newJob;
   } catch (err) {
     console.error('createJob service error:', err);
@@ -98,6 +126,18 @@ async function updateJob(jobId, jobData) {
 
     // validate update data
     validateJobData(jobData, true);
+
+    // if company name provided, translate to ID
+    if (!jobData.company_id && jobData.company) {
+      const name = String(jobData.company).trim();
+      const existingComp = await CompanyModel.getCompanyByName(name);
+      if (existingComp) {
+        jobData.company_id = existingComp.id;
+      } else {
+        const created = await CompanyModel.createCompany(name, null, null, null, null);
+        jobData.company_id = created.id;
+      }
+    }
 
     // verify job exists
     const existing = await JobModel.getJobById(jobId);
@@ -155,7 +195,7 @@ async function getJobsByCompany(companyId, query = {}) {
   }
 }
 
-module.exports = {
+export default {
   getJobs,
   getJobById,
   createJob,

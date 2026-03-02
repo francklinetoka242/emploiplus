@@ -1,6 +1,27 @@
-const FormationModel = require('../models/formation.model');
+import FormationModel from '../models/formation.model.js';
 
-// retrieve all formations with pagination
+// helper to validate formation payloads
+function validateFormationData(data, isUpdate = false) {
+  if (isUpdate && Object.keys(data).length === 0) {
+    throw new Error('No fields to update');
+  }
+
+  if (!isUpdate) {
+    if (!data.title || typeof data.title !== 'string' || data.title.trim().length === 0) {
+      throw new Error('Title is required');
+    }
+    // other required fields can be added here if needed
+  }
+
+  if (data.price !== undefined && typeof data.price !== 'number' && typeof data.price !== 'string') {
+    // allow string to be parsed later in model
+    throw new Error('Price must be a number');
+  }
+
+  return true;
+}
+
+// retrieve all formations with pagination and optional published filter
 async function getFormations(query = {}) {
   try {
     const limit = parseInt(query.limit) || 20;
@@ -13,7 +34,16 @@ async function getFormations(query = {}) {
       throw new Error('Offset must be non-negative');
     }
 
-    const formations = await FormationModel.getAllFormations(limit, offset);
+    // default behaviour: only return published formations unless explicit flag passed
+    let publishedFilter;
+    if (query.published !== undefined) {
+      publishedFilter = query.published === true || String(query.published).toLowerCase() === 'true';
+    } else {
+      // public route, hide unpublished
+      publishedFilter = true;
+    }
+
+    const formations = await FormationModel.getAllFormations(limit, offset, publishedFilter);
     return formations;
   } catch (err) {
     console.error('getFormations service error:', err);
@@ -86,9 +116,77 @@ async function getUserFormations(userId, query = {}) {
   }
 }
 
-module.exports = {
+// create a new formation (admin-side)
+async function createFormation(data) {
+  try {
+    validateFormationData(data, false);
+
+    // ensure boolean conversion for published if present
+    if (data.published !== undefined) {
+      data.published = !!data.published;
+    }
+
+    const newFormation = await FormationModel.createFormation(data);
+    return newFormation;
+  } catch (err) {
+    console.error('createFormation service error:', err);
+    throw err;
+  }
+}
+
+// update an existing formation
+async function updateFormation(formationId, data) {
+  try {
+    if (!formationId) {
+      throw new Error('Formation ID is required');
+    }
+    validateFormationData(data, true);
+
+    // verify existence
+    const existing = await FormationModel.getFormationById(formationId);
+    if (!existing) {
+      throw new Error('Formation not found');
+    }
+
+    // convert published flag if provided
+    if (data.published !== undefined) {
+      data.published = !!data.published;
+    }
+
+    const updated = await FormationModel.updateFormation(formationId, data);
+    return updated;
+  } catch (err) {
+    console.error('updateFormation service error:', err);
+    throw err;
+  }
+}
+
+// delete a formation
+async function deleteFormation(formationId) {
+  try {
+    if (!formationId) {
+      throw new Error('Formation ID is required');
+    }
+
+    const existing = await FormationModel.getFormationById(formationId);
+    if (!existing) {
+      throw new Error('Formation not found');
+    }
+
+    const deleted = await FormationModel.deleteFormation(formationId);
+    return deleted;
+  } catch (err) {
+    console.error('deleteFormation service error:', err);
+    throw err;
+  }
+}
+
+export default {
   getFormations,
   getFormationById,
   enroll,
   getUserFormations,
+  createFormation,
+  updateFormation,
+  deleteFormation,
 };

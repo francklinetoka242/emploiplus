@@ -25,6 +25,7 @@ interface Formation {
   duration: string;
   price?: number;
   image_url?: string;
+  published?: boolean;
   published_at?: string;
   created_at: string;
   enrollment_deadline?: string;

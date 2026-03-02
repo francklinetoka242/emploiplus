@@ -1,4 +1,4 @@
-const UserModel = require('../models/user.model');
+import UserModel from '../models/user.model.js';
 
 // retrieve all users with pagination
 async function getUsers(query = {}) {
@@ -154,7 +154,7 @@ async function deleteUser(userId) {
   }
 }
 
-module.exports = {
+export default {
   getUsers,
   getUserById,
   getUserByEmail,

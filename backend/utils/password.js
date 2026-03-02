@@ -1,4 +1,4 @@
-const bcrypt = require('bcryptjs');
+import bcrypt from 'bcryptjs';
 
 // hash a plain text password using bcryptjs
 // uses salt rounds to increase computation time and security
@@ -39,7 +39,7 @@ async function comparePassword(password, hashedPassword) {
   }
 }
 
-module.exports = {
+export {
   hashPassword,
   comparePassword,
 };

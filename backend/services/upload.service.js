@@ -1,6 +1,12 @@
-const fs = require('fs');
-const path = require('path');
-const UserModel = require('../models/user.model');
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
+import UserModel from '../models/user.model.js';
+
+// ESM does not provide __dirname; derive it from import.meta.url
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 // directory where uploaded files will be stored
 const UPLOAD_DIR = path.join(__dirname, '../../uploads/candidates');
@@ -69,6 +75,6 @@ async function uploadCandidateDocAndSave(file, docKey, userId, dbColumn) {
   }
 }
 
-module.exports = {
+export default {
   uploadCandidateDocAndSave,
 };

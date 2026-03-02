@@ -1,0 +1,112 @@
+
+// Load environment variables from .env file
+require('dotenv').config();
+
+// import third-party middleware and utilities
+const express = require('express');
+const cors = require('cors');
+const helmet = require('helmet');
+
+// import database pool
+const pool = require('./config/db');
+
+// import custom middleware
+const errorHandler = require('./middleware/errorHandler');
+
+// import route handlers
+const authRoutes = require('./routes/auth.routes');
+const jobRoutes = require('./routes/job.routes');
+const formationRoutes = require('./routes/formation.routes');
+const publicationRoutes = require('./routes/publication.routes');
+const faqRoutes = require('./routes/faq.routes');
+const notificationRoutes = require('./routes/notification.routes');
+const dashboardRoutes = require('./routes/dashboard.routes');
+const serviceRoutes = require('./routes/service.routes');
+const companyRoutes = require('./routes/company.routes');
+const userRoutes = require('./routes/user.routes');
+const uploadRoutes = require('./routes/upload.routes');
+const path = require('path');
+
+// initialize express application
+const app = express();
+
+// retrieve port from environment or use default
+const PORT = process.env.PORT || 5000;
+
+// ===== MIDDLEWARE STACK =====
+
+// security: use helmet to set various HTTP headers
+app.use(helmet());
+
+// cross-origin: configure CORS policy
+const corsOptions = {
+  origin: process.env.CORS_ORIGIN || '*',
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+};
+app.use(cors(corsOptions));
+
+// body parsing: parse incoming JSON request bodies
+app.use(express.json());
+
+// ===== HEALTH CHECK =====
+
+// root health check endpoint
+app.get('/', (req, res) => {
+  res.json({ success: true, message: 'Backend server is running' });
+});
+
+// ===== API ROUTES =====
+
+app.use('/api/auth', authRoutes);
+app.use('/api/jobs', jobRoutes);
+app.use('/api/formations', formationRoutes);
+app.use('/api/publications', publicationRoutes);
+app.use('/api/faq', faqRoutes);
+app.use('/api/notifications', notificationRoutes);
+app.use('/api/dashboard', dashboardRoutes);
+app.use('/api/services', serviceRoutes);
+app.use('/api/companies', companyRoutes);
+app.use('/api/users', userRoutes);
+// serve uploaded files statically (so client can access `/uploads/...`)
+app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
+// upload endpoints
+app.use('/api/uploads', uploadRoutes);
+
+// ===== 404 HANDLER =====
+
+// if no route matched, send 404 error
+app.use((req, res) => {
+  res.status(404).json({ success: false, message: 'Route not found' });
+});
+
+// ===== ERROR HANDLER =====
+
+// centralized error handling middleware (must be last)
+app.use(errorHandler);
+
+// ===== DATABASE & SERVER START =====
+
+// test database connection before starting server
+async function startServer() {
+  try {
+    // attempt to connect to PostgreSQL database
+    const connection = await pool.connect();
+    console.log('✓ Database connection successful');
+    connection.release(); // release connection back to pool
+
+    // start listening for incoming requests
+    app.listen(PORT, () => {
+      console.log(`✓ Server listening on port ${PORT}`);
+      console.log(`✓ API available at http://localhost:${PORT}/api`);
+    });
+  } catch (err) {
+    // if database connection fails, log error and exit
+    console.error('✗ Database connection failed:', err.message);
+    process.exit(1);
+  }
+}
+
+// start the server
+startServer();

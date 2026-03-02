@@ -1,4 +1,4 @@
-const companyService = require('../services/company.service');
+import companyService from '../services/company.service.js';
 
 async function getCompanies(req, res) {
   try {
@@ -20,7 +20,7 @@ async function getCompanyById(req, res) {
   }
 }
 
-module.exports = {
+export {
   getCompanies,
   getCompanyById,
 };

@@ -1,4 +1,4 @@
-const pool = require('../config/db');
+import pool from '../config/db.js';
 
 // verify user credentials by email and password hash
 // returns user object if credentials are valid, null otherwise
@@ -51,7 +51,7 @@ async function updatePasswordHash(userId, newPasswordHash) {
   }
 }
 
-module.exports = {
+export default {
   verifyCredentials,
   getUserForAuth,
   updatePasswordHash,

@@ -1,4 +1,4 @@
-const pool = require('../config/db');
+import pool from '../config/db.js';
 
 // retrieve all publications with pagination
 async function getAllPublications(limit = 20, offset = 0) {
@@ -109,7 +109,7 @@ async function deletePublication(publicationId) {
   }
 }
 
-module.exports = {
+export default {
   getAllPublications,
   getPublicationById,
   getPublicationsByAuthor,

@@ -1,4 +1,4 @@
-const pool = require('../config/db');
+import pool from '../config/db.js';
 
 // retrieve all FAQ entries with optional category filter
 async function getAllFAQ(category = null, limit = 50, offset = 0) {
@@ -114,7 +114,7 @@ async function deleteFAQ(faqId) {
   }
 }
 
-module.exports = {
+export default {
   getAllFAQ,
   getFAQById,
   getFAQCategories,

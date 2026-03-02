@@ -1,5 +1,6 @@
 // src/pages/admin/jobs/page.tsx
 import { useState, useMemo } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Plus, Briefcase, Search } from "lucide-react";
 import JobList from "@/components/admin/jobs/JobList";
@@ -10,6 +11,7 @@ import { api } from "@/lib/api";
 type FilterPeriod = "all" | "week" | "month" | "year";
 
 export default function JobsPage() {
+  const queryClient = useQueryClient();
   const [showCreateForm, setShowCreateForm] = useState(false);
   const [searchText, setSearchText] = useState("");
   const [filterPeriod, setFilterPeriod] = useState<FilterPeriod>("all");
@@ -167,7 +169,13 @@ export default function JobsPage() {
                 </Button>
               </div>
               <div className="p-10">
-                <JobForm onSuccess={() => setShowCreateForm(false)} />
+                <JobForm
+          onSuccess={() => {
+            setShowCreateForm(false);
+            // immediately refetch the list so the new offer appears
+            queryClient.invalidateQueries(["admin-jobs"]);
+          }}
+        />
               </div>
             </div>
           </div>

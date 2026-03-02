@@ -1,12 +1,16 @@
-const pool = require('../config/db');
+import pool from '../config/db.js';
 
 // retrieve all jobs with company information via JOIN
+// include all relevant columns (published status, sector, deadlines...) so
+// the admin interface can display and filter them.
 async function getAllJobs(limit = 20, offset = 0) {
   try {
     const query = `
       SELECT 
         j.id, j.title, j.description, j.location, j.salary, j.job_type,
-        j.company_id, c.name AS company_name, c.logo,
+        j.sector, j.type, j.published, j.published_at, j.deadline_date,
+        j.experience_level, j.is_closed, j.company_id,
+        c.name AS company, c.logo,
         j.created_at, j.updated_at
       FROM jobs j
       LEFT JOIN companies c ON j.company_id = c.id
@@ -27,7 +31,9 @@ async function getJobById(jobId) {
     const query = `
       SELECT 
         j.id, j.title, j.description, j.location, j.salary, j.job_type,
-        j.company_id, c.name AS company_name, c.logo, c.website,
+        j.sector, j.type, j.published, j.published_at, j.deadline_date,
+        j.experience_level, j.is_closed, j.company_id,
+        c.name AS company, c.logo, c.website,
         j.created_at, j.updated_at
       FROM jobs j
       LEFT JOIN companies c ON j.company_id = c.id
@@ -47,7 +53,7 @@ async function getJobsByCompanyId(companyId, limit = 10, offset = 0) {
     const query = `
       SELECT 
         j.id, j.title, j.description, j.location, j.salary, j.job_type,
-        j.company_id, c.name AS company_name,
+        j.company_id, c.name AS company,
         j.created_at, j.updated_at
       FROM jobs j
       LEFT JOIN companies c ON j.company_id = c.id
@@ -63,15 +69,37 @@ async function getJobsByCompanyId(companyId, limit = 10, offset = 0) {
   }
 }
 
+
 // create a new job posting
-async function createJob(title, description, location, salary, jobType, companyId) {
+// Accepts an object of fields so that we can persist optional attributes
+// (published, sector, type, salary_min, salary_max, company, etc.) without
+// having to update the signature every time.
+async function createJob(jobData) {
   try {
+    const fields = [];
+    const placeholders = [];
+    const values = [];
+
+    Object.entries(jobData).forEach(([key, value], idx) => {
+      // ignore undefined values
+      if (value !== undefined) {
+        fields.push(key);
+        placeholders.push(`$${idx + 1}`);
+        values.push(value);
+      }
+    });
+
+    // always set timestamps
+    fields.push('created_at', 'updated_at');
+    placeholders.push('NOW()', 'NOW()');
+
     const query = `
-      INSERT INTO jobs (title, description, location, salary, job_type, company_id, created_at, updated_at)
-      VALUES ($1, $2, $3, $4, $5, $6, NOW(), NOW())
-      RETURNING id, title, description, location, salary, job_type, company_id, created_at, updated_at
+      INSERT INTO jobs (${fields.join(', ')})
+      VALUES (${placeholders.join(', ')})
+      RETURNING *
     `;
-    const result = await pool.query(query, [title, description, location, salary, jobType, companyId]);
+
+    const result = await pool.query(query, values);
     return result.rows[0];
   } catch (err) {
     console.error('createJob query error:', err);
@@ -122,7 +150,7 @@ async function deleteJob(jobId) {
   }
 }
 
-module.exports = {
+export default {
   getAllJobs,
   getJobById,
   getJobsByCompanyId,

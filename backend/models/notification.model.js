@@ -1,4 +1,4 @@
-const pool = require('../config/db');
+import pool from '../config/db.js';
 
 // retrieve all notifications for a specific user
 async function getUserNotifications(userId, limit = 20, offset = 0) {
@@ -123,7 +123,7 @@ async function deleteUserNotifications(userId) {
   }
 }
 
-module.exports = {
+export default {
   getUserNotifications,
   getUnreadNotificationsCount,
   getNotificationById,

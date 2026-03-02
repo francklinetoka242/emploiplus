@@ -1,4 +1,4 @@
-const NotificationModel = require('../models/notification.model');
+import NotificationModel from '../models/notification.model.js';
 
 // retrieve all notifications for current user
 async function getNotifications(user, query = {}) {
@@ -99,7 +99,7 @@ async function createNotification(userId, title, message, type = 'info') {
   }
 }
 
-module.exports = {
+export default {
   getNotifications,
   getUnreadCount,
   markAsRead,

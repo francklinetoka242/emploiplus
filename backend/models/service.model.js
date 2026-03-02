@@ -1,4 +1,4 @@
-const pool = require('../config/db');
+import pool from '../config/db.js';
 
 // retrieve all services with pagination
 async function getAllServices(limit = 20, offset = 0) {
@@ -108,7 +108,7 @@ async function deleteService(serviceId) {
   }
 }
 
-module.exports = {
+export default {
   getAllServices,
   getServiceById,
   searchServices,

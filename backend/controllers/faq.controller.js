@@ -1,4 +1,4 @@
-const faqService = require('../services/faq.service');
+import faqService from '../services/faq.service.js';
 
 async function getFAQ(req, res) {
   try {
@@ -10,4 +10,4 @@ async function getFAQ(req, res) {
   }
 }
 
-module.exports = { getFAQ };
+export { getFAQ };

@@ -82,6 +82,18 @@ export const api = {
     return { success: true };
   },
 
+  // admin helpers for mocks
+  getAdminJobs: async () => {
+    await simulateNetworkDelay();
+    return { data: MOCK_JOBS };
+  },
+
+  publishJob: async (_jobId: string, published: boolean) => {
+    await simulateNetworkDelay();
+    // simply return toggled state
+    return { data: { published } };
+  },
+
   // ========================================================================
   // FORMATIONS
   // ========================================================================
@@ -166,9 +178,52 @@ export const api = {
   // ========================================================================
   // SERVICES
   // ========================================================================
-  getServices: async () => {
+  getServices: async (params?: any) => {
     await simulateNetworkDelay();
     return { data: MOCK_SERVICES };
+  },
+
+  getAdminServiceCategories: async () => {
+    await simulateNetworkDelay();
+    return { 
+      data: [
+        { id: 1, title: 'Design Graphique', description: 'Services de design', is_featured: true },
+        { id: 2, title: 'Développement Web', description: 'Services de développement', is_featured: false },
+      ] 
+    };
+  },
+
+  createServiceCategory: async (data: any) => {
+    await simulateNetworkDelay();
+    return { 
+      id: Math.random().toString(36).substr(2, 9),
+      ...data,
+      is_featured: false,
+    };
+  },
+
+  toggleServiceCategoryFeature: async (id: string, featured: boolean) => {
+    await simulateNetworkDelay();
+    return { success: true, is_featured: featured };
+  },
+
+  getAdminServices: async (params?: any) => {
+    await simulateNetworkDelay();
+    return { data: MOCK_SERVICES };
+  },
+
+  createService: async (data: any) => {
+    await simulateNetworkDelay();
+    return { 
+      id: Math.random().toString(36).substr(2, 9),
+      ...data,
+      is_featured: false,
+    };
+  },
+
+  toggleServiceFeature: async (id: string, featured: boolean) => {
+    await simulateNetworkDelay();
+    return { success: true, is_featured: featured };
   },
 
   // ========================================================================

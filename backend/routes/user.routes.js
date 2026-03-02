@@ -1,6 +1,6 @@
-const express = require('express');
+import express from 'express';
 const router = express.Router();
-const { getUsers, getUserById } = require('../controllers/user.controller');
+import { getUsers, getUserById } from '../controllers/user.controller.js';
 
 // GET /api/users - retrieve all users
 // no authentication required, public endpoint (for display purposes)
@@ -10,4 +10,4 @@ router.get('/', getUsers);
 // GET /api/users/:id - retrieve a single user by ID
 router.get('/:id', getUserById);
 
-module.exports = router;
+export default router;

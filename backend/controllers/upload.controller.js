@@ -1,4 +1,4 @@
-const uploadService = require('../services/upload.service');
+import uploadService from '../services/upload.service.js';
 
 // Controller to handle candidate document upload
 // expects `req.file` (from multer) and authenticated user on `req.user` or `req.body.userId`
@@ -21,4 +21,4 @@ async function uploadCandidateDocAndSave(req, res) {
   }
 }
 
-module.exports = { uploadCandidateDocAndSave };
+export { uploadCandidateDocAndSave };

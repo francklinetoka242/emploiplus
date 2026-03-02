@@ -2,8 +2,9 @@
 // utilise la librairie `pg` pour gérer les connexions à la base de données
 // utilise une chaîne de connexion unique (DATABASE_URL) au lieu de variables individuelles
 
-const { Pool } = require('pg');
-const { DATABASE_URL } = require('./env');
+import { Pool } from 'pg';
+import env from './env.js';
+const { DATABASE_URL } = env;
 
 // Crée un pool de connexions partagé à partir de DATABASE_URL
 // DATABASE_URL doit être au format: postgresql://user:password@host:port/database
@@ -36,4 +37,4 @@ async function testConnection() {
 
 // Exporte le pool et la fonction de test pour qu'on puisse l'invoquer depuis
 // server.js ou un script de démarrage.
-module.exports = pool;
+export default pool;

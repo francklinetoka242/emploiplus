@@ -150,6 +150,7 @@ const Jobs = () => {
         company: filters.company || '',
         sector: filters.sector || '',
         type: filters.type && filters.type !== 'all' ? filters.type : '',
+        published: true,
         page,
         sortBy: 'created_at',
         sortOrder: filters.recent ? 'DESC' : 'ASC',

@@ -1,4 +1,4 @@
-const pool = require('../config/db');
+import pool from '../config/db.js';
 
 // retrieve all companies
 async function getAllCompanies(limit = 20, offset = 0) {
@@ -108,7 +108,7 @@ async function deleteCompany(companyId) {
   }
 }
 
-module.exports = {
+export default {
   getAllCompanies,
   getCompanyById,
   getCompanyByName,

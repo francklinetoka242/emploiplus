@@ -1,4 +1,4 @@
-const ServiceModel = require('../models/service.model');
+import ServiceModel from '../models/service.model.js';
 
 // retrieve all services with pagination
 async function getServices(query = {}) {
@@ -130,7 +130,7 @@ async function deleteService(serviceId) {
   }
 }
 
-module.exports = {
+export default {
   getServices,
   getServiceById,
   searchServices,

@@ -1,4 +1,4 @@
-const CompanyModel = require('../models/company.model');
+import CompanyModel from '../models/company.model.js';
 
 // validate company payload data
 function validateCompanyData(data, isUpdate = false) {
@@ -145,7 +145,7 @@ async function deleteCompany(companyId) {
   }
 }
 
-module.exports = {
+export default {
   getCompanies,
   getCompanyById,
   createCompany,

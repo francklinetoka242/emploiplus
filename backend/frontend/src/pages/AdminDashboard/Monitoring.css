@@ -1,0 +1,31 @@
+.monitoring-page {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.system-health .health-cards {
+  display: flex;
+  gap: 1rem;
+}
+
+.health-card {
+  background: white;
+  padding: 1rem;
+  border-radius: 0.6rem;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  min-width: 160px;
+}
+
+.health-card.ok { border-left: 4px solid #16a34a; }
+.health-card.bad { border-left: 4px solid #ef4444; }
+
+.health-title { color: #6b7280; font-weight: 700; }
+.health-value { font-size: 1.1rem; font-weight: 800; margin-top: 0.5rem; }
+
+.audit-exports { display: flex; gap: 0.75rem; margin-bottom: 0.75rem; }
+.audit-exports button { padding: 0.5rem 0.75rem; border-radius: 0.4rem; cursor: pointer; }
+
+.audit-table-container { background: white; padding: 0.5rem; border-radius: 0.6rem; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
+.audit-table { width: 100%; border-collapse: collapse; }
+.audit-table th, .audit-table td { padding: 0.6rem 0.75rem; text-align: left; border-bottom: 1px solid #f1f5f9; }

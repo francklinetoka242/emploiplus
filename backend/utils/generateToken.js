@@ -1,4 +1,4 @@
-const jwt = require('jsonwebtoken');
+import jwt from 'jsonwebtoken';
 
 // generate a JWT token for a user
 function generateToken(userId) {
@@ -39,4 +39,4 @@ function verifyToken(token) {
   }
 }
 
-module.exports = { generateToken, verifyToken };
+export { generateToken, verifyToken };

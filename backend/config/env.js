@@ -1,7 +1,7 @@
 // env.js - chargement et validation des variables d'environnement
 // utilise dotenv pour lire le fichier .env au démarrage
 
-const dotenv = require('dotenv');
+import dotenv from 'dotenv';
 
 // charge .env dans process.env (si présent)
 dotenv.config();
@@ -21,7 +21,7 @@ requiredVars.forEach((name) => {
 
 // Export des variables validées pour garantir qu'elles existent partout
 // DATABASE_URL doit être au format: postgresql://user:password@host:port/database
-module.exports = {
+export default {
   DATABASE_URL: process.env.DATABASE_URL,
   PORT: process.env.PORT || 5000,
   JWT_SECRET: process.env.JWT_SECRET,

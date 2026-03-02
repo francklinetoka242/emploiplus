@@ -1,9 +1,9 @@
-const express = require('express');
+import express from 'express';
 const router = express.Router();
-const { getFAQ } = require('../controllers/faq.controller');
+import { getFAQ } from '../controllers/faq.controller.js';
 
 // GET /api/faq - retrieve all FAQ entries
 // no authentication required, public endpoint
 router.get('/', getFAQ);
 
-module.exports = router;
+export default router;

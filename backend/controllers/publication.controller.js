@@ -1,4 +1,4 @@
-const publicationService = require('../services/publication.service');
+import publicationService from '../services/publication.service.js';
 
 async function getPublications(req, res) {
   try {
@@ -40,7 +40,7 @@ async function deletePublication(req, res) {
   }
 }
 
-module.exports = {
+export {
   getPublications,
   getPublicationById,
   createPublication,

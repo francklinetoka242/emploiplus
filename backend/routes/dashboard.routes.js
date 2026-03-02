@@ -1,11 +1,11 @@
-const express = require('express');
+import express from 'express';
 const router = express.Router();
-const { getStats } = require('../controllers/dashboard.controller');
-const { authenticateJWT } = require('../middleware/auth.middleware');
+import { getStats } from '../controllers/dashboard.controller.js';
+import { requireAdmin } from '../middleware/auth.middleware.js';
 
 // GET /api/dashboard/stats - retrieve dashboard statistics (protected)
-// requires valid JWT token (admin-only access recommended)
+// requires admin token (admin-only access required)
 // returns system health, user counts, revenue, etc.
-router.get('/stats', authenticateJWT, getStats);
+router.get('/stats', requireAdmin, getStats);
 
-module.exports = router;
+export default router;

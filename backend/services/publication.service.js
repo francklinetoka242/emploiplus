@@ -1,4 +1,4 @@
-const PublicationModel = require('../models/publication.model');
+import PublicationModel from '../models/publication.model.js';
 
 // retrieve all publications with pagination
 async function getPublications(query = {}) {
@@ -116,7 +116,7 @@ async function getPublicationsByAuthor(authorId, query = {}) {
   }
 }
 
-module.exports = {
+export default {
   getPublications,
   getPublicationById,
   createPublication,

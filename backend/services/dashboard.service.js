@@ -70,7 +70,7 @@ async function getJobStats() {
   }
 }
 
-module.exports = {
+export default {
   getStats,
   getUserStats,
   getJobStats,

@@ -95,7 +95,9 @@ export default function JobForm({ job, onSuccess }: JobFormProps) {
         salary_max: parseInt(String(form.salary).split('-')[1]?.trim() || form.salary) || null,
       }),
       // Status fields for admin
-      published: false,
+      // newly created offers are published immediately so they show up
+      // both in the admin listing and on the public /emplois page.
+      published: true,
       is_closed: false,
     };
 

@@ -1,4 +1,4 @@
-const FAQModel = require('../models/faq.model');
+import FAQModel from '../models/faq.model.js';
 
 // retrieve all FAQ entries with optional category filtering
 async function getFAQ(query = {}) {
@@ -53,7 +53,7 @@ async function getFAQById(faqId) {
   }
 }
 
-module.exports = {
+export default {
   getFAQ,
   getFAQCategories,
   getFAQById,

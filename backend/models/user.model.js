@@ -1,9 +1,10 @@
-const pool = require('../config/db');
+import pool from '../config/db.js';
 
 // retrieve all users from the users table
 async function getAllUsers(limit = 10, offset = 0) {
   try {
-    const query = 'SELECT id, email, username, role, created_at FROM users LIMIT $1 OFFSET $2';
+    // CORRIGÉ: role -> user_type
+    const query = 'SELECT id, email, username, user_type, created_at FROM users LIMIT $1 OFFSET $2';
     const result = await pool.query(query, [limit, offset]);
     return result.rows;
   } catch (err) {
@@ -15,7 +16,8 @@ async function getAllUsers(limit = 10, offset = 0) {
 // retrieve a single user by ID
 async function getUserById(userId) {
   try {
-    const query = 'SELECT id, email, username, role, created_at FROM users WHERE id = $1';
+    // CORRIGÉ: role -> user_type
+    const query = 'SELECT id, email, username, user_type, created_at FROM users WHERE id = $1';
     const result = await pool.query(query, [userId]);
     return result.rows[0] || null;
   } catch (err) {
@@ -27,7 +29,8 @@ async function getUserById(userId) {
 // retrieve user by email
 async function getUserByEmail(email) {
   try {
-    const query = 'SELECT id, email, username, role, password_hash, created_at FROM users WHERE email = $1';
+    // CORRIGÉ: role -> user_type
+    const query = 'SELECT id, email, username, user_type, password_hash, created_at FROM users WHERE email = $1';
     const result = await pool.query(query, [email]);
     return result.rows[0] || null;
   } catch (err) {
@@ -37,14 +40,15 @@ async function getUserByEmail(email) {
 }
 
 // insert a new user into the users table
-async function createUser(email, username, passwordHash, role = 'user') {
+// CORRIGÉ: role -> user_type par défaut
+async function createUser(email, username, passwordHash, user_type = 'candidate') {
   try {
     const query = `
-      INSERT INTO users (email, username, password_hash, role, created_at)
+      INSERT INTO users (email, username, password_hash, user_type, created_at)
       VALUES ($1, $2, $3, $4, NOW())
-      RETURNING id, email, username, role, created_at
+      RETURNING id, email, username, user_type, created_at
     `;
-    const result = await pool.query(query, [email, username, passwordHash, role]);
+    const result = await pool.query(query, [email, username, passwordHash, user_type]);
     return result.rows[0];
   } catch (err) {
     console.error('createUser query error:', err);
@@ -66,7 +70,8 @@ async function updateUser(userId, updates) {
 
     // build SET part: email = $1, username = $2, ...
     const setClause = fields.map((field, i) => `${field} = $${i + 1}`).join(', ');
-    const query = `UPDATE users SET ${setClause} WHERE id = $${fields.length + 1} RETURNING id, email, username, role, created_at`;
+    // CORRIGÉ: role -> user_type
+    const query = `UPDATE users SET ${setClause} WHERE id = $${fields.length + 1} RETURNING id, email, username, user_type, created_at`;
     
     const result = await pool.query(query, values);
     return result.rows[0] || null;
@@ -88,7 +93,7 @@ async function deleteUser(userId) {
   }
 }
 
-module.exports = {
+export default {
   getAllUsers,
   getUserById,
   getUserByEmail,

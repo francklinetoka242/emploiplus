@@ -1,0 +1,112 @@
+{
+  "name": "Emploi+ - Plateforme d'emploi et de recrutement",
+  "short_name": "Emploi+",
+  "description": "La plateforme digitale pour candidats, entreprises et formation professionnelle",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#ffffff",
+  "theme_color": "#2563eb",
+  "categories": ["business", "productivity"],
+  
+  "icons": [
+    {
+      "src": "/icons/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-192x192-maskable.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/icons/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-512x512-maskable.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+
+  "screenshots": [
+    {
+      "src": "/screenshots/mobile-1.png",
+      "sizes": "540x720",
+      "type": "image/png",
+      "form_factor": "narrow"
+    },
+    {
+      "src": "/screenshots/tablet-1.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "form_factor": "wide"
+    }
+  ],
+
+  "shortcuts": [
+    {
+      "name": "Voir les offres d'emploi",
+      "short_name": "Offres",
+      "description": "Accédez directement à la liste des offres d'emploi",
+      "url": "/emplois",
+      "icons": [
+        {
+          "src": "/icons/jobs-192x192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "Consulter les formations",
+      "short_name": "Formations",
+      "description": "Découvrez nos formations professionnelles",
+      "url": "/formations",
+      "icons": [
+        {
+          "src": "/icons/formations-192x192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "Accéder à mon profil",
+      "short_name": "Profil",
+      "description": "Consultez et modifiez votre profil",
+      "url": "/profil",
+      "icons": [
+        {
+          "src": "/icons/profile-192x192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "Messagerie",
+      "short_name": "Messages",
+      "description": "Consultez vos messages",
+      "url": "/messages",
+      "icons": [
+        {
+          "src": "/icons/messages-192x192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    }
+  ],
+
+  "prefer_related_applications": false,
+  "related_applications": []
+}

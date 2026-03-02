@@ -1,19 +1,37 @@
-const express = require('express');
+
+import express from 'express';
 const router = express.Router();
-const { register, login } = require('../controllers/auth.controller');
+import { register, loginAdmin, loginUser } from '../controllers/auth.controller.js';
 
 // ---------------------------------------------------------------------------
-// Public authentication routes
+// ADMIN AUTHENTICATION ROUTES
 // ---------------------------------------------------------------------------
 
-// POST /register
-// Accepts email and password in body. Delegates to auth.controller.register
-// which handles validation, hashing, and user creation.
+// POST /api/auth/register
+// Create a new super admin (first-time setup)
+// Public endpoint - used only for creating the initial admin
+// Body: { email, password, first_name, last_name }
 router.post('/register', register);
+// Compatibility alias: some frontends still call /api/auth/admin/register
+router.post('/admin/register', register);
 
-// POST /login
-// Accepts email and password in body. Delegates to auth.controller.login
-// which verifies credentials and returns a JWT + user info.
-router.post('/login', login);
+// POST /api/auth/login
+// Admin login endpoint
+// Queries public.admins table only
+// Body: { email, password }
+// Returns: { token, user: { id, email, role, firstName, lastName }, userType: 'admin' }
+router.post('/login', loginAdmin);
 
-module.exports = router;
+// ---------------------------------------------------------------------------
+// USER (CANDIDATE/COMPANY) AUTHENTICATION ROUTES
+// ---------------------------------------------------------------------------
+
+// POST /api/auth/user/login
+// User (candidate or company) login endpoint
+// Queries public.users table only (NOT public.admins)
+// SECURITY: Uses user_type field instead of role field
+// Body: { email, password }
+// Returns: { token, user: { id, email, user_type, firstName, lastName }, userType: 'user' }
+router.post('/user/login', loginUser);
+
+export default router;

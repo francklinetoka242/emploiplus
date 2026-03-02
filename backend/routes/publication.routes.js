@@ -1,7 +1,7 @@
-const express = require('express');
+import express from 'express';
 const router = express.Router();
-const { getPublications, getPublicationById, createPublication, deletePublication } = require('../controllers/publication.controller');
-const { authenticateJWT } = require('../middleware/auth.middleware');
+import { getPublications, getPublicationById, createPublication, deletePublication } from '../controllers/publication.controller.js';
+import { requireAdmin, requireRoles } from '../middleware/auth.middleware.js';
 
 // GET /api/publications - retrieve all publications with optional filtering/pagination
 // query params: ?limit=20&offset=0
@@ -11,12 +11,12 @@ router.get('/', getPublications);
 router.get('/:id', getPublicationById);
 
 // POST /api/publications - create a new publication (protected)
-// requires valid JWT token
+// requires admin token (only content admins or super admins)
 // body: { content, image_url?, visibility?, category?, achievement? }
-router.post('/', authenticateJWT, createPublication);
+router.post('/', requireAdmin, requireRoles('super_admin','content_admin'), createPublication);
 
 // DELETE /api/publications/:id - delete a publication (protected)
-// requires valid JWT token
-router.delete('/:id', authenticateJWT, deletePublication);
+// requires admin token (only content admins or super admins)
+router.delete('/:id', requireAdmin, requireRoles('super_admin','content_admin'), deletePublication);
 
-module.exports = router;
+export default router;

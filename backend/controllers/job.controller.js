@@ -1,4 +1,4 @@
-const jobService = require('../services/job.service');
+import jobService from '../services/job.service.js';
 
 async function getJobs(req, res) {
   try {
@@ -26,7 +26,8 @@ async function createJob(req, res) {
     res.status(201).json({ data: newJob });
   } catch (err) {
     console.error('createJob error', err);
-    res.status(500).json({ message: err.message || 'Internal server error' });
+    const status = /required|must/i.test(err.message) ? 400 : 500;
+    res.status(status).json({ message: err.message || 'Internal server error' });
   }
 }
 
@@ -36,7 +37,8 @@ async function updateJob(req, res) {
     res.json({ data: updated });
   } catch (err) {
     console.error('updateJob error', err);
-    res.status(500).json({ message: err.message || 'Internal server error' });
+    const status = /required|must/i.test(err.message) ? 400 : 500;
+    res.status(status).json({ message: err.message || 'Internal server error' });
   }
 }
 
@@ -49,11 +51,32 @@ async function deleteJob(req, res) {
     res.status(500).json({ message: err.message || 'Internal server error' });
   }
 }
-
-module.exports = {
+// toggle published state (and set published_at timestamp if going live)
+async function publishJob(req, res) {
+  try {
+    const { published } = req.body;
+    if (typeof published !== 'boolean') {
+      throw new Error('Published flag must be boolean');
+    }
+    const updates = { published };
+    if (published) {
+      updates.published_at = new Date();
+    } else {
+      updates.published_at = null;
+    }
+    const updated = await jobService.updateJob(req.params.id, updates);
+    res.json({ data: updated });
+  } catch (err) {
+    console.error('publishJob error:', err);
+    const status = /required|must/i.test(err.message) ? 400 : 500;
+    res.status(status).json({ message: err.message || 'Internal server error' });
+  }
+}
+export {
   getJobs,
   getJobById,
   createJob,
   updateJob,
   deleteJob,
+  publishJob,
 };

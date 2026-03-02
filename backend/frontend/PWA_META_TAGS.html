@@ -1,0 +1,68 @@
+<!-- PWA Configuration -->
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no" />
+
+<!-- Theme Colors -->
+<meta name="theme-color" content="#2563eb" />
+<meta name="msapplication-TileColor" content="#2563eb" />
+
+<!-- PWA Manifest -->
+<link rel="manifest" href="/manifest.json" />
+
+<!-- Icons & Favicons -->
+<link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192x192.png" />
+<link rel="apple-touch-icon" href="/icons/icon-192x192.png" />
+
+<!-- App Meta Tags -->
+<meta name="application-name" content="Emploi+" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="Emploi+" />
+
+<!-- Status Bar (iOS) -->
+<meta name="apple-mobile-web-app-status-bar-style" content="black" />
+
+<!-- Safe Area Inset for notch support -->
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+
+<!-- Description -->
+<meta name="description" content="Emploi+ - La plateforme digitale pour candidats, entreprises et formations professionnelles" />
+<meta name="keywords" content="emploi, recrutement, formation, candidature, entreprise" />
+
+<!-- Open Graph Tags -->
+<meta property="og:type" content="website" />
+<meta property="og:title" content="Emploi+ - Plateforme d'emploi et de recrutement" />
+<meta property="og:description" content="La plateforme digitale pour candidats, entreprises et formations professionnelles" />
+<meta property="og:image" content="/og-image.png" />
+<meta property="og:url" content="https://emploiplus.cg" />
+
+<!-- Twitter Tags -->
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="Emploi+ - Plateforme d'emploi" />
+<meta name="twitter:description" content="La plateforme digitale pour candidats, entreprises et formations" />
+<meta name="twitter:image" content="/og-image.png" />
+
+<!-- Disable pinch zoom on iOS (optional) -->
+<script>
+  document.addEventListener('touchmove', function (e) {
+    if (e.scale !== 1) {
+      e.preventDefault();
+    }
+  }, false);
+</script>
+
+<!-- Service Worker Registration -->
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('/sw.js').then(
+        (registration) => {
+          console.log('✅ Service Worker registered:', registration);
+        },
+        (error) => {
+          console.error('❌ Service Worker registration failed:', error);
+        }
+      );
+    });
+  }
+</script>
