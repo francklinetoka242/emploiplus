@@ -20,7 +20,49 @@ async function getUserById(req, res) {
   }
 }
 
+// admin-only handlers
+async function createUser(req, res) {
+  try {
+    const { email, first_name, last_name, password, user_type } = req.body;
+    if (!email || !first_name || !last_name || !password) {
+      return res.status(400).json({ message: 'Email, first_name, last_name, and password are required' });
+    }
+    // password should arrive hashed by auth controller or hashed here
+    const newUser = await userService.createUser(email, first_name, last_name, password, user_type);
+    res.status(201).json({ data: newUser });
+  } catch (err) {
+    console.error('createUser error', err);
+    const status = /required|already in use|Invalid/i.test(err.message) ? 400 : 500;
+    res.status(status).json({ message: err.message || 'Internal server error' });
+  }
+}
+
+async function updateUser(req, res) {
+  try {
+    const updated = await userService.updateUserProfile(req.params.id, req.body);
+    res.json({ data: updated });
+  } catch (err) {
+    console.error('updateUser error', err);
+    const status = /required|not found|No valid/i.test(err.message) ? 400 : 500;
+    res.status(status).json({ message: err.message || 'Internal server error' });
+  }
+}
+
+async function deleteUser(req, res) {
+  try {
+    await userService.deleteUser(req.params.id);
+    res.json({ message: 'User deleted' });
+  } catch (err) {
+    console.error('deleteUser error', err);
+    const status = /not found/i.test(err.message) ? 404 : 500;
+    res.status(status).json({ message: err.message || 'Internal server error' });
+  }
+}
+
 export {
   getUsers,
   getUserById,
+  createUser,
+  updateUser,
+  deleteUser,
 };

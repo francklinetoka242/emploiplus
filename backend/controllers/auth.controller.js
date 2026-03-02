@@ -17,12 +17,38 @@ async function register(req, res, next) {
 // Controller for admin login
 // expects { email, password } in request body
 // returns 200 with token and user information
+// additionally records each attempt in login history
 async function loginAdmin(req, res, next) {
+  const { email, password } = req.body;
   try {
-    const { email, password } = req.body;
     const { token, user } = await authService.loginAdmin(email, password);
+
+    // record successful login event (fire and forget)
+    import('../services/login-history.service.js').then(mod => {
+      mod.default.record({
+        admin_id: user.id,
+        admin_email: email,
+        success: true,
+        ip_address: req.ip,
+        user_agent: req.headers['user-agent'] || '',
+        details: null
+      });
+    }).catch(()=>{});
+
     return res.status(200).json({ success: true, data: { token, admin: user }, userType: 'admin' });
   } catch (error) {
+    // record failed login attempt
+    import('../services/login-history.service.js').then(mod => {
+      mod.default.record({
+        admin_id: null,
+        admin_email: email,
+        success: false,
+        ip_address: req.ip,
+        user_agent: req.headers['user-agent'] || '',
+        details: { message: error.message }
+      });
+    }).catch(()=>{});
+
     next(error);
   }
 }

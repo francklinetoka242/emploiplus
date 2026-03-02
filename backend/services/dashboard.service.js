@@ -1,29 +1,30 @@
-// dashboard service - aggregates statistics from various models
-// in production, you'd query actual models or use a dedicated analytics service
+import dashboardModel from '../models/dashboard.model.js';
 
+// aggregate all statistics for the dashboard
 async function getStats() {
   try {
-    // NOTE: these are placeholder stats; in production, query actual data
-    // from your models and database
+    // Fetch all stats in parallel
+    const [systemStats, userStats, jobStats, formationStats, faqStats, adminStats, healthStatus] = 
+      await Promise.all([
+        dashboardModel.getSystemStats(),
+        dashboardModel.getUserStats(),
+        dashboardModel.getJobStats(),
+        dashboardModel.getFormationStats(),
+        dashboardModel.getFAQStats(),
+        dashboardModel.getAdminStats(),
+        dashboardModel.getSystemHealth(),
+      ]);
 
-    const stats = {
-      total_users: 1250,
-      total_jobs: 342,
-      total_formations: 87,
-      total_publications: 2105,
-      active_candidates: 890,
-      active_companies: 145,
-      monthly_revenue: 45230.50,
-      system_health: {
-        status: 'healthy',
-        uptime_percentage: 99.98,
-        response_time_ms: 45,
-        database_connections: 12,
-        cache_hit_rate: 0.92,
-      },
+    return {
+      timestamp: new Date().toISOString(),
+      system: systemStats,
+      users: userStats,
+      jobs: jobStats,
+      formations: formationStats,
+      faqs: faqStats,
+      admins: adminStats,
+      system_health: healthStatus,
     };
-
-    return stats;
   } catch (err) {
     console.error('getStats service error:', err);
     throw err;
@@ -33,16 +34,7 @@ async function getStats() {
 // get detailed user statistics
 async function getUserStats() {
   try {
-    // placeholder: in production, query actual user data
-    const stats = {
-      total_candidates: 1000,
-      total_companies: 200,
-      total_admins: 50,
-      verified_users: 950,
-      new_users_this_month: 120,
-      active_users_this_week: 580,
-    };
-
+    const stats = await dashboardModel.getUserStats();
     return stats;
   } catch (err) {
     console.error('getUserStats service error:', err);
@@ -53,19 +45,32 @@ async function getUserStats() {
 // get job posting statistics
 async function getJobStats() {
   try {
-    // placeholder: in production, aggregate from job model
-    const stats = {
-      total_jobs: 342,
-      active_jobs: 280,
-      closed_jobs: 62,
-      jobs_posted_this_month: 45,
-      average_salary: 45000,
-      most_popular_category: 'IT',
-    };
-
+    const stats = await dashboardModel.getJobStats();
     return stats;
   } catch (err) {
     console.error('getJobStats service error:', err);
+    throw err;
+  }
+}
+
+// get formation statistics
+async function getFormationStats() {
+  try {
+    const stats = await dashboardModel.getFormationStats();
+    return stats;
+  } catch (err) {
+    console.error('getFormationStats service error:', err);
+    throw err;
+  }
+}
+
+// get system health
+async function getSystemHealth() {
+  try {
+    const health = await dashboardModel.getSystemHealth();
+    return health;
+  } catch (err) {
+    console.error('getSystemHealth service error:', err);
     throw err;
   }
 }
@@ -74,4 +79,6 @@ export default {
   getStats,
   getUserStats,
   getJobStats,
+  getFormationStats,
+  getSystemHealth,
 };

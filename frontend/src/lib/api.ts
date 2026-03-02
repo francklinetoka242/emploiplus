@@ -225,6 +225,79 @@ const apiReal = {
     const res = await fetch(url, { headers: authHeaders() });
     return res.json();
   },
+
+  // ------------------------------------------------------------------------
+  // UTILISATEURS
+  // ------------------------------------------------------------------------
+  getUsers: async (params?: any) => {
+    const url = buildApiUrl(`/users${toQuery(params)}`);
+    const res = await fetch(url, { headers: authHeaders() });
+    return res.json();
+  },
+
+  createUser: async (data: any) => {
+    const res = await fetch(buildApiUrl('/admin/users'), {
+      method: 'POST',
+      headers: authHeaders('application/json'),
+      body: JSON.stringify(data),
+    });
+    return res.json();
+  },
+
+  updateUser: async (id: string, updates: any) => {
+    const res = await fetch(buildApiUrl(`/admin/users/${id}`), {
+      method: 'PUT',
+      headers: authHeaders('application/json'),
+      body: JSON.stringify(updates),
+    });
+    return res.json();
+  },
+
+  deleteUser: async (id: string) => {
+    const res = await fetch(buildApiUrl(`/admin/users/${id}`), {
+      method: 'DELETE',
+      headers: authHeaders(),
+    });
+    return res.json();
+  },
+
+  // ------------------------------------------------------------------------
+  // NOTIFICATIONS UTILISATEUR
+  // ------------------------------------------------------------------------
+  getNotifications: async (params?: any) => {
+    const url = buildApiUrl(`/notifications${toQuery(params)}`);
+    const res = await fetch(url, { headers: authHeaders() });
+    return res.json();
+  },
+
+  getUnreadNotificationCount: async () => {
+    const res = await fetch(buildApiUrl('/notifications/unread-count'), { headers: authHeaders() });
+    return res.json();
+  },
+
+  markNotificationRead: async (id: string) => {
+    const res = await fetch(buildApiUrl(`/notifications/${id}/read`), {
+      method: 'POST',
+      headers: authHeaders(),
+    });
+    return res.json();
+  },
+
+  markAllNotificationsRead: async () => {
+    const res = await fetch(buildApiUrl('/notifications/read-all'), {
+      method: 'POST',
+      headers: authHeaders(),
+    });
+    return res.json();
+  },
+
+  deleteNotification: async (id: string) => {
+    const res = await fetch(buildApiUrl(`/notifications/${id}`), {
+      method: 'DELETE',
+      headers: authHeaders(),
+    });
+    return res.json();
+  },
 };
 
 // un simple flag permet de repasser en mode statique au besoin (par exemple

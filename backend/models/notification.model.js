@@ -4,7 +4,7 @@ import pool from '../config/db.js';
 async function getUserNotifications(userId, limit = 20, offset = 0) {
   try {
     const query = `
-      SELECT id, user_id, title, message, type, is_read, created_at, updated_at
+      SELECT id, user_id, sender_id, title, message, read, created_at
       FROM notifications
       WHERE user_id = $1
       ORDER BY created_at DESC
@@ -24,7 +24,7 @@ async function getUnreadNotificationsCount(userId) {
     const query = `
       SELECT COUNT(*) as count
       FROM notifications
-      WHERE user_id = $1 AND is_read = false
+      WHERE user_id = $1 AND read = false
     `;
     const result = await pool.query(query, [userId]);
     return parseInt(result.rows[0].count);
@@ -38,7 +38,7 @@ async function getUnreadNotificationsCount(userId) {
 async function getNotificationById(notificationId) {
   try {
     const query = `
-      SELECT id, user_id, title, message, type, is_read, created_at, updated_at
+      SELECT id, user_id, sender_id, title, message, read, created_at
       FROM notifications
       WHERE id = $1
     `;
@@ -54,11 +54,11 @@ async function getNotificationById(notificationId) {
 async function createNotification(userId, title, message, type = 'info') {
   try {
     const query = `
-      INSERT INTO notifications (user_id, title, message, type, is_read, created_at, updated_at)
-      VALUES ($1, $2, $3, $4, false, NOW(), NOW())
-      RETURNING id, user_id, title, message, type, is_read, created_at, updated_at
+      INSERT INTO notifications (user_id, title, message, read, created_at)
+      VALUES ($1, $2, $3, false, NOW())
+      RETURNING id, user_id, title, message, read, created_at
     `;
-    const result = await pool.query(query, [userId, title, message, type]);
+    const result = await pool.query(query, [userId, title, message]);
     return result.rows[0];
   } catch (err) {
     console.error('createNotification query error:', err);
@@ -71,9 +71,9 @@ async function markNotificationAsRead(notificationId) {
   try {
     const query = `
       UPDATE notifications
-      SET is_read = true, updated_at = NOW()
+      SET read = true
       WHERE id = $1
-      RETURNING id, user_id, title, message, type, is_read, created_at, updated_at
+      RETURNING id, user_id, sender_id, title, message, read, created_at
     `;
     const result = await pool.query(query, [notificationId]);
     return result.rows[0] || null;
@@ -88,8 +88,8 @@ async function markAllNotificationsAsRead(userId) {
   try {
     const query = `
       UPDATE notifications
-      SET is_read = true, updated_at = NOW()
-      WHERE user_id = $1 AND is_read = false
+      SET read = true
+      WHERE user_id = $1 AND read = false
     `;
     const result = await pool.query(query, [userId]);
     return result.rowCount;

@@ -99,10 +99,37 @@ async function createNotification(userId, title, message, type = 'info') {
   }
 }
 
+// delete a notification belonging to the user
+async function deleteNotification(notificationId, user) {
+  try {
+    if (!notificationId) {
+      throw new Error('Notification ID is required');
+    }
+    if (!user || !user.id) {
+      throw new Error('Authenticated user is required');
+    }
+
+    const notif = await NotificationModel.getNotificationById(notificationId);
+    if (!notif) {
+      throw new Error('Notification not found');
+    }
+    if (notif.user_id !== user.id) {
+      throw new Error('Access denied');
+    }
+
+    const deleted = await NotificationModel.deleteNotification(notificationId);
+    return deleted;
+  } catch (err) {
+    console.error('deleteNotification service error:', err);
+    throw err;
+  }
+}
+
 export default {
   getNotifications,
   getUnreadCount,
   markAsRead,
   markAllAsRead,
   createNotification,
+  deleteNotification,
 };

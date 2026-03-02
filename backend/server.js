@@ -23,9 +23,12 @@ import faqRoutes from './routes/faq.routes.js';
 import notificationRoutes from './routes/notification.routes.js';
 import dashboardRoutes from './routes/dashboard.routes.js';
 import serviceRoutes from './routes/service.routes.js';
+import serviceCatalogRoutes from './routes/service-catalog.routes.js';
 import companyRoutes from './routes/company.routes.js';
 import userRoutes from './routes/user.routes.js';
 import uploadRoutes from './routes/upload.routes.js';
+import adminManagementRoutes from './routes/admin-management.routes.js';
+import loginHistoryRoutes from './routes/login-history.routes.js';
 import { requireAdmin, requireRoles, requireSuperAdmin } from './middleware/auth.middleware.js';
 import { fileURLToPath } from 'url';
 
@@ -77,13 +80,33 @@ app.use('/api/admin/jobs', requireAdmin, requireRoles('super_admin','admin_offre
 app.use('/api/formations', formationRoutes);
 // admin mount for formations (super_admin only for now)
 app.use('/api/admin/formations', requireAdmin, requireRoles('super_admin'), formationRoutes);
+
+app.use('/api/services/catalogs', serviceCatalogRoutes);
+// admin mount for service catalogs
+app.use('/api/admin/services/catalogs', requireAdmin, requireRoles('super_admin'), serviceCatalogRoutes);
+// alias for backward compatibility with frontend
+app.use('/api/admin/service-categories', requireAdmin, requireRoles('super_admin'), serviceCatalogRoutes);
+// admin mount for services (super_admin only for now)
+app.use('/api/admin/services', requireAdmin, requireRoles('super_admin'), serviceRoutes);
+
 app.use('/api/publications', publicationRoutes);
 app.use('/api/faq', faqRoutes);
+// admin FAQ management mount (reuse same router)
+app.use('/api/admin/faq', requireAdmin, requireRoles('super_admin','perm_manage_faq'), faqRoutes);
+
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/services', serviceRoutes);
 app.use('/api/companies', companyRoutes);
 app.use('/api/users', userRoutes);
+// admin user management
+app.use('/api/admin/users', requireAdmin, requireRoles('super_admin'), userRoutes);
+
+// admin management endpoints (admins, exports, etc.)
+app.use('/api/admin/management/admins', requireAdmin, requireRoles('super_admin'), adminManagementRoutes);
+
+// login history
+app.use('/api/admin/login-history', requireAdmin, requireRoles('super_admin'), loginHistoryRoutes);
 // servir les fichiers uploadés en statique (pour que le client puisse accéder à `/uploads/...`)
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 // points de terminaison d'upload

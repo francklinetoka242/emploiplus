@@ -5,7 +5,7 @@ async function getAllFAQ(category = null, limit = 50, offset = 0) {
   try {
     let query = `
       SELECT id, question, answer, category, created_at, updated_at
-      FROM faq
+      FROM faqs
     `;
     const params = [];
 
@@ -30,7 +30,7 @@ async function getFAQById(faqId) {
   try {
     const query = `
       SELECT id, question, answer, category, created_at, updated_at
-      FROM faq
+      FROM faqs
       WHERE id = $1
     `;
     const result = await pool.query(query, [faqId]);
@@ -45,7 +45,7 @@ async function getFAQById(faqId) {
 async function getFAQCategories() {
   try {
     const query = `
-      SELECT DISTINCT category FROM faq WHERE category IS NOT NULL
+      SELECT DISTINCT category FROM faqs WHERE category IS NOT NULL
       ORDER BY category
     `;
     const result = await pool.query(query);
@@ -60,7 +60,7 @@ async function getFAQCategories() {
 async function createFAQ(question, answer, category = null) {
   try {
     const query = `
-      INSERT INTO faq (question, answer, category, created_at, updated_at)
+      INSERT INTO faqs (question, answer, category, created_at, updated_at)
       VALUES ($1, $2, $3, NOW(), NOW())
       RETURNING id, question, answer, category, created_at, updated_at
     `;
@@ -88,7 +88,7 @@ async function updateFAQ(faqId, updates) {
 
     const setClause = fields.map((field, i) => `${field} = $${i + 1}`).join(', ');
     const query = `
-      UPDATE faq
+      UPDATE faqs
       SET ${setClause}
       WHERE id = $${fields.length + 1}
       RETURNING id, question, answer, category, created_at, updated_at
@@ -105,7 +105,7 @@ async function updateFAQ(faqId, updates) {
 // delete a FAQ entry by ID
 async function deleteFAQ(faqId) {
   try {
-    const query = 'DELETE FROM faq WHERE id = $1 RETURNING id';
+    const query = 'DELETE FROM faqs WHERE id = $1 RETURNING id';
     const result = await pool.query(query, [faqId]);
     return result.rowCount > 0;
   } catch (err) {

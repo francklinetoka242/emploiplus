@@ -162,7 +162,22 @@ export const api = {
     return { data: MOCK_NOTIFICATIONS };
   },
 
+  getUnreadNotificationCount: async () => {
+    await simulateNetworkDelay();
+    return { data: { unread_count: MOCK_NOTIFICATIONS.filter(n => !n.is_read).length } };
+  },
+
   markNotificationAsRead: async (notifId: string) => {
+    await simulateNetworkDelay();
+    return { success: true };
+  },
+
+  markAllNotificationsRead: async () => {
+    await simulateNetworkDelay();
+    return { success: true };
+  },
+
+  deleteNotification: async (notifId: string) => {
     await simulateNetworkDelay();
     return { success: true };
   },
@@ -252,6 +267,21 @@ export const api = {
     await simulateNetworkDelay();
     const user = findById(MOCK_USERS, userId);
     return { data: user };
+  },
+
+  createUser: async (data: any) => {
+    await simulateNetworkDelay();
+    return { data: { id: 'user-' + Math.random().toString(36).substr(2, 9), ...data } };
+  },
+
+  updateUser: async (id: string, updates: any) => {
+    await simulateNetworkDelay();
+    return { data: { id, ...updates } };
+  },
+
+  deleteUser: async (id: string) => {
+    await simulateNetworkDelay();
+    return { success: true };
   },
 
   // ========================================================================

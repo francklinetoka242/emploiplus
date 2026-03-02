@@ -1,15 +1,38 @@
 import pool from '../config/db.js';
 
-// retrieve all services with pagination
-async function getAllServices(limit = 20, offset = 0) {
+// retrieve all services with optional filtering (by catalog, visibility, etc.)
+async function getAllServices(limit = 20, offset = 0, catalogId = null, visibleOnly = false) {
   try {
-    const query = `
-      SELECT id, name, description, icon_url, features, price, created_at, updated_at
+    const conditions = [];
+    const params = [];
+
+    if (catalogId) {
+      conditions.push(`catalog_id = $${params.length + 1}`);
+      params.push(catalogId);
+    }
+
+    if (visibleOnly) {
+      conditions.push(`is_visible = true`);
+    }
+
+    let query = `
+      SELECT id, catalog_id, name, description, price, rating, is_promo, promo_text, 
+             is_visible, image_url, brochure_url, display_order, created_at, updated_at
       FROM services
-      ORDER BY created_at DESC
-      LIMIT $1 OFFSET $2
     `;
-    const result = await pool.query(query, [limit, offset]);
+
+    if (conditions.length > 0) {
+      query += ` WHERE ${conditions.join(' AND ')}`;
+    }
+
+    query += `
+      ORDER BY display_order ASC, created_at DESC
+      LIMIT $${params.length + 1} OFFSET $${params.length + 2}
+    `;
+
+    params.push(limit, offset);
+
+    const result = await pool.query(query, params);
     return result.rows;
   } catch (err) {
     console.error('getAllServices query error:', err);
@@ -21,7 +44,8 @@ async function getAllServices(limit = 20, offset = 0) {
 async function getServiceById(serviceId) {
   try {
     const query = `
-      SELECT id, name, description, icon_url, features, price, created_at, updated_at
+      SELECT id, catalog_id, name, description, price, rating, is_promo, promo_text, 
+             is_visible, image_url, brochure_url, display_order, created_at, updated_at
       FROM services
       WHERE id = $1
     `;
@@ -33,13 +57,15 @@ async function getServiceById(serviceId) {
   }
 }
 
-// retrieve services by name (search functionality)
+// retrieve services by name or description (search functionality)
 async function searchServices(searchTerm, limit = 20) {
   try {
     const query = `
-      SELECT id, name, description, icon_url, features, price, created_at, updated_at
+      SELECT id, catalog_id, name, description, price, rating, is_promo, promo_text, 
+             is_visible, image_url, brochure_url, display_order, created_at, updated_at
       FROM services
       WHERE name ILIKE $1 OR description ILIKE $1
+      ORDER BY name ASC
       LIMIT $2
     `;
     const result = await pool.query(query, [`%${searchTerm}%`, limit]);
@@ -50,15 +76,44 @@ async function searchServices(searchTerm, limit = 20) {
   }
 }
 
-// create a new service
-async function createService(name, description, iconUrl, features = null, price = null) {
+// create a new service with flexible columns
+async function createService(data) {
   try {
+    const columns = [];
+    const placeholders = [];
+    const values = [];
+    let idx = 1;
+
+    // catalog_id is required
+    if (!data.catalog_id) {
+      throw new Error('Catalog ID is required');
+    }
+
+    for (const [key, value] of Object.entries(data)) {
+      columns.push(key);
+      placeholders.push(`$${idx}`);
+      values.push(value);
+      idx += 1;
+    }
+
+    // always set timestamps if not provided
+    if (!columns.includes('created_at')) {
+      columns.push('created_at');
+      placeholders.push('NOW()');
+    }
+    if (!columns.includes('updated_at')) {
+      columns.push('updated_at');
+      placeholders.push('NOW()');
+    }
+
     const query = `
-      INSERT INTO services (name, description, icon_url, features, price, created_at, updated_at)
-      VALUES ($1, $2, $3, $4, $5, NOW(), NOW())
-      RETURNING id, name, description, icon_url, features, price, created_at, updated_at
+      INSERT INTO services (${columns.join(', ')})
+      VALUES (${placeholders.join(', ')})
+      RETURNING id, catalog_id, name, description, price, rating, is_promo, promo_text, 
+                is_visible, image_url, brochure_url, display_order, created_at, updated_at
     `;
-    const result = await pool.query(query, [name, description, iconUrl, features, price]);
+
+    const result = await pool.query(query, values);
     return result.rows[0];
   } catch (err) {
     console.error('createService query error:', err);
@@ -85,7 +140,8 @@ async function updateService(serviceId, updates) {
       UPDATE services
       SET ${setClause}
       WHERE id = $${fields.length + 1}
-      RETURNING id, name, description, icon_url, features, price, created_at, updated_at
+      RETURNING id, catalog_id, name, description, price, rating, is_promo, promo_text, 
+                is_visible, image_url, brochure_url, display_order, created_at, updated_at
     `;
     
     const result = await pool.query(query, values);

@@ -10,4 +10,36 @@ async function getFAQ(req, res) {
   }
 }
 
-export { getFAQ };
+// admin handlers -------------------------------------------------------
+async function createFAQEntry(req, res, next) {
+  try {
+    const { question, answer, category } = req.body;
+    const entry = await faqService.createFAQ(question, answer, category);
+    res.status(201).json({ success: true, data: entry });
+  } catch (err) {
+    next(err);
+  }
+}
+
+async function updateFAQEntry(req, res, next) {
+  try {
+    const faqId = parseInt(req.params.id);
+    const updates = req.body;
+    const updated = await faqService.updateFAQ(faqId, updates);
+    res.json({ success: true, data: updated });
+  } catch (err) {
+    next(err);
+  }
+}
+
+async function deleteFAQEntry(req, res, next) {
+  try {
+    const faqId = parseInt(req.params.id);
+    await faqService.deleteFAQ(faqId);
+    res.json({ success: true });
+  } catch (err) {
+    next(err);
+  }
+}
+
+export { getFAQ, createFAQEntry, updateFAQEntry, deleteFAQEntry };

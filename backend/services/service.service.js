@@ -63,7 +63,11 @@ async function searchServices(searchTerm, query = {}) {
 // create a new service
 async function createService(serviceData) {
   try {
-    const { name, description, icon_url, features, price } = serviceData;
+    const { catalog_id, name, description } = serviceData;
+
+    if (!catalog_id) {
+      throw new Error('Catalog ID is required');
+    }
 
     if (!name || typeof name !== 'string' || name.trim().length === 0) {
       throw new Error('Service name is required');
@@ -73,8 +77,8 @@ async function createService(serviceData) {
       throw new Error('Service description is required');
     }
 
-    // create service in database
-    const service = await ServiceModel.createService(name, description, icon_url, features, price);
+    // create service in database, passing the entire data object
+    const service = await ServiceModel.createService(serviceData);
     return service;
   } catch (err) {
     console.error('createService service error:', err);

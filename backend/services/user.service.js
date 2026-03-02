@@ -62,10 +62,10 @@ async function getUserByEmail(email) {
 }
 
 // create a new user
-async function createUser(email, username, passwordHash, role = 'user') {
+async function createUser(email, firstname, lastname, passwordHash, user_type = 'candidate') {
   try {
-    if (!email || !username || !passwordHash) {
-      throw new Error('Email, username, and password hash are required');
+    if (!email || !firstname || !lastname || !passwordHash) {
+      throw new Error('Email, first name, last name, and password hash are required');
     }
 
     // validate email format
@@ -81,7 +81,7 @@ async function createUser(email, username, passwordHash, role = 'user') {
     }
 
     // create new user in database
-    const newUser = await UserModel.createUser(email, username, passwordHash, role);
+    const newUser = await UserModel.createUser(email, firstname, lastname, passwordHash, user_type);
     return newUser;
   } catch (err) {
     console.error('createUser service error:', err);
@@ -103,7 +103,7 @@ async function updateUserProfile(userId, profileData) {
     }
 
     // filter allowed fields for profile update
-    const allowedFields = ['username', 'email'];
+    const allowedFields = ['email', 'first_name', 'last_name', 'user_type', 'phone', 'job_title', 'profession', 'experience_years'];
     const updates = {};
     for (const [key, value] of Object.entries(profileData)) {
       if (allowedFields.includes(key) && value !== undefined) {
