@@ -2,8 +2,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Link, useNavigate } from "react-router-dom";
 import { Briefcase, PenTool, Mail, GraduationCap, Layout, Lock, Star } from "lucide-react";
-import BusinessCardModal from "@/components/BusinessCardModal";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { sendInteraction } from "@/lib/analytics";
 
 interface VisualCreationProps {
@@ -12,38 +11,24 @@ interface VisualCreationProps {
 
 export default function VisualCreation({ isLoggedIn = false }: VisualCreationProps) {
   const navigate = useNavigate();
-  const [open, setOpen] = useState(false);
-  const [isMounted, setIsMounted] = useState(false);
 
-  useEffect(() => {
-    setIsMounted(true);
-  }, []);
-
-  const handleRestrictedAction = (action: string) => {
-    if (!isLoggedIn) {
-      sendInteraction({ service: action, event_type: 'restricted_action_click' });
-      navigate(`/connexion?redirect=${encodeURIComponent(window.location.pathname)}`);
-    }
-  };
+  // removed login-based redirection; all actions are now available without authentication
 
   return (
     <section id="creation-visuelle" className={`py-16 ${isLoggedIn ? 'bg-gradient-to-br from-primary/5 via-white to-secondary/5' : 'bg-white'}`}>
       <div className="container">
         <div className="text-center mb-12">
-        
           <h2 className="text-4xl font-bold mb-4">
-            {isLoggedIn ? "Créez vos supports visuels" : "Création visuelle"}
+            Créez vos supports visuels
           </h2>
           <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-            Modèles éditables, export PNG/JPG et PDF. 
-            {isLoggedIn && <span> Profitez de tous les outils avancés pour vos créations.</span>}
-            {!isLoggedIn && <span> Connectez-vous pour débloquer les options supplémentaires.</span>}
+            Modèles éditables, export PNG/JPG et PDF.
           </p>
         </div>
 
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-4">
           {/* Cartes de visite */}
-          <Card className={`p-6 relative overflow-hidden transition-all hover:shadow-lg ${!isLoggedIn ? 'opacity-90' : ''}`}>
+          <Card className="p-6 relative overflow-hidden transition-all hover:shadow-lg">
             <div className="absolute top-0 right-0 w-20 h-20 bg-primary/5 rounded-full -mr-10 -mt-10"></div>
             <div className="relative z-10">
               <div className="h-12 w-12 rounded-lg bg-primary/10 flex items-center justify-center mb-4">
@@ -57,15 +42,11 @@ export default function VisualCreation({ isLoggedIn = false }: VisualCreationPro
                 <Button 
                   onClick={() => {
                     sendInteraction({ service: 'business-card', event_type: 'create_click' });
-                    if (!isLoggedIn) {
-                      handleRestrictedAction('business-card');
-                    } else {
-                      setOpen(true);
-                    }
+                    navigate('/services/business-card-editor?tab=models');
                   }}
                   className="bg-primary text-white hover:bg-primary/90"
                 >
-                  {isLoggedIn ? "Créer une carte" : "Créer"}
+                  Créer
                 </Button>
                 <Button 
                   variant="outline" 
@@ -79,7 +60,7 @@ export default function VisualCreation({ isLoggedIn = false }: VisualCreationPro
           </Card>
 
           {/* Flyers */}
-          <Card className={`p-6 relative overflow-hidden transition-all hover:shadow-lg ${!isLoggedIn ? 'opacity-90' : ''}`}>
+          <Card className="p-6 relative overflow-hidden transition-all hover:shadow-lg">
             <div className="absolute top-0 right-0 w-20 h-20 bg-rose-100/50 rounded-full -mr-10 -mt-10"></div>
             <div className="relative z-10">
               <div className="h-12 w-12 rounded-lg bg-rose-100 flex items-center justify-center mb-4">
@@ -109,7 +90,7 @@ export default function VisualCreation({ isLoggedIn = false }: VisualCreationPro
           </Card>
 
           {/* Bannières */}
-          <Card className={`p-6 relative overflow-hidden transition-all hover:shadow-lg ${!isLoggedIn ? 'opacity-90' : ''}`}>
+          <Card className="p-6 relative overflow-hidden transition-all hover:shadow-lg">
             <div className="absolute top-0 right-0 w-20 h-20 bg-indigo-100/50 rounded-full -mr-10 -mt-10"></div>
             <div className="relative z-10">
               <div className="h-12 w-12 rounded-lg bg-indigo-100 flex items-center justify-center mb-4">
@@ -139,7 +120,7 @@ export default function VisualCreation({ isLoggedIn = false }: VisualCreationPro
           </Card>
 
           {/* Portfolio - Nouveau */}
-          <Card className={`p-6 relative overflow-hidden transition-all hover:shadow-lg ${!isLoggedIn ? 'opacity-90' : 'ring-2 ring-primary/30'}`}>
+          <Card className="p-6 relative overflow-hidden transition-all hover:shadow-lg">
             <div className="absolute top-0 right-0 w-20 h-20 bg-emerald-100/50 rounded-full -mr-10 -mt-10"></div>
             {isLoggedIn && (
               <div className="absolute top-3 right-3 bg-emerald-500 text-white px-2 py-1 rounded-full text-xs font-semibold">
@@ -158,15 +139,11 @@ export default function VisualCreation({ isLoggedIn = false }: VisualCreationPro
                 <Button 
                   onClick={() => {
                     sendInteraction({ service: 'portfolio', event_type: 'create_click' });
-                    if (!isLoggedIn) {
-                      handleRestrictedAction('portfolio');
-                    } else {
-                      navigate('/services/portfolio-builder');
-                    }
+                    navigate('/services/portfolio-builder');
                   }}
                   className="bg-emerald-600 text-white hover:bg-emerald-700"
                 >
-                  {isLoggedIn ? "Créer" : <><Lock className="h-4 w-4 mr-1" />Créer</>}
+                  Créer
                 </Button>
                 <Button 
                   variant="outline" 
@@ -178,17 +155,11 @@ export default function VisualCreation({ isLoggedIn = false }: VisualCreationPro
                   Voir les modèles
                 </Button>
               </div>
-              {!isLoggedIn && (
-                <p className="text-xs text-muted-foreground mt-3 flex items-center gap-1">
-                  <Lock className="h-3 w-3" /> Connectez-vous pour créer
-                </p>
-              )}
             </div>
           </Card>
         </div>
       </div>
 
-      <BusinessCardModal open={open} onClose={() => setOpen(false)} />
     </section>
   );
 }

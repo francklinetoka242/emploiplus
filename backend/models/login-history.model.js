@@ -27,29 +27,62 @@ export async function getLoginHistory(filters = {}, limit = 50, offset = 0) {
   try {
     const params = [];
     let where = [];
+    
+    // Admin ID filter
     if (filters.admin_id) {
       params.push(filters.admin_id);
-      where.push(`admin_id = $${params.length}`);
+      where.push(`alh.admin_id = $${params.length}`);
     }
+    
+    // Success status filter
     if (filters.success !== undefined) {
-      params.push(filters.success);
-      where.push(`success = $${params.length}`);
+      params.push(filters.success === 'true' || filters.success === true);
+      where.push(`alh.success = $${params.length}`);
     }
+    
+    // Role filter
+    if (filters.role) {
+      params.push(filters.role);
+      where.push(`a.role = $${params.length}`);
+    }
+    
+    // Date range filters
     if (filters.date_from) {
       params.push(filters.date_from);
-      where.push(`created_at >= $${params.length}`);
+      where.push(`alh.created_at >= $${params.length}`);
     }
     if (filters.date_to) {
       params.push(filters.date_to);
-      where.push(`created_at <= $${params.length}`);
+      where.push(`alh.created_at <= $${params.length}`);
     }
+    
+    // Email search filter
+    if (filters.email) {
+      params.push(`%${filters.email}%`);
+      where.push(`alh.admin_email ILIKE $${params.length}`);
+    }
+    
     const whereClause = where.length ? 'WHERE ' + where.join(' AND ') : '';
     params.push(limit, offset);
+    
     const query = `
-      SELECT *
-      FROM admin_login_history
+      SELECT 
+        alh.id,
+        alh.admin_id,
+        alh.admin_email,
+        alh.success,
+        alh.ip_address,
+        alh.user_agent,
+        alh.details,
+        alh.created_at,
+        a.first_name,
+        a.last_name,
+        a.role,
+        COALESCE(a.first_name || ' ' || a.last_name, alh.admin_email) as full_name
+      FROM admin_login_history alh
+      LEFT JOIN admins a ON alh.admin_id = a.id
       ${whereClause}
-      ORDER BY created_at DESC
+      ORDER BY alh.created_at DESC
       LIMIT $${params.length-1} OFFSET $${params.length}
     `;
     const result = await pool.query(query, params);

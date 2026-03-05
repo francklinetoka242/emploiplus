@@ -9,7 +9,7 @@ async function getAllJobs(limit = 20, offset = 0) {
       SELECT 
         j.id, j.title, j.description, j.location, j.salary, j.job_type,
         j.sector, j.type, j.published, j.published_at, j.deadline_date,
-        j.experience_level, j.is_closed, j.company_id,
+        j.experience_level, j.is_closed, j.company_id, j.requirements,
         c.name AS company, c.logo,
         j.created_at, j.updated_at
       FROM jobs j
@@ -32,7 +32,7 @@ async function getJobById(jobId) {
       SELECT 
         j.id, j.title, j.description, j.location, j.salary, j.job_type,
         j.sector, j.type, j.published, j.published_at, j.deadline_date,
-        j.experience_level, j.is_closed, j.company_id,
+        j.experience_level, j.is_closed, j.company_id, j.requirements,
         c.name AS company, c.logo, c.website,
         j.created_at, j.updated_at
       FROM jobs j
@@ -52,7 +52,7 @@ async function getJobsByCompanyId(companyId, limit = 10, offset = 0) {
   try {
     const query = `
       SELECT 
-        j.id, j.title, j.description, j.location, j.salary, j.job_type,
+        j.id, j.title, j.description, j.location, j.salary, j.job_type, j.requirements,
         j.company_id, c.name AS company,
         j.created_at, j.updated_at
       FROM jobs j
@@ -127,7 +127,7 @@ async function updateJob(jobId, updates) {
       UPDATE jobs
       SET ${setClause}
       WHERE id = $${fields.length + 1}
-      RETURNING id, title, description, location, salary, job_type, company_id, created_at, updated_at
+      RETURNING id, title, description, location, salary, job_type, company_id, requirements, created_at, updated_at
     `;
     
     const result = await pool.query(query, values);

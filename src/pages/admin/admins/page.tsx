@@ -10,12 +10,49 @@ import AdminForm from "@/components/admin/admins/AdminForm";
 type AdminRole = "super_admin" | "admin_offres" | "admin_users" | "admin";
 
 interface Admin {
-  id: string;
-  full_name: string;
+  id: string | number;
+  full_name?: string;
+  first_name?: string;
+  last_name?: string;
   email: string;
   role: AdminRole;
+  role_level?: number;
   created_at: string;
   is_blocked: boolean;
+  status?: string;
+}
+
+// Helper function to transform API data to Admin interface
+function transformAdminData(apiAdmin: any): Admin {
+  const role_level = apiAdmin.role_level || 1;
+  let role: AdminRole = "admin";
+  
+  if (apiAdmin.role) {
+    role = apiAdmin.role;
+  } else {
+    // Map role_level to role string
+    const roleMap: Record<number, AdminRole> = {
+      1: "super_admin",
+      2: "admin_offres",
+      3: "admin_users",
+      4: "admin_offres",
+      5: "admin",
+    };
+    role = roleMap[role_level] || "admin";
+  }
+  
+  return {
+    id: apiAdmin.id,
+    first_name: apiAdmin.first_name,
+    last_name: apiAdmin.last_name,
+    full_name: `${apiAdmin.first_name} ${apiAdmin.last_name}`.trim(),
+    email: apiAdmin.email,
+    role,
+    role_level: apiAdmin.role_level,
+    created_at: apiAdmin.created_at,
+    is_blocked: apiAdmin.status === 'blocked',
+    status: apiAdmin.status,
+  };
 }
 
 export default function AdminsPage() {
@@ -30,11 +67,13 @@ export default function AdminsPage() {
   useEffect(() => {
     fetchAdmins();
     // fetch admin stats if super admin
-      try {
+    try {
       const current = JSON.parse(localStorage.getItem('admin') || '{}');
       if (current && current.role === 'super_admin') {
         const adminToken = localStorage.getItem('adminToken');
-        const headers = adminToken ? authHeaders(undefined, 'adminToken') : authHeaders();
+        const headers = adminToken ? 
+          { "Authorization": `Bearer ${adminToken}`, "Content-Type": "application/json" } : 
+          { "Content-Type": "application/json" };
         fetch('/api/admin/stats', { headers })
           .then((r) => r.ok ? r.json() : Promise.reject(r))
           .then((d) => setStats(d))
@@ -45,26 +84,27 @@ export default function AdminsPage() {
 
   const fetchAdmins = async () => {
     try {
-      const response = await fetch("/api/admins");
+      const adminToken = localStorage.getItem("adminToken");
+      const headers = adminToken ? 
+        { "Authorization": `Bearer ${adminToken}`, "Content-Type": "application/json" } : 
+        { "Content-Type": "application/json" };
+      
+      const response = await fetch("/api/admins", { headers });
       if (response.ok) {
         const data = await response.json();
-        setAdmins(data);
+        // Transform API data to match Admin interface
+        const adminsData = Array.isArray(data) ? data : data.admins || [];
+        const transformedAdmins = adminsData.map((admin: any) => transformAdminData(admin));
+        setAdmins(transformedAdmins);
       } else {
-        const demoAdmins: Admin[] = [
-          {
-            id: "1",
-            full_name: "Francklin Etoka",
-            email: "super@emploi.cg",
-            role: "super_admin",
-            created_at: "2025-04-05",
-            is_blocked: false,
-          },
-        ];
-        setAdmins(demoAdmins);
+        console.error(`Erreur API: ${response.status} ${response.statusText}`);
+        toast.error(`Erreur lors du chargement des administrateurs (${response.status})`);
+        setAdmins([]);
       }
     } catch (err) {
       console.error("Erreur fetch admins:", err);
-      toast.error("Erreur lors du chargement des administrateurs");
+      toast.error("Erreur de connexion au serveur");
+      setAdmins([]);
     } finally {
       setLoading(false);
     }
@@ -207,7 +247,9 @@ export default function AdminsPage() {
                     <Shield className="h-10 w-10 text-white" />
                   </div>
                   <div className="flex-1">
-                    <h3 className="text-2xl font-bold text-gray-900">{admin.first_name && admin.last_name ? `${admin.first_name} ${admin.last_name}` : (admin.nom && admin.prenom ? `${admin.prenom} ${admin.nom}` : admin.email)}</h3>
+                    <h3 className="text-2xl font-bold text-gray-900">
+                      {admin.full_name || admin.email}
+                    </h3>
                     <p className="text-muted-foreground flex items-center gap-2 mt-1">
                       <Mail className="h-4 w-4" />
                       {admin.email}

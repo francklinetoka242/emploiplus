@@ -7,8 +7,8 @@ function validateCatalogData(data, isUpdate = false) {
   }
 
   if (!isUpdate) {
-    if (!data.title || typeof data.title !== 'string' || data.title.trim().length === 0) {
-      throw new Error('Catalog title is required');
+    if (!data.name || typeof data.name !== 'string' || data.name.trim().length === 0) {
+      throw new Error('Catalog name is required');
     }
   }
 

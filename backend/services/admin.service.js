@@ -149,6 +149,42 @@ async function getAdminStatistics() {
   }
 }
 
+// get admin by ID
+async function getAdminById(adminId) {
+  try {
+    if (!adminId) {
+      throw new AppError('Admin ID is required', 400);
+    }
+    const admin = await AdminModel.getAdminById(adminId);
+    if (!admin) {
+      throw new AppError('Admin not found', 404);
+    }
+    return admin;
+  } catch (err) {
+    console.error('getAdminById service error:', err);
+    throw err;
+  }
+}
+
+// update admin permissions
+async function updateAdminPermissions(adminId, permissions) {
+  try {
+    if (!adminId) {
+      throw new AppError('Admin ID is required', 400);
+    }
+    const admin = await AdminModel.getAdminById(adminId);
+    if (!admin) {
+      throw new AppError('Admin not found', 404);
+    }
+    // permissions should be a JSON object or array
+    const updated = await AdminModel.updateAdmin(adminId, { permissions: JSON.stringify(permissions) });
+    return updated;
+  } catch (err) {
+    console.error('updateAdminPermissions service error:', err);
+    throw err;
+  }
+}
+
 export default {
   listAdmins,
   setAdminStatus,
@@ -157,4 +193,6 @@ export default {
   getVerificationStatus,
   resendInvitation,
   getAdminStatistics,
+  getAdminById,
+  updateAdminPermissions,
 };

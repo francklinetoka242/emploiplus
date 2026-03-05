@@ -1,16 +1,22 @@
 import { useRef, useState, useEffect } from "react";
 import { User, Phone, Mail, Globe, MapPin, Link as LinkIcon } from "lucide-react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate, useLocation, Link } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import Breadcrumb from "@/components/Breadcrumb";
 import { Button } from "@/components/ui/button";
 import html2canvas from "html2canvas";
 import html2pdf from "html2pdf.js";
+import { TEMPLATES } from "@/pages/services/BusinessCardModels"; // shared templates for preview
 
 const FONT_FAMILIES = ["Arial", "Helvetica", "Georgia", "Times New Roman", "Montserrat"];
 
 export default function BusinessCardEditor() {
   const [texts, setTexts] = useState([{ id: 1, field: 'Nom', content: "Prénom Nom", color: "#000000", size: 14, font: "Montserrat", align: "left" }]);
+  // tab state for editor / models view
+  const location = useLocation();
+  const params = new URLSearchParams(location.search);
+  const initialTab = params.get('tab') === 'models' ? 'models' : 'editor';
+  const [tab, setTab] = useState<'editor'|'models'>(initialTab);
   const [images, setImages] = useState<string[]>([]);
   const [bgFrom, setBgFrom] = useState("#ffffff");
   const [bgTo, setBgTo] = useState("#ffffff");
@@ -79,7 +85,6 @@ export default function BusinessCardEditor() {
   // Restore pending export if user just logged in
   const { user } = useAuth();
   const navigate = useNavigate();
-  const location = useLocation();
 
   useEffect(() => {
     const pending = localStorage.getItem("pending_export_business_card");
@@ -116,11 +121,65 @@ export default function BusinessCardEditor() {
 
       <h1 className="text-2xl font-bold my-4">Créateur de carte de visite</h1>
 
-      <div className="grid md:grid-cols-2 gap-6">
+      {/* tabs */}
+      <div className="mb-6 flex gap-4">
+        <button
+          className={
+            `px-3 py-1 rounded ${tab === 'editor' ? 'bg-primary/20 font-semibold' : 'text-gray-600'}`
+          }
+          onClick={() => setTab('editor')}
+        >
+          Éditeur
+        </button>
+        <button
+          className={
+            `px-3 py-1 rounded ${tab === 'models' ? 'bg-primary/20 font-semibold' : 'text-gray-600'}`
+          }
+          onClick={() => setTab('models')}
+        >
+          Modèles
+        </button>
+      </div>
+
+      {tab === 'models' ? (
         <div>
-          <div className="space-y-3">
-            <Button onClick={addText}>Ajouter un texte</Button>
-            {texts.map((t) => (
+          <h2 className="text-xl font-semibold mb-4">Aperçu des modèles</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {TEMPLATES.map((template) => (
+              <div
+                key={template.id}
+                className="bg-white rounded-lg shadow-md hover:shadow-lg transition overflow-hidden"
+              >
+                <div className="p-4 bg-gray-50 border-b h-64 flex items-center justify-center">
+                  <template.component data={{
+                    candidateName: 'Jean Dupont',
+                    position: 'Développeur',
+                    email: 'jean.dupont@example.com',
+                    phone: '+33 6 12 34 56 78',
+                    location: 'Paris',
+                    template: template.id,
+                  }} />
+                </div>
+                <div className="p-4">
+                  <h3 className="font-bold text-lg mb-1">{template.name}</h3>
+                  <p className="text-sm text-gray-600 mb-4">{template.description}</p>
+                  <Button
+                    variant="outline"
+                    asChild
+                  >
+                    <Link to="/services/business-card-models">Voir plus</Link>
+                  </Button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      ) : (
+        <div className="grid md:grid-cols-2 gap-6">
+          <div>
+            <div className="space-y-3">
+              <Button onClick={addText}>Ajouter un texte</Button>
+              {texts.map((t) => (
               <div key={t.id} className="p-3 border rounded">
                 <input value={t.content} onChange={(e)=>updateText(t.id, { content: e.target.value })} className="w-full p-2 border rounded mb-2" />
                 <div className="flex gap-2 mb-2">

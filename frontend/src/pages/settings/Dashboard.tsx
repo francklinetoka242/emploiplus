@@ -130,7 +130,9 @@ export default function Dashboard() {
         if (userRole === 'company') {
           const jobsRes = await fetch('/api/jobs', { headers });
           if (jobsRes.ok) {
-            const jobs = await jobsRes.json();
+            const jobsData = await jobsRes.json();
+            // API returns {data: [...]} format
+            const jobs = jobsData?.data || jobsData;
             const companyName = String(user?.company_name || '').toLowerCase();
             const posted = Array.isArray(jobs)
               ? jobs.filter((j) => (j.company || '').toLowerCase().includes(companyName)).length

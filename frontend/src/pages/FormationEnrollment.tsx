@@ -59,7 +59,9 @@ export default function FormationEnrollment() {
     queryFn: async () => {
       const response = await fetch("/api/jobs?limit=8");
       if (!response.ok) throw new Error("Failed to fetch jobs");
-      return response.json();
+      const result = await response.json();
+      // API returns {data: [...]} format
+      return result?.data || result || [];
     },
     staleTime: 1000 * 60 * 5,
   });

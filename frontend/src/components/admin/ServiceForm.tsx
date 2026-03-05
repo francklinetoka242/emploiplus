@@ -79,12 +79,12 @@ export default function ServiceForm({ categories, onSuccess }: ServiceFormProps)
           name="catalog_id"
           value={formData.catalog_id}
           onChange={handleChange}
-          className="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full px-3 py-2 border border-slate-300 rounded bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none cursor-pointer"
           disabled={loading}
         >
           <option value="">-- Sélectionnez une catégorie --</option>
           {categories.map(cat => (
-            <option key={cat.id} value={String(cat.id)}>{cat.title}</option>
+            <option key={cat.id} value={String(cat.id)} className="text-slate-900">{cat.title}</option>
           ))}
         </select>
       </div>
@@ -97,7 +97,7 @@ export default function ServiceForm({ categories, onSuccess }: ServiceFormProps)
           value={formData.title}
           onChange={handleChange}
           placeholder="Ex: Création de logo"
-          className="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full px-3 py-2 border border-slate-300 rounded bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
           disabled={loading}
         />
       </div>
@@ -110,7 +110,7 @@ export default function ServiceForm({ categories, onSuccess }: ServiceFormProps)
           onChange={handleChange}
           placeholder="Détails du service..."
           rows={3}
-          className="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full px-3 py-2 border border-slate-300 rounded bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
           disabled={loading}
         />
       </div>
@@ -124,7 +124,7 @@ export default function ServiceForm({ categories, onSuccess }: ServiceFormProps)
             value={formData.price}
             onChange={handleChange}
             placeholder="Ex: 50 €"
-            className="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2 border border-slate-300 rounded bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
             disabled={loading}
           />
         </div>
@@ -137,7 +137,7 @@ export default function ServiceForm({ categories, onSuccess }: ServiceFormProps)
             value={formData.display_order}
             onChange={handleChange}
             min="0"
-            className="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-3 py-2 border border-slate-300 rounded bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
             disabled={loading}
           />
         </div>

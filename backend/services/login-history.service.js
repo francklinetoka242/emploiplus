@@ -15,9 +15,11 @@ async function fetchHistory(query = {}) {
   const offset = parseInt(query.offset) || 0;
   const filters = {
     admin_id: query.admin_id ? parseInt(query.admin_id) : undefined,
-    success: query.success !== undefined ? query.success === 'true' : undefined,
+    success: query.success !== undefined ? query.success : undefined,
     date_from: query.date_from,
     date_to: query.date_to,
+    role: query.role,
+    email: query.email,
   };
   return await LoginHistoryModel.getLoginHistory(filters, limit, offset);
 }

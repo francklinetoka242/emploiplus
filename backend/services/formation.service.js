@@ -37,7 +37,11 @@ async function getFormations(query = {}) {
     // default behaviour: only return published formations unless explicit flag passed
     let publishedFilter;
     if (query.published !== undefined) {
-      publishedFilter = query.published === true || String(query.published).toLowerCase() === 'true';
+      if (query.published === 'all') {
+        publishedFilter = undefined; // no filter for admin
+      } else {
+        publishedFilter = query.published === true || String(query.published).toLowerCase() === 'true';
+      }
     } else {
       // public route, hide unpublished
       publishedFilter = true;
@@ -124,6 +128,9 @@ async function createFormation(data) {
     // ensure boolean conversion for published if present
     if (data.published !== undefined) {
       data.published = !!data.published;
+    } else {
+      // default to unpublished for admin-created formations
+      data.published = false;
     }
 
     const newFormation = await FormationModel.createFormation(data);

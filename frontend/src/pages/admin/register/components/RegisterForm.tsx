@@ -64,7 +64,7 @@ export default function RegisterForm({ role, title, color }: Props) {
         const data = await res.json().catch(() => ({}));
 
         if (res.ok) {
-          toast.success("Super Admin créé ! Un email de validation a été envoyé.");
+          toast.success("Super Admin créé !");
           navigate("/admin/login");
         } else {
           toast.error(data.message || "Erreur lors de la création du Super Admin");

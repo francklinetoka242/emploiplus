@@ -12,12 +12,16 @@ export function AdminHeader() {
 
   const getRoleLabel = () => {
     if (!userSession) return 'Admin';
+    // backend roles use underscores, ui uses hyphens – normalise both
+    const key = userSession.role.replace(/_/g, '-');
     const labels: Record<string, string> = {
       'super-admin': 'Super Administrateur',
       'admin': 'Administrateur',
-      'content-admin': 'Administrateur de Contenu'
+      'content-admin': 'Administrateur de Contenu',
+      'admin-offres': 'Administrateur Offres',
+      'admin-users': "Administrateur Utilisateurs",
     };
-    return labels[userSession.role] || 'Admin';
+    return labels[key] || 'Admin';
   };
 
   return (
@@ -36,7 +40,7 @@ export function AdminHeader() {
 
         {/* Right Side - User Info & Logout */}
         <div className="flex items-center gap-4">
-          {/* Role Badge */}
+          {/* Role & Name */}
           <div className="hidden sm:flex flex-col items-end">
             <span className="text-xs text-gray-500 uppercase tracking-wider">
               {getRoleLabel()}

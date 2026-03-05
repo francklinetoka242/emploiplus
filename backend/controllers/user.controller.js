@@ -1,11 +1,12 @@
 import userService from '../services/user.service.js';
 
 async function getUsers(req, res) {
+  console.log('[user.controller] getUsers called with query', req.query);
   try {
     const users = await userService.getUsers(req.query);
     res.json({ data: users });
   } catch (err) {
-    console.error('getUsers error', err);
+    console.error('getUsers error', err.stack || err);
     res.status(500).json({ message: err.message || 'Internal server error' });
   }
 }
@@ -23,12 +24,16 @@ async function getUserById(req, res) {
 // admin-only handlers
 async function createUser(req, res) {
   try {
-    const { email, first_name, last_name, password, user_type } = req.body;
-    if (!email || !first_name || !last_name || !password) {
-      return res.status(400).json({ message: 'Email, first_name, last_name, and password are required' });
+    const { email, first_name, last_name, full_name, password, user_type } = req.body;
+    const nameProvided = full_name || (first_name && last_name);
+    if (!email || !nameProvided || !password) {
+      return res.status(400).json({ message: 'Email, name, and password are required' });
     }
+    // determine parts for service
+    const fn = full_name || first_name;
+    const ln = last_name || '';
     // password should arrive hashed by auth controller or hashed here
-    const newUser = await userService.createUser(email, first_name, last_name, password, user_type);
+    const newUser = await userService.createUser(email, fn, ln, password, user_type);
     res.status(201).json({ data: newUser });
   } catch (err) {
     console.error('createUser error', err);
@@ -54,7 +59,9 @@ async function deleteUser(req, res) {
     res.json({ message: 'User deleted' });
   } catch (err) {
     console.error('deleteUser error', err);
-    const status = /not found/i.test(err.message) ? 404 : 500;
+    let status = 500;
+    if (/not found/i.test(err.message)) status = 404;
+    else if (/dependent|referenc|foreign|constraint/i.test(err.message)) status = 409;
     res.status(status).json({ message: err.message || 'Internal server error' });
   }
 }

@@ -134,6 +134,15 @@ const apiReal = {
     return res.json();
   },
 
+  // Backwards-compatible alias used by admin UI (was calling `api.deleteAdminJob`)
+  deleteAdminJob: async (jobId: string) => {
+    const res = await fetch(buildApiUrl(`/jobs/${jobId}`), {
+      method: 'DELETE',
+      headers: authHeaders(undefined, 'adminToken'),
+    });
+    return res.json();
+  },
+
   publishJob: async (jobId: string, published: boolean) => {
     const res = await fetch(buildApiUrl(`/jobs/${jobId}`), {
       method: 'PATCH',
@@ -165,29 +174,96 @@ const apiReal = {
     return res.json();
   },
 
+  // Admin formations management
+  getAdminFormations: async () => {
+    const url = buildApiUrl(`/admin/formations`);
+    const res = await fetch(url, { headers: authHeaders(undefined, 'adminToken') });
+    const json = await res.json();
+    if (Array.isArray(json)) return json;
+    return json?.data || [];
+  },
+
+  createFormation: async (formation: any) => {
+    const res = await fetch(buildApiUrl('/admin/formations'), {
+      method: 'POST',
+      headers: authHeaders('application/json', 'adminToken'),
+      body: JSON.stringify(formation),
+    });
+    return res.json();
+  },
+
+  updateFormation: async (formationId: string, updates: any) => {
+    const res = await fetch(buildApiUrl(`/admin/formations/${formationId}`), {
+      method: 'PUT',
+      headers: authHeaders('application/json', 'adminToken'),
+      body: JSON.stringify(updates),
+    });
+    return res.json();
+  },
+
+  deleteFormation: async (formationId: string) => {
+    const res = await fetch(buildApiUrl(`/admin/formations/${formationId}`), {
+      method: 'DELETE',
+      headers: authHeaders(undefined, 'adminToken'),
+    });
+    return res.json();
+  },
+
+  publishFormation: async (formationId: string, published: boolean) => {
+    const res = await fetch(buildApiUrl(`/admin/formations/${formationId}/publish`), {
+      method: 'PATCH',
+      headers: authHeaders('application/json', 'adminToken'),
+      body: JSON.stringify({ published, published_at: published ? new Date().toISOString() : null }),
+    });
+    return res.json();
+  },
+
   // ------------------------------------------------------------------------
   // SERVICE CATEGORIES (Admin)
   // ------------------------------------------------------------------------
   getAdminServiceCategories: async () => {
     const url = buildApiUrl('/admin/service-categories');
-    const res = await fetch(url, { headers: authHeaders() });
+    const res = await fetch(url, { headers: authHeaders(undefined, 'adminToken') });
     return res.json();
   },
 
   createServiceCategory: async (data: any) => {
     const res = await fetch(buildApiUrl('/admin/service-categories'), {
       method: 'POST',
-      headers: authHeaders('application/json'),
+      headers: authHeaders('application/json', 'adminToken'),
       body: JSON.stringify(data),
     });
     return res.json();
   },
 
   toggleServiceCategoryFeature: async (id: string, featured: boolean) => {
-    const res = await fetch(buildApiUrl(`/admin/service-categories/${id}/feature`), {
-      method: 'PATCH',
-      headers: authHeaders('application/json'),
+    const res = await fetch(buildApiUrl(`/admin/service-categories/${id}`), {
+      method: 'PUT',
+      headers: authHeaders('application/json', 'adminToken'),
       body: JSON.stringify({ is_featured: featured }),
+    });
+    return res.json();
+  },
+
+  getAdminServiceCategory: async (id: string) => {
+    const url = buildApiUrl(`/admin/service-categories/${id}`);
+    const res = await fetch(url, { headers: authHeaders(undefined, 'adminToken') });
+    return res.json();
+  },
+
+  updateServiceCategory: async (id: string, data: any) => {
+    const res = await fetch(buildApiUrl(`/admin/service-categories/${id}`), {
+      method: 'PUT',
+      headers: authHeaders('application/json', 'adminToken'),
+      body: JSON.stringify(data),
+    });
+    return res.json();
+  },
+
+  deleteServiceCategory: async (id: string) => {
+    const res = await fetch(buildApiUrl(`/admin/service-categories/${id}`), {
+      method: 'DELETE',
+      headers: authHeaders('application/json', 'adminToken'),
     });
     return res.json();
   },
@@ -197,24 +273,47 @@ const apiReal = {
   // ------------------------------------------------------------------------
   getAdminServices: async (params?: any) => {
     const url = buildApiUrl(`/admin/services${toQuery(params)}`);
-    const res = await fetch(url, { headers: authHeaders() });
+    const res = await fetch(url, { headers: authHeaders(undefined, 'adminToken') });
     return res.json();
   },
 
   createService: async (data: any) => {
     const res = await fetch(buildApiUrl('/admin/services'), {
       method: 'POST',
-      headers: authHeaders('application/json'),
+      headers: authHeaders('application/json', 'adminToken'),
       body: JSON.stringify(data),
     });
     return res.json();
   },
 
   toggleServiceFeature: async (id: string, featured: boolean) => {
-    const res = await fetch(buildApiUrl(`/admin/services/${id}/feature`), {
-      method: 'PATCH',
-      headers: authHeaders('application/json'),
+    const res = await fetch(buildApiUrl(`/admin/services/${id}`), {
+      method: 'PUT',
+      headers: authHeaders('application/json', 'adminToken'),
       body: JSON.stringify({ is_featured: featured }),
+    });
+    return res.json();
+  },
+
+  getAdminService: async (id: string) => {
+    const url = buildApiUrl(`/admin/services/${id}`);
+    const res = await fetch(url, { headers: authHeaders(undefined, 'adminToken') });
+    return res.json();
+  },
+
+  updateService: async (id: string, data: any) => {
+    const res = await fetch(buildApiUrl(`/admin/services/${id}`), {
+      method: 'PUT',
+      headers: authHeaders('application/json', 'adminToken'),
+      body: JSON.stringify(data),
+    });
+    return res.json();
+  },
+
+  deleteService: async (id: string) => {
+    const res = await fetch(buildApiUrl(`/admin/services/${id}`), {
+      method: 'DELETE',
+      headers: authHeaders('application/json', 'adminToken'),
     });
     return res.json();
   },
@@ -222,7 +321,14 @@ const apiReal = {
   // Public services endpoint (for public pages)
   getServices: async (params?: any) => {
     const url = buildApiUrl(`/services${toQuery(params)}`);
-    const res = await fetch(url, { headers: authHeaders() });
+    const res = await fetch(url, { headers: authHeaders(undefined, 'token') });
+    return res.json();
+  },
+
+  // Public service categories endpoint (for displaying services by category)
+  getServiceCategories: async () => {
+    const url = buildApiUrl('/services/catalogs');
+    const res = await fetch(url, { headers: authHeaders(undefined, 'token') });
     return res.json();
   },
 
@@ -297,6 +403,30 @@ const apiReal = {
       headers: authHeaders(),
     });
     return res.json();
+  },
+
+  // Dashboard stats
+  getStats: async () => {
+    const url = buildApiUrl(`/dashboard/stats`);
+    const res = await fetch(url, { headers: authHeaders(undefined, 'adminToken') });
+    const json = await res.json();
+    return json?.data || json;
+  },
+
+  // Dashboard history
+  getDashboardHistory: async () => {
+    const url = buildApiUrl(`/admin/login-history`);
+    const res = await fetch(url, { headers: authHeaders(undefined, 'adminToken') });
+    const json = await res.json();
+    return json?.data || json;
+  },
+
+  // Login history attempts
+  getLoginAttempts: async (params?: any) => {
+    const url = buildApiUrl(`/admin/login-history${toQuery(params)}`);
+    const res = await fetch(url, { headers: authHeaders(undefined, 'adminToken') });
+    const json = await res.json();
+    return { attempts: json?.data || json || [] };
   },
 };
 

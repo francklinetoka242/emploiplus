@@ -2,11 +2,17 @@ import jobService from '../services/job.service.js';
 
 async function getJobs(req, res) {
   try {
-    const jobs = await jobService.getJobs(req.query);
-    res.json({ data: jobs });
+    const result = await jobService.getJobs(req.query);
+    // Service returns { jobs: [...], pagination: {...} }
+    res.json({ 
+      data: result.jobs,
+      pagination: result.pagination,
+    });
   } catch (err) {
     console.error('getJobs error', err);
-    res.status(500).json({ message: err.message || 'Internal server error' });
+    // check if error has a status property (validation errors); default to 500
+    const status = err.status || 500;
+    res.status(status).json({ message: err.message || 'Internal server error' });
   }
 }
 

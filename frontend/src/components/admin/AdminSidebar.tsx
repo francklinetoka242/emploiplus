@@ -13,6 +13,7 @@ import {
   BookMarked,
   AlertTriangle,
   ChevronLeft,
+  Settings,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -94,6 +95,12 @@ const MENU_ITEMS = [
     label: "FAQ",
     icon: HelpCircle,
     path: "/admin/faq",
+    badge: null,
+  },
+  {
+    label: "Paramètres",
+    icon: Settings,
+    path: "/admin/profile",
     badge: null,
   },
   {

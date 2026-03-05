@@ -7,12 +7,12 @@ async function getAllCatalogs(limit = 20, offset = 0, published = null) {
     const params = [];
 
     if (published !== null && published !== undefined) {
-      conditions.push(`published = $${params.length + 1}`);
+      conditions.push(`is_featured = $${params.length + 1}`);
       params.push(published);
     }
 
     let query = `
-      SELECT id, title, category_id, published, created_at, updated_at
+      SELECT id, name, description, icon, is_featured, created_at, updated_at
       FROM services_catalog
     `;
 
@@ -39,7 +39,7 @@ async function getAllCatalogs(limit = 20, offset = 0, published = null) {
 async function getCatalogById(catalogId) {
   try {
     const query = `
-      SELECT id, title, category_id, published, created_at, updated_at
+      SELECT id, name, description, icon, is_featured, created_at, updated_at
       FROM services_catalog
       WHERE id = $1
     `;
@@ -54,19 +54,19 @@ async function getCatalogById(catalogId) {
 // create a new service catalog
 async function createCatalog(data) {
   try {
-    const { title, category_id, published } = data;
+    const { name, description, icon, is_featured } = data;
 
-    if (!title || typeof title !== 'string' || title.trim().length === 0) {
-      throw new Error('Catalog title is required');
+    if (!name || typeof name !== 'string' || name.trim().length === 0) {
+      throw new Error('Catalog name is required');
     }
 
     const query = `
-      INSERT INTO services_catalog (title, category_id, published, created_at, updated_at)
-      VALUES ($1, $2, $3, NOW(), NOW())
-      RETURNING id, title, category_id, published, created_at, updated_at
+      INSERT INTO services_catalog (name, description, icon, is_featured, created_at, updated_at)
+      VALUES ($1, $2, $3, $4, NOW(), NOW())
+      RETURNING id, name, description, icon, is_featured, created_at, updated_at
     `;
 
-    const result = await pool.query(query, [title, category_id || null, published || false]);
+    const result = await pool.query(query, [name, description || null, icon || null, is_featured || false]);
     return result.rows[0];
   } catch (err) {
     console.error('createCatalog query error:', err);
@@ -93,7 +93,7 @@ async function updateCatalog(catalogId, updates) {
       UPDATE services_catalog
       SET ${setClause}
       WHERE id = $${fields.length + 1}
-      RETURNING id, title, category_id, published, created_at, updated_at
+      RETURNING id, name, description, icon, is_featured, created_at, updated_at
     `;
 
     const result = await pool.query(query, values);

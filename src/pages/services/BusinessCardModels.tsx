@@ -32,7 +32,7 @@ import BusinessCardModelOrangeBlackDynamic from '@/components/business-card-temp
 import BusinessCardModelBeigeHighEnd from '@/components/business-card-templates/BusinessCardModelBeigeHighEnd';
 import BusinessCardModelNavyWhiteBicolor from '@/components/business-card-templates/BusinessCardModelNavyWhiteBicolor';
 
-const TEMPLATES = [
+export const TEMPLATES = [
   {
     id: 'black-orange',
     name: 'Black & Orange',

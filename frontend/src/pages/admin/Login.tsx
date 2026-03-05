@@ -1,18 +1,24 @@
 // src/pages/admin/Login.tsx
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useContext, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { toast } from "sonner";
 import { Shield, LogIn } from "lucide-react";
 import { buildApiUrl } from "@/lib/headers";
+import { AdminNavContext } from "@/context/AdminNavContext";
 
 export default function AdminLogin() {
   const [email, setEmail] = useState("email@email.com");
   const [password, setPassword] = useState("mot de passe");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  // context may not be available while rendering the standalone login
+  // page; using `useContext` on the raw context lets us safely obtain
+  // the value or `undefined` without throwing.
+  const adminNav = useContext(AdminNavContext);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -31,8 +37,34 @@ export default function AdminLogin() {
       if (data.success) {
         localStorage.setItem("adminToken", data.token);
         localStorage.setItem("admin", JSON.stringify(data.admin));
-        const name = data.admin.first_name && data.admin.last_name ? `${data.admin.first_name} ${data.admin.last_name}` : (data.admin.nom && data.admin.prenom ? `${data.admin.prenom} ${data.admin.nom}` : "Admin");
+        const name =
+          data.admin.first_name && data.admin.last_name
+            ? `${data.admin.first_name} ${data.admin.last_name}`
+            : data.admin.prenom && data.admin.nom
+            ? `${data.admin.prenom} ${data.admin.nom}`
+            : data.admin.name || "Admin";
         toast.success(`Bienvenue ${name} !`);
+
+        // if the context is available we also update it so the header
+        // immediately shows the right information without waiting for a
+        // page reload.
+        if (adminNav && adminNav.setUserSession) {
+          const initials =
+            data.admin.initials ||
+            name
+              .split(' ')
+              .map((w: string) => w[0] || '')
+              .join('')
+              .toUpperCase();
+          adminNav.setUserSession({
+            id: String(data.admin.id),
+            name,
+            email: data.admin.email || '',
+            role: data.admin.role || 'admin',
+            photo: data.admin.photo,
+            initials,
+          });
+        }
 
         // Redirect based on admin role
         const role = data.admin?.role;

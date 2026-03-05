@@ -28,8 +28,11 @@ import companyRoutes from './routes/company.routes.js';
 import userRoutes from './routes/user.routes.js';
 import uploadRoutes from './routes/upload.routes.js';
 import adminManagementRoutes from './routes/admin-management.routes.js';
+import adminsRoutes from './routes/admins.routes.js';
+import siteNotificationsRoutes from './routes/site-notifications.routes.js';
 import loginHistoryRoutes from './routes/login-history.routes.js';
 import { requireAdmin, requireRoles, requireSuperAdmin } from './middleware/auth.middleware.js';
+import { exportStats as adminExportStats } from './controllers/admin.controller.js';
 import { fileURLToPath } from 'url';
 
 // ESM does not provide __dirname; derive it from import.meta.url
@@ -44,6 +47,12 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 
 // ===== PILE DE MIDDLEWARES =====
+
+// simple request logger for debugging
+app.use((req, res, next) => {
+  console.log('[HTTP]', req.method, req.path);
+  next();
+});
 
 // sécurité : utiliser helmet pour définir divers en-têtes HTTP
 app.use(helmet());
@@ -105,12 +114,43 @@ app.use('/api/admin/users', requireAdmin, requireRoles('super_admin'), userRoute
 // admin management endpoints (admins, exports, etc.)
 app.use('/api/admin/management/admins', requireAdmin, requireRoles('super_admin'), adminManagementRoutes);
 
+// simple admins endpoints for getting/updating admin by ID
+app.use('/api/admins', adminsRoutes);
+
+// Convenience endpoint used by frontend: GET /api/admin/stats
+// Reuses the existing exportStats controller but exposed at a shorter path
+app.get('/api/admin/stats', requireAdmin, requireRoles('super_admin'), adminExportStats);
+
+// Dashboard stats endpoint (protected)
+app.get('/api/dashboard/stats', requireAdmin, adminExportStats);
+
+// site notifications (public read, admin write)
+app.use('/api/site-notifications', siteNotificationsRoutes);
+app.use('/api/admin/site-notifications', requireAdmin, requireRoles('super_admin'), siteNotificationsRoutes);
+
 // login history
 app.use('/api/admin/login-history', requireAdmin, requireRoles('super_admin'), loginHistoryRoutes);
 // servir les fichiers uploadés en statique (pour que le client puisse accéder à `/uploads/...`)
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 // points de terminaison d'upload
 app.use('/api/uploads', uploadRoutes);
+
+// ===== SERVIR LA FRONTEND (SPA) =====
+
+// servir les fichiers statiques frontend (CSS, JS, images)
+const frontendDistPath = path.join(__dirname, '../frontend/dist');
+app.use(express.static(frontendDistPath));
+
+// fallback route pour le routeur SPA : renvoyer index.html pour les routes inconnues
+// cela permet aux routes React Router de fonctionner correctement
+app.use((req, res, next) => {
+  // ne pas intercepter les requêtes API
+  if (req.path.startsWith('/api')) {
+    return next();
+  }
+  // renvoyer index.html pour toutes les autres routes (SPA)
+  res.sendFile(path.join(frontendDistPath, 'index.html'));
+});
 
 // ===== GESTIONNAIRE 404 =====
 

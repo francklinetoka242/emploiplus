@@ -199,7 +199,7 @@ export default function FAQManagementPage() {
             <div>
               <p className="text-sm text-slate-600">Catégories</p>
               <p className="text-3xl font-bold mt-2 text-blue-600">
-                {Object.keys(stats.categories || {}).length || 0}
+                {stats.categories_count || 0}
               </p>
             </div>
             <HelpCircle className="h-10 w-10 opacity-20 text-blue-600" />

@@ -47,7 +47,13 @@ export default function DashboardPage() {
   const fetchStats = async () => {
     try {
       const data = await api.getStats();
-      setStats(data);
+      // Extract numbers from nested objects
+      setStats({
+        jobs: data?.jobs?.total_jobs || data?.jobs || 0,
+        formations: data?.formations?.total_formations || data?.formations || 0,
+        users: data?.users?.total_users || data?.users || 0,
+        admins: data?.admins?.total_admins || data?.admins || 0,
+      });
     } catch (err) {
       console.error("Erreur stats:", err);
     } finally {
@@ -168,7 +174,7 @@ export default function DashboardPage() {
                 <Card className="p-4 border hover:bg-blue-50 transition">
                   <p className="text-sm text-gray-600 mb-2">Nouveaux inscrits</p>
                   <p className="text-2xl font-bold text-blue-600 mb-1">
-                    {history.user_registrations || 0}
+                    {stats.users || 0}
                   </p>
                   <p className="text-xs text-gray-500">utilisateurs ajoutés</p>
                 </Card>
@@ -177,7 +183,7 @@ export default function DashboardPage() {
                 <Card className="p-4 border hover:bg-green-50 transition">
                   <p className="text-sm text-gray-600 mb-2">Offres d'emploi</p>
                   <p className="text-2xl font-bold text-green-600 mb-1">
-                    {history.job_postings || 0}
+                    {stats.jobs || 0}
                   </p>
                   <p className="text-xs text-gray-500">offres publiées</p>
                 </Card>
@@ -186,7 +192,7 @@ export default function DashboardPage() {
                 <Card className="p-4 border hover:bg-purple-50 transition">
                   <p className="text-sm text-gray-600 mb-2">Formations</p>
                   <p className="text-2xl font-bold text-purple-600 mb-1">
-                    {history.formations || 0}
+                    {stats.formations || 0}
                   </p>
                   <p className="text-xs text-gray-500">formations ajoutées</p>
                 </Card>
@@ -195,18 +201,18 @@ export default function DashboardPage() {
                 <Card className="p-4 border hover:bg-orange-50 transition">
                   <p className="text-sm text-gray-600 mb-2">Candidatures</p>
                   <p className="text-2xl font-bold text-orange-600 mb-1">
-                    {history.applications || 0}
+                    0
                   </p>
                   <p className="text-xs text-gray-500">soumises</p>
                 </Card>
 
-                {/* Revenus */}
+                {/* Administrateurs */}
                 <Card className="p-4 border hover:bg-yellow-50 transition">
-                  <p className="text-sm text-gray-600 mb-2">Revenus</p>
+                  <p className="text-sm text-gray-600 mb-2">Administrateurs</p>
                   <p className="text-2xl font-bold text-yellow-600 mb-1">
-                    {history.revenue || '0'}
+                    {stats.admins || 0}
                   </p>
-                  <p className="text-xs text-gray-500">générés</p>
+                  <p className="text-xs text-gray-500">connectés</p>
                 </Card>
               </>
             ) : (

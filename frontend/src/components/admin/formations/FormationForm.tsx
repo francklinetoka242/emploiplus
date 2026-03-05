@@ -86,14 +86,29 @@ export default function FormationForm({ formation, onSuccess }: FormationFormPro
     }
 
     try {
-      const url = formation ? `/api/formations/${formation.id}` : "/api/formations";
+      // Check if admin token exists
+      if (!adminToken) {
+        toast.error("Authentification requise. Veuillez vous reconnecter.");
+        return;
+      }
+
+      const url = formation ? `/api/admin/formations/${formation.id}` : "/api/admin/formations";
       const method = formation ? "PUT" : "POST";
 
       const res = await fetch(url, {
         method,
-        headers: { "Content-Type": "application/json", ...(adminToken ? { Authorization: `Bearer ${adminToken}` } : {}) },
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${adminToken}` },
         body: JSON.stringify(payload),
       });
+
+      // Handle 401 Unauthorized
+      if (res.status === 401) {
+        localStorage.removeItem("adminToken");
+        localStorage.removeItem("admin");
+        toast.error("Votre session a expiré. Veuillez vous reconnecter.");
+        window.location.href = "/admin/login";
+        return;
+      }
 
       if (res.ok) {
         toast.success(formation ? "Formation modifiée !" : "Formation créée avec succès !");
@@ -102,8 +117,9 @@ export default function FormationForm({ formation, onSuccess }: FormationFormPro
         const error = await res.json();
         toast.error(error.message || "Erreur");
       }
-    } catch {
-      toast.error("Serveur injoignable");
+    } catch (err) {
+      console.error('Formation submit error:', err);
+      toast.error("Erreur lors de l'envoi du formulaire");
     }
   };
 

@@ -57,7 +57,7 @@ export default function ServiceCategoryForm({ onSuccess }: ServiceCategoryFormPr
           value={formData.title}
           onChange={handleChange}
           placeholder="Ex: Design Graphique"
-          className="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full px-3 py-2 border border-slate-300 rounded bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
           disabled={loading}
         />
       </div>
@@ -70,7 +70,7 @@ export default function ServiceCategoryForm({ onSuccess }: ServiceCategoryFormPr
           onChange={handleChange}
           placeholder="Description courte..."
           rows={3}
-          className="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full px-3 py-2 border border-slate-300 rounded bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
           disabled={loading}
         />
       </div>
@@ -83,7 +83,7 @@ export default function ServiceCategoryForm({ onSuccess }: ServiceCategoryFormPr
           value={formData.icon}
           onChange={handleChange}
           placeholder="Nom de l'icône (ex: star)"
-          className="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full px-3 py-2 border border-slate-300 rounded bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
           disabled={loading}
         />
       </div>

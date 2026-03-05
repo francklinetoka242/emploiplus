@@ -5,7 +5,6 @@ import { useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useUserRole } from "@/hooks/useUserRole";
 import { useScrollDirection } from "@/hooks/useScrollDirection";
-import BusinessCardModal from "@/components/BusinessCardModal";
 import {
   FileText,
   Briefcase,
@@ -213,7 +212,7 @@ export default function Services() {
                 {/* Visual Creation Section */}
                 {activeTab === "visual" && (
                   <div className="animate-fadeIn">
-                    <VisualCreation />
+                    <VisualCreation isLoggedIn={!!user} />
                   </div>
                 )}
 
@@ -259,7 +258,7 @@ export default function Services() {
 
             {activeTab === "visual" && (
               <div className="animate-fadeIn">
-                <VisualCreation />
+                <VisualCreation isLoggedIn={!!user} />
               </div>
             )}
 

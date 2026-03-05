@@ -27,11 +27,24 @@ export default function FormationList() {
 
   const fetchFormations = async () => {
     const token = localStorage.getItem('adminToken');
-    const res = await fetch("/api/admin/formations", {
-      headers: token ? { Authorization: `Bearer ${token}` } : undefined,
-    });
-    const data = await res.json();
-    setFormations(data?.data || data);
+    try {
+      const res = await fetch("/api/admin/formations?published=all", {
+        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+      });
+
+      if (!res.ok) {
+        const errorData = await res.json();
+        console.error('Erreur API formations:', errorData);
+        toast.error(errorData.message || 'Erreur lors du chargement des formations');
+        return;
+      }
+
+      const data = await res.json();
+      setFormations(data?.data || data);
+    } catch (error) {
+      console.error('Erreur réseau:', error);
+      toast.error('Erreur de connexion au serveur');
+    }
   };
 
   useEffect(() => { fetchFormations(); }, []);

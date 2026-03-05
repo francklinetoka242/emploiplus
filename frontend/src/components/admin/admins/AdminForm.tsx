@@ -45,7 +45,7 @@ export default function AdminForm({ admin, onSuccess }: AdminFormProps) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    const url = admin ? `/api/admins/${admin.id}` : "/api/admin/create";
+    const url = admin ? `/api/admins/${admin.id}` : "/api/admins";
     const method = admin ? "PUT" : "POST";
 
     const body: Record<string, string> = {

@@ -55,8 +55,10 @@ export default function UsersPage() {
       const response = await fetch("/api/users");
       if (response.ok) {
         const data = await response.json();
+        // Accept either an array response or an object { data: [...] }
+        const raw = Array.isArray(data) ? data : (data?.data ?? []);
         // Normalize user_type values to french labels used in admin UI
-        const normalized = (data || []).map((u: any) => ({
+        const normalized = (raw || []).map((u: any) => ({
           ...u,
           user_type: ((): "candidat" | "entreprise" => {
             const ut = String(u.user_type || '').toLowerCase();

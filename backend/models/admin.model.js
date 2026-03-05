@@ -1,13 +1,13 @@
 import pool from '../config/db.js';
 
 // helper that builds where clauses based on optional filters
-function buildFilterClause(filters, params) {
+function buildFilterClause(filters, params, present = new Set()) {
   let where = [];
-  if (filters.status) {
+  if (filters.status && present.has('status')) {
     where.push(`status = $${params.length + 1}`);
     params.push(filters.status);
   }
-  if (filters.role) {
+  if (filters.role && present.has('role_level')) {
     where.push(`role_level = $${params.length + 1}`);
     params.push(filters.role);
   }
@@ -38,9 +38,16 @@ function buildFilterClause(filters, params) {
 async function getAllAdmins(filters = {}, limit = 20, offset = 0) {
   try {
     const params = [];
-    const filterClause = buildFilterClause(filters, params);
+    // detect available columns
+    const sample = await pool.query('SELECT * FROM admins LIMIT 0');
+    const present = new Set((sample.fields || []).map(f => f.name));
+    const wanted = ['id','first_name','last_name','email','role','role_level','status','created_at','updated_at','token_expires_at','phone','country','profile_photo','account_type'];
+    const selectCols = wanted.filter(c => present.has(c));
+    const selectClause = selectCols.length ? selectCols.join(', ') : '*';
+
+    const filterClause = buildFilterClause(filters, params, present);
     const query = `
-      SELECT id, first_name, last_name, email, role, role_level, status, created_at, updated_at, token_expires_at
+      SELECT ${selectClause}
       FROM admins
       ${filterClause}
       ORDER BY created_at DESC
@@ -59,7 +66,7 @@ async function getAllAdmins(filters = {}, limit = 20, offset = 0) {
 async function getAdminById(adminId) {
   try {
     const query = `
-      SELECT id, first_name, last_name, email, role, role_level, status, created_at, updated_at, token_expires_at
+      SELECT id, first_name, last_name, email, role, role_level, status, created_at, updated_at, token_expires_at, phone, country, profile_photo, account_type
       FROM admins
       WHERE id = $1
     `;
@@ -106,19 +113,31 @@ async function deleteAdmin(adminId) {
 // count statistics for export/stats page
 async function getAdminCounts() {
   try {
-    const query = `
-      SELECT
-        COUNT(*) AS total_admins,
-        COUNT(*) FILTER (WHERE status = 'active') AS active_admins,
-        COUNT(*) FILTER (WHERE status <> 'active') AS inactive_admins,
-        COUNT(*) FILTER (WHERE role_level = 1) AS super_admins,
-        COUNT(*) FILTER (WHERE role_level = 2) AS content_admins,
-        COUNT(*) FILTER (WHERE role_level = 3) AS user_admins,
-        COUNT(*) FILTER (WHERE role_level = 4) AS analytics_admins,
-        COUNT(*) FILTER (WHERE role_level = 5) AS billing_admins,
-        MAX(created_at) AS last_created
-      FROM admins
-    `;
+    // detect columns by fetching zero rows from the table (safer across schemas)
+    const sample = await pool.query('SELECT * FROM admins LIMIT 0');
+    const present = new Set((sample.fields || []).map(f => f.name));
+    const hasStatus = present.has('status');
+    const hasRoleLevel = present.has('role_level');
+    const hasRole = present.has('role');
+
+    // build query dynamically depending on which columns exist
+    let query = `SELECT COUNT(*) AS total_admins, `;
+
+    if (hasStatus) {
+      query += `COUNT(*) FILTER (WHERE status = 'active') AS active_admins, COUNT(*) FILTER (WHERE status <> 'active') AS inactive_admins, `;
+    } else {
+      query += `COUNT(*) AS active_admins, 0 AS inactive_admins, `;
+    }
+
+    if (hasRoleLevel) {
+      query += `COUNT(*) FILTER (WHERE role_level = 1) AS super_admins, COUNT(*) FILTER (WHERE role_level = 2) AS content_admins, COUNT(*) FILTER (WHERE role_level = 3) AS user_admins, COUNT(*) FILTER (WHERE role_level = 4) AS analytics_admins, COUNT(*) FILTER (WHERE role_level = 5) AS billing_admins, `;
+    } else if (hasRole) {
+      query += `COUNT(*) FILTER (WHERE role = 'super_admin') AS super_admins, COUNT(*) FILTER (WHERE role = 'admin_offres' OR role = 'content_admin') AS content_admins, COUNT(*) FILTER (WHERE role = 'admin_users' OR role = 'user_admin') AS user_admins, 0 AS analytics_admins, 0 AS billing_admins, `;
+    } else {
+      query += `0 AS super_admins, 0 AS content_admins, 0 AS user_admins, 0 AS analytics_admins, 0 AS billing_admins, `;
+    }
+
+    query += `MAX(created_at) AS last_created FROM admins`;
     const result = await pool.query(query);
     return result.rows[0];
   } catch (err) {

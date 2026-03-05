@@ -2,12 +2,14 @@ import authService from '../services/auth.service.js';
 import AppError from '../utils/AppError.js';
 
 // Controller for admin registration
-// expects { email, password } in request body
+// expects { email, password, first_name, last_name, role } in request body
 // returns 201 with the created user data
 async function register(req, res, next) {
   try {
-    const { email, password } = req.body;
-    const user = await authService.registerAdmin(email, password);
+    const { email, password, first_name, last_name, role } = req.body;
+    // Default to super_admin if no role specified
+    const adminRole = role || 'super_admin';
+    const user = await authService.registerAdmin(email, password, first_name, last_name, adminRole);
     return res.status(201).json({ success: true, data: { admin: user } });
   } catch (error) {
     next(error);

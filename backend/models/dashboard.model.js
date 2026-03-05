@@ -7,7 +7,7 @@ async function getSystemStats() {
       SELECT
         (SELECT COUNT(*) FROM users) AS total_users,
         (SELECT COUNT(*) FROM jobs) AS total_jobs,
-        (SELECT COUNT(*) FROM trainings) AS total_formations,
+        (SELECT COUNT(*) FROM formations) AS total_formations,
         (SELECT COUNT(*) FROM publications) AS total_publications,
         (SELECT COUNT(*) FROM users WHERE user_type = 'candidate') AS active_candidates,
         (SELECT COUNT(*) FROM users WHERE user_type = 'company') AS active_companies
@@ -47,10 +47,9 @@ async function getJobStats() {
     const query = `
       SELECT
         COUNT(*) AS total_jobs,
-        SUM(CASE WHEN status = 'open' THEN 1 ELSE 0 END) AS active_jobs,
-        SUM(CASE WHEN status = 'closed' THEN 1 ELSE 0 END) AS closed_jobs,
-        SUM(CASE WHEN created_at >= NOW() - INTERVAL '30 days' THEN 1 ELSE 0 END) AS jobs_posted_this_month,
-        COALESCE(AVG(salary_min), 0) AS average_salary
+        SUM(CASE WHEN published = true THEN 1 ELSE 0 END) AS published_jobs,
+        SUM(CASE WHEN is_closed = true THEN 1 ELSE 0 END) AS closed_jobs,
+        SUM(CASE WHEN created_at >= NOW() - INTERVAL '30 days' THEN 1 ELSE 0 END) AS jobs_posted_this_month
       FROM jobs
     `;
     const result = await pool.query(query);
@@ -67,10 +66,10 @@ async function getFormationStats() {
     const query = `
       SELECT
         COUNT(*) AS total_formations,
-        COUNT(DISTINCT provider) AS unique_providers,
-        SUM(CASE WHEN is_closed = false THEN 1 ELSE 0 END) AS active_formations,
+        COUNT(DISTINCT category) AS unique_categories,
+        SUM(CASE WHEN published = true THEN 1 ELSE 0 END) AS published_formations,
         SUM(CASE WHEN created_at >= NOW() - INTERVAL '30 days' THEN 1 ELSE 0 END) AS formations_added_this_month
-      FROM trainings
+      FROM formations
     `;
     const result = await pool.query(query);
     return result.rows[0];
@@ -86,8 +85,7 @@ async function getFAQStats() {
     const query = `
       SELECT
         COUNT(*) AS total_faqs,
-        COUNT(DISTINCT category) AS categories,
-        SUM(CASE WHEN published = true THEN 1 ELSE 0 END) AS published_faqs
+        SUM(CASE WHEN created_at >= NOW() - INTERVAL '30 days' THEN 1 ELSE 0 END) AS faqs_added_this_month
       FROM faqs
     `;
     const result = await pool.query(query);
@@ -104,9 +102,9 @@ async function getAdminStats() {
     const query = `
       SELECT
         COUNT(*) AS total_admins,
-        SUM(CASE WHEN status = 'active' THEN 1 ELSE 0 END) AS active_admins,
-        SUM(CASE WHEN status = 'blocked' THEN 1 ELSE 0 END) AS blocked_admins,
-        SUM(CASE WHEN role_level = 1 THEN 1 ELSE 0 END) AS super_admins
+        SUM(CASE WHEN is_active = true THEN 1 ELSE 0 END) AS active_admins,
+        SUM(CASE WHEN is_active = false THEN 1 ELSE 0 END) AS inactive_admins,
+        SUM(CASE WHEN role = 'super_admin' THEN 1 ELSE 0 END) AS super_admins
       FROM admins
     `;
     const result = await pool.query(query);

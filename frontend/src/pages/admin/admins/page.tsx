@@ -6,6 +6,7 @@ import { Shield, Plus, Mail, Calendar, Trash2, Edit, AlertCircle } from "lucide-
 import ConfirmButton from '@/components/ConfirmButton';
 import { toast } from "sonner";
 import AdminForm from "@/components/admin/admins/AdminForm";
+import { authHeaders } from "@/lib/headers";
 
 type AdminRole = "super_admin" | "admin_offres" | "admin_users" | "admin";
 
@@ -37,7 +38,7 @@ export default function AdminsPage() {
         const headers = adminToken ? authHeaders(undefined, 'adminToken') : authHeaders();
         fetch('/api/admin/stats', { headers })
           .then((r) => r.ok ? r.json() : Promise.reject(r))
-          .then((d) => setStats(d))
+          .then((d) => setStats(d.data || d))
           .catch((e) => { console.error('Fetch admin stats error', e); });
       }
     } catch (e) {}
@@ -45,26 +46,27 @@ export default function AdminsPage() {
 
   const fetchAdmins = async () => {
     try {
-      const response = await fetch("/api/admins");
+      const adminToken = localStorage.getItem('adminToken');
+      const headers = adminToken ? authHeaders(undefined, 'adminToken') : authHeaders();
+      const response = await fetch("/api/admins", { headers });
       if (response.ok) {
-        const data = await response.json();
-        setAdmins(data);
+        const result = await response.json();
+        // backend returns { success: true, admins: [...] }
+        const list = Array.isArray(result)
+          ? result
+          : Array.isArray(result.admins)
+          ? result.admins
+          : [];
+        setAdmins(list);
       } else {
-        const demoAdmins: Admin[] = [
-          {
-            id: "1",
-            full_name: "Francklin Etoka",
-            email: "super@emploi.cg",
-            role: "super_admin",
-            created_at: "2025-04-05",
-            is_blocked: false,
-          },
-        ];
-        setAdmins(demoAdmins);
+        console.error("Erreur lors du chargement:", response.status);
+        toast.error(`Erreur lors du chargement des administrateurs (${response.status})`);
+        setAdmins([]);
       }
     } catch (err) {
       console.error("Erreur fetch admins:", err);
       toast.error("Erreur lors du chargement des administrateurs");
+      setAdmins([]);
     } finally {
       setLoading(false);
     }
@@ -72,24 +74,47 @@ export default function AdminsPage() {
 
   const deleteAdmin = async (adminId: string) => {
     try {
-      setAdmins(admins.filter((a) => a.id !== adminId));
+      // optimistic UI update
+      setAdmins((prev) => prev.filter((a) => a.id !== adminId));
+      const adminToken = localStorage.getItem('adminToken');
+      const headers = adminToken ? authHeaders(undefined, 'adminToken') : authHeaders();
+      const res = await fetch(`/api/admin/management/admins/${adminId}`, {
+        method: 'DELETE',
+        headers,
+      });
+      if (!res.ok) {
+        throw new Error(`HTTP ${res.status}`);
+      }
       toast.success("Administrateur supprimé");
     } catch (err) {
+      console.error('deleteAdmin error', err);
       toast.error("Erreur lors de la suppression");
+      // rollback UI by refetching list
+      fetchAdmins();
     }
   };
 
   const toggleBlockAdmin = async (adminId: string, currentStatus: boolean) => {
     try {
       const newStatus = !currentStatus;
-      setAdmins(
-        admins.map((a) =>
+      // optimistic update
+      setAdmins((prev) =>
+        prev.map((a) =>
           a.id === adminId ? { ...a, is_blocked: newStatus } : a
         )
       );
+      const adminToken = localStorage.getItem('adminToken');
+      const headers = adminToken ? authHeaders(undefined, 'adminToken') : authHeaders();
+      const endpoint = `/api/admin/management/admins/${adminId}/${newStatus ? 'block' : 'unblock'}`;
+      const res = await fetch(endpoint, { method: 'POST', headers });
+      if (!res.ok) {
+        throw new Error(`HTTP ${res.status}`);
+      }
       toast.success(newStatus ? "Administrateur bloqué" : "Administrateur débloqué");
     } catch (err) {
+      console.error('toggleBlockAdmin error', err);
       toast.error("Erreur lors de la mise à jour");
+      fetchAdmins();
     }
   };
 
@@ -117,7 +142,7 @@ export default function AdminsPage() {
   };
 
   return (
-    <div className="p-10 min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+    <div className="p-10 h-full overflow-auto bg-gradient-to-br from-gray-50 to-gray-100">
       <div className="mb-12">
         <h1 className="text-5xl font-bold text-gray-900 flex items-center gap-4 mb-3">
           <div className="p-2 bg-orange-600 rounded-lg">

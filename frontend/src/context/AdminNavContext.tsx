@@ -26,12 +26,58 @@ interface AdminNavContextType {
   logout: () => void;
 }
 
-const AdminNavContext = createContext<AdminNavContextType | undefined>(undefined);
+export const AdminNavContext = createContext<AdminNavContextType | undefined>(undefined);
 
 export function AdminNavProvider({ children }: { children: ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [activeMenu, setActiveMenu] = useState<MenuItemId>('dashboard');
   const [userSession, setUserSession] = useState<UserSession | null>(null);
+
+  // on mount try to hydrate the context with whatever is left in localStorage
+  // (login pages store the raw `admin` object under the key `admin`).
+  // we convert it to the simplified `UserSession` shape used by the header
+  // so that the role badge, name and initials render correctly.
+  React.useEffect(() => {
+    const stored = localStorage.getItem('admin');
+    if (stored) {
+      try {
+        const raw = JSON.parse(stored);
+        if (raw && raw.id) {
+          const name =
+            raw.first_name && raw.last_name
+              ? `${raw.first_name} ${raw.last_name}`
+              : raw.firstName && raw.lastName
+              ? `${raw.firstName} ${raw.lastName}`
+              : raw.prenom && raw.nom
+              ? `${raw.prenom} ${raw.nom}`
+              : raw.fullName || raw.name || '';
+
+          const initials =
+            raw.initials ||
+            name
+              .split(' ')
+              .filter((w: string) => w.length > 0)
+              .map((w: string) => w[0] || '')
+              .join('')
+              .toUpperCase() ||
+            (raw.first_name && raw.last_name
+              ? (raw.first_name[0] + raw.last_name[0]).toUpperCase()
+              : 'AD');
+
+          setUserSession({
+            id: String(raw.id),
+            name,
+            email: raw.email || '',
+            role: raw.role || 'admin',
+            photo: raw.photo,
+            initials,
+          });
+        }
+      } catch {
+        // invalid JSON – ignore and leave session null
+      }
+    }
+  }, []);
 
   const toggleSidebar = useCallback(() => {
     setSidebarOpen(prev => !prev);
@@ -40,6 +86,8 @@ export function AdminNavProvider({ children }: { children: ReactNode }) {
   const logout = useCallback(() => {
     setUserSession(null);
     localStorage.removeItem('auth_token');
+    localStorage.removeItem('adminToken');
+    localStorage.removeItem('admin');
     window.location.href = '/admin/login';
   }, []);
 

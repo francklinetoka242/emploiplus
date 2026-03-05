@@ -76,9 +76,11 @@ const Profile = () => {
             const token = localStorage.getItem('token');
             const res = await fetch('/api/jobs');
             if (!res.ok) return;
-            const all = await res.json();
+            const result = await res.json();
+            // API returns {data: [...]} format
+            const all = result?.data || result || [];
             const companyName = (user && (user as any).company_name) || '';
-            const filtered = companyName ? (all || []).filter((j: any) => String(j.company || '').toLowerCase() === String(companyName).toLowerCase()) : [];
+            const filtered = companyName ? (Array.isArray(all) ? all : []).filter((j: any) => String(j.company || '').toLowerCase() === String(companyName).toLowerCase()) : [];
             setCompanyOffersCount(filtered.length);
           } catch (e) { /* ignore */ }
         })();

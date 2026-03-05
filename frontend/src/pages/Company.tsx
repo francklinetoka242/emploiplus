@@ -44,7 +44,9 @@ export default function CompanyPage() {
         const jobsRes = await fetch(`/api/jobs?company_id=${id}`);
         if (jobsRes.ok) {
           const jobsData = await jobsRes.json();
-          if (mounted) setJobs(Array.isArray(jobsData) ? jobsData : []);
+          // API returns {data: [...]} format
+          const jobsList = jobsData?.data || jobsData;
+          if (mounted) setJobs(Array.isArray(jobsList) ? jobsList : []);
         }
       } catch (e) {
         setCompany(null);

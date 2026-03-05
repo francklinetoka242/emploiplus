@@ -101,12 +101,16 @@ export default function RecrutementPage() {
         const resCompany = await fetch('/api/company/jobs', { headers: authHeaders() });
         if (!resCompany.ok) throw new Error('Erreur chargement offres entreprise');
         const companyData = await resCompany.json();
-        setJobs(Array.isArray(companyData) ? companyData : []);
+        // API returns {data: [...]} format for /api/jobs endpoint
+        const jobsList = companyData?.data || companyData || [];
+        setJobs(Array.isArray(jobsList) ? jobsList : []);
       } else {
         const res = await fetch('/api/jobs');
         if (!res.ok) throw new Error('Erreur chargement offres');
         const data = await res.json();
-        setJobs(Array.isArray(data) ? data : []);
+        // API returns {data: [...]} format
+        const jobsList = data?.data || data || [];
+        setJobs(Array.isArray(jobsList) ? jobsList : []);
       }
     } catch (e) {
       toast.error('Impossible de charger les offres');

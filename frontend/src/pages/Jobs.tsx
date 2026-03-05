@@ -8,11 +8,11 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Briefcase, ExternalLink, ChevronDown, ChevronUp, MapPin, Calendar, Building, Building2, BookOpen, User, Loader2, Search, X, Settings } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { PWALayout } from '@/components/layout/PWALayout';
-import { useState, useMemo, useEffect, useRef, useCallback } from "react";
+import { useState, useMemo, useEffect, useRef, useCallback, useRef as useRef2 } from "react";
 import { useLocation, useNavigate, Link } from 'react-router-dom';
 import { BottomNavigation } from "@/components/layout/BottomNavigation";
 
-import JobSearchPro from "@/components/jobs/JobSearchPro";
+import JobFilters from "@/components/jobs/JobFilters";
 import { toast } from 'sonner';
 import SaveJobButton from "@/components/jobs/SaveJobButton";
 import { JobListItem } from "@/components/jobs/JobListItem";
@@ -43,6 +43,23 @@ const Jobs = () => {
     recent: true,
   });
 
+  // Ensure page resets to 1 when ANY filter changes
+  const prevFiltersRef = useRef(filters);
+  useEffect(() => {
+    const filterChanged =
+      JSON.stringify(prevFiltersRef.current) !== JSON.stringify(filters) &&
+      (filters.search !== prevFiltersRef.current.search ||
+        filters.company !== prevFiltersRef.current.company ||
+        filters.country !== prevFiltersRef.current.country ||
+        filters.sector !== prevFiltersRef.current.sector ||
+        filters.location !== prevFiltersRef.current.location);
+    if (filterChanged) {
+      setPage(1);
+      setAllJobs([]);
+      prevFiltersRef.current = filters;
+    }
+  }, [filters]);
+
   // Infinite scroll state
   const [allJobs, setAllJobs] = useState<Record<string, unknown>[]>([]);
   const [formations, setFormations] = useState<Record<string, unknown>[]>([]);
@@ -50,7 +67,6 @@ const Jobs = () => {
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
-  const [expandedJobId, setExpandedJobId] = useState<string | null>(null);
   const [expandFilters, setExpandFilters] = useState(false);
   const [openDrawer, setOpenDrawer] = useState(false);
   const loaderRef = useRef<HTMLDivElement>(null);
@@ -75,33 +91,7 @@ const Jobs = () => {
     setFilters((prev) => ({ ...prev, search: debouncedSearch }));
   }, [debouncedSearch]);
 
-  // Reset pagination when filters change (but keep default filters intact)
-  useEffect(() => {
-    // Block resets while user types a short search (<3 chars)
-    if (filters.search && filters.search.length > 0 && filters.search.length < 3) return;
-
-    // if filters are unchanged from their initial default values, don't wipe the list
-    const defaultFilters = {
-      search: "",
-      location: "",
-      country: "",
-      company: "",
-      sector: "",
-      type: "all",
-      recent: true,
-    };
-    const isDefault = Object.keys(defaultFilters).every(
-      (k) => (filters as any)[k] === (defaultFilters as any)[k]
-    );
-    if (isDefault) {
-      // nothing to reset; the query hook will load the jobs on its own
-      return;
-    }
-
-    setAllJobs([]);
-    setPage(1);
-    setHasMore(true);
-  }, [filters]);
+  // Removed: filter-change reset is now handled above with a ref-based comparison
 
   // Fetch formations and candidates for sidebar
   useEffect(() => {
@@ -147,6 +137,7 @@ const Jobs = () => {
       api.getJobs({
         q: filters.search || '',
         location: filters.location || '',
+        country: filters.country || '',
         company: filters.company || '',
         sector: filters.sector || '',
         type: filters.type && filters.type !== 'all' ? filters.type : '',
@@ -158,7 +149,8 @@ const Jobs = () => {
       }),
     // Block search requests when search string is present but shorter than 3 chars
     enabled: !(filters.search && filters.search.length > 0 && filters.search.length < 3),
-    staleTime: 1000 * 60 * 5, // Cache results for 5 minutes
+    staleTime: 0, // Always fetch fresh data when filters change
+    refetchOnWindowFocus: true, // Refetch when user returns to window
   });
 
   // Update allJobs when new data arrives
@@ -238,7 +230,7 @@ const Jobs = () => {
       <PWALayout notificationCount={0} messageCount={0}>
       <div className="min-h-screen bg-gray-50">
         {/* Search Bar */}
-        <JobSearchPro onFilterChange={setFilters} />
+        <JobFilters onFilterChange={setFilters} />
 
         {/* Main Content with Two Columns */}
         <div className="container py-6 px-4">
@@ -264,12 +256,7 @@ const Jobs = () => {
                           <JobListItem
                             key={String(jobItem.id)}
                             job={jobItem}
-                            isExpanded={expandedJobId === String(jobItem.id)}
-                            onToggle={() =>
-                              setExpandedJobId(
-                                expandedJobId === String(jobItem.id) ? null : String(jobItem.id)
-                              )
-                            }
+                            isExpanded={true}
                             onApply={() => {
                               toast.info("Connectez-vous pour postuler");
                               navigate("/connexion");
@@ -314,8 +301,8 @@ const Jobs = () => {
 
       {/* Main Content with Three Columns */}
       <div className="container py-6 px-4 pb-24 md:pb-0">
-        <div className="mb-6">
-          <JobSearchPro onFilterChange={setFilters} />
+          <div className="mb-6">
+          <JobFilters onFilterChange={setFilters} />
         </div>
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
           {/* LEFT COLUMN - PROFILE ONLY */}
@@ -388,12 +375,8 @@ const Jobs = () => {
                         <JobListItem
                           key={String(jobItem.id)}
                           job={jobItem}
-                          isExpanded={expandedJobId === String(jobItem.id)}
-                          onToggle={() =>
-                            setExpandedJobId(
-                              expandedJobId === String(jobItem.id) ? null : String(jobItem.id)
-                            )
-                          }
+                          isExpanded={true}
+                          onToggle={() => {}}
                           onApply={() => {
                             const dl = jobItem.deadline
                               ? new Date(String(jobItem.deadline)).getTime()
@@ -429,12 +412,8 @@ const Jobs = () => {
                         <JobListItem
                           key={String(jobItem.id)}
                           job={jobItem}
-                          isExpanded={expandedJobId === String(jobItem.id)}
-                          onToggle={() =>
-                            setExpandedJobId(
-                              expandedJobId === String(jobItem.id) ? null : String(jobItem.id)
-                            )
-                          }
+                          isExpanded={true}
+                          onToggle={() => {}}
                           onApply={() => {
                             const dl = jobItem.deadline
                               ? new Date(String(jobItem.deadline)).getTime()

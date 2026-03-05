@@ -1,9 +1,10 @@
 // src/components/admin/formations/FormationList.tsx
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import FormationCard from "./FormationCard";
 import FormationForm from "./FormationForm";
 import { Button } from "@/components/ui/button";
-import { Plus, BookOpen } from "lucide-react";
+import { Plus, BookOpen, AlertCircle } from "lucide-react";
 import ConfirmButton from '@/components/ConfirmButton';
 import { toast } from "sonner";
 import { api } from '@/lib/api';
@@ -22,17 +23,59 @@ interface Formation {
 }
 
 export default function FormationList() {
+  const navigate = useNavigate();
   const [formations, setFormations] = useState<Formation[]>([]);
   const [editing, setEditing] = useState<Formation | null>(null);
   const [showForm, setShowForm] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   const fetchFormations = async () => {
-    const res = await fetch("/api/formations");
-    const data = await res.json();
-    setFormations(data);
+    try {
+      setIsLoading(true);
+      setError(null);
+      
+      // Check if admin token exists
+      const token = localStorage.getItem("adminToken");
+      if (!token) {
+        setError("Authentification requise");
+        toast.error("Session expirée. Veuillez vous reconnecter.");
+        navigate("/admin/login");
+        return;
+      }
+
+      const res = await fetch("/api/admin/formations?published=all", {
+        headers: { "Authorization": `Bearer ${token}` }
+      });
+
+      // Handle 401 Unauthorized
+      if (res.status === 401) {
+        localStorage.removeItem("adminToken");
+        localStorage.removeItem("admin");
+        setError("Votre session a expiré");
+        toast.error("Veuillez vous reconnecter");
+        navigate("/admin/login");
+        return;
+      }
+
+      if (!res.ok) {
+        throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+      }
+
+      const data = await res.json();
+      // API returns { data: [...] }, extract the array
+      setFormations(Array.isArray(data) ? data : (data?.data || []));
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : "Erreur lors du chargement";
+      setError(errorMessage);
+      toast.error(errorMessage);
+      console.error('Fetch formations error:', err);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  useEffect(() => { fetchFormations(); }, []);
+  useEffect(() => { fetchFormations(); }, [navigate]);
 
   const togglePublish = async (id: string, published: boolean) => {
     try {
@@ -46,10 +89,48 @@ export default function FormationList() {
   };
 
   const deleteFormation = async (id: string) => {
-    await fetch(`/api/formations/${id}`, { method: "DELETE" });
-    toast.success("Formation supprimée");
-    fetchFormations();
+    try {
+      await api.deleteFormation(id);
+      toast.success("Formation supprimée");
+      fetchFormations();
+    } catch (err) {
+      console.error('Delete formation error:', err);
+      toast.error('Échec de la suppression');
+    }
   };
+
+  // Loading state
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Chargement des formations...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Error state
+  if (error) {
+    return (
+      <div className="p-6 bg-red-50 border border-red-200 rounded-lg">
+        <div className="flex items-start gap-3">
+          <AlertCircle className="h-6 w-6 text-red-600 flex-shrink-0 mt-0.5" />
+          <div className="flex-1">
+            <h3 className="font-semibold text-red-900">Erreur de chargement</h3>
+            <p className="text-red-700 mt-1">{error}</p>
+            <button
+              onClick={fetchFormations}
+              className="mt-3 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition"
+            >
+              Réessayer
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div>

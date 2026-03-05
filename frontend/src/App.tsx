@@ -117,6 +117,7 @@ import VerifyRequestsPage from "./pages/admin/verify-requests/page";
 import Contact from "./pages/Contact";
 import AdminNotificationsPage from "./pages/admin/notifications/page";
 import { AdminExport } from "./pages/admin/AdminExport";
+import AdminProfilePage from "./pages/admin/profile/page";
 import { Messages } from "./pages/Messages";
 
 const queryClient = new QueryClient();
@@ -344,6 +345,13 @@ const App = () => {
             <Route path="export" element={
               <ProtectedRoute requiredRoles={["super_admin"]}>
                 <AdminExport />
+              </ProtectedRoute>
+            } />
+            
+            {/* Profile — tous les admins authentifiés */}
+            <Route path="profile" element={
+              <ProtectedRoute>
+                <AdminProfilePage />
               </ProtectedRoute>
             } />
           </Route>

@@ -61,7 +61,7 @@ export default function JobSearchPro({ onFilterChange }: Props) {
     const payload = {
       search: search,
       company: company,
-      country: country,
+      location: country, // Send as location, not country
       sector: position, // Use position as sector for compatibility
       recent: true,
     };

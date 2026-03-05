@@ -25,8 +25,21 @@ const ICON_MAP: Record<string, React.ComponentType<any>> = {
 };
 
 export function AdminSidebar() {
-  const { sidebarOpen, activeMenu, setActiveMenu } = useAdminNav();
+  const { sidebarOpen, activeMenu, setActiveMenu, userSession } = useAdminNav();
   const location = useLocation();
+
+  const getRoleLabel = () => {
+    if (!userSession) return 'Admin';
+    const key = userSession.role.replace(/_/g, '-');
+    const labels: Record<string, string> = {
+      'super-admin': 'Super Admin',
+      'admin': 'Administrateur',
+      'content-admin': 'Administrateur de Contenu',
+      'admin-offres': 'Admin Offres',
+      'admin-users': 'Admin Utilisateurs',
+    };
+    return labels[key] || 'Admin';
+  };
 
   const handleMenuClick = (menuId: any) => {
     setActiveMenu(menuId);
@@ -44,12 +57,12 @@ export function AdminSidebar() {
         <div className="h-20 flex items-center justify-center border-b border-slate-700">
           <div className={`flex items-center gap-3 transition-all duration-300 ${!sidebarOpen && 'justify-center w-full'}`}>
             <div className="w-10 h-10 bg-gradient-to-br from-blue-400 to-blue-600 rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-lg">SA</span>
+              <span className="text-white font-bold text-lg">{userSession?.initials || 'SA'}</span>
             </div>
             {sidebarOpen && (
               <div className="flex flex-col">
-                <span className="text-white font-bold text-base">Super Admin</span>
-                <span className="text-slate-400 text-xs">Dashboard</span>
+                <span className="text-white font-bold text-base">{getRoleLabel()}</span>
+                <span className="text-slate-400 text-xs">{userSession?.name || 'Dashboard'}</span>
               </div>
             )}
           </div>

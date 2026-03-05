@@ -14,7 +14,10 @@ async function getUsers(query = {}) {
     }
 
     // fetch users from database
+    const sql = 'SELECT id, full_name, email, user_type, is_blocked, created_at FROM users ORDER BY created_at DESC LIMIT $1 OFFSET $2';
+    console.log('[userService] executing getAllUsers:', sql, [limit, offset]);
     const users = await UserModel.getAllUsers(limit, offset);
+    console.log('[userService] got', users.length, 'users');
     return users;
   } catch (err) {
     console.error('getUsers service error:', err);
@@ -64,8 +67,8 @@ async function getUserByEmail(email) {
 // create a new user
 async function createUser(email, firstname, lastname, passwordHash, user_type = 'candidate') {
   try {
-    if (!email || !firstname || !lastname || !passwordHash) {
-      throw new Error('Email, first name, last name, and password hash are required');
+    if (!email || (!firstname && !lastname) || !passwordHash) {
+      throw new Error('Email, first name/last name, and password hash are required');
     }
 
     // validate email format
@@ -80,8 +83,11 @@ async function createUser(email, firstname, lastname, passwordHash, user_type = 
       throw new Error('Email already in use');
     }
 
+    // combine name pieces into full_name for storage
+    const fullName = [firstname, lastname].filter(Boolean).join(' ').trim();
+
     // create new user in database
-    const newUser = await UserModel.createUser(email, firstname, lastname, passwordHash, user_type);
+    const newUser = await UserModel.createUser(email, fullName, passwordHash, user_type);
     return newUser;
   } catch (err) {
     console.error('createUser service error:', err);
@@ -103,8 +109,15 @@ async function updateUserProfile(userId, profileData) {
     }
 
     // filter allowed fields for profile update
-    const allowedFields = ['email', 'first_name', 'last_name', 'user_type', 'phone', 'job_title', 'profession', 'experience_years'];
+    const allowedFields = ['email', 'full_name', 'user_type', 'phone', 'job_title', 'profession', 'experience_years'];
     const updates = {};
+    // support legacy first_name/last_name in incoming data
+    let fn = profileData.first_name;
+    let ln = profileData.last_name;
+    if (fn || ln) {
+      updates.full_name = [fn, ln].filter(Boolean).join(' ').trim();
+    }
+
     for (const [key, value] of Object.entries(profileData)) {
       if (allowedFields.includes(key) && value !== undefined) {
         updates[key] = value;
@@ -134,6 +147,9 @@ async function updateUserProfile(userId, profileData) {
 
 // delete a user account
 async function deleteUser(userId) {
+  // This implementation performs a transactional cleanup of common dependent rows
+  // to avoid foreign key constraint errors when removing a user.
+
   try {
     if (!userId) {
       throw new Error('User ID is required');
@@ -145,11 +161,44 @@ async function deleteUser(userId) {
       throw new Error('User not found');
     }
 
-    // delete user from database
-    const deleted = await UserModel.deleteUser(userId);
-    return deleted;
+    // Start a transaction and remove dependent rows that reference users.id
+    const client = await (await import('../config/db.js')).default.connect();
+    try {
+      await client.query('BEGIN');
+
+      // Order matters: child tables first
+      await client.query('DELETE FROM user_skills WHERE user_id = $1', [userId]);
+      await client.query('DELETE FROM user_documents WHERE user_id = $1', [userId]);
+      await client.query('DELETE FROM testimonials WHERE user_id = $1', [userId]);
+      await client.query('DELETE FROM notifications WHERE user_id = $1', [userId]);
+      await client.query('DELETE FROM verification_requests WHERE user_id = $1', [userId]);
+
+      // job_applications can reference users as applicant or company
+      await client.query('DELETE FROM job_applications WHERE applicant_id = $1 OR company_id = $1', [userId]);
+
+      // jobs and business_cards reference companies
+      await client.query('DELETE FROM jobs WHERE company_id = $1', [userId]);
+      await client.query('DELETE FROM business_cards WHERE company_id = $1', [userId]);
+
+      // Finally delete the user
+      const delRes = await client.query('DELETE FROM users WHERE id = $1 RETURNING id', [userId]);
+
+      await client.query('COMMIT');
+      return delRes.rowCount > 0;
+    } catch (txErr) {
+      await client.query('ROLLBACK');
+      console.error('deleteUser transaction error:', txErr);
+      throw txErr;
+    } finally {
+      client.release();
+    }
   } catch (err) {
     console.error('deleteUser service error:', err);
+    // Handle common Postgres foreign-key/constraint errors when user is referenced elsewhere
+    // Postgres FK violation code is '23503'
+    if (err && (err.code === '23503' || /foreign key|constraint|referenc/i.test(err.message || ''))) {
+      throw new Error('User has dependent records and cannot be deleted');
+    }
     throw err;
   }
 }

@@ -6,12 +6,12 @@ import AppError from '../utils/AppError.js';
 // ---------------------------------------------------------------------------
 // ADMIN REGISTRATION
 // ---------------------------------------------------------------------------
-// Register a new super admin (used during initial setup)
+// Register a new admin (used during setup)
 // - Inserts into public.admins table only
 // - Validates email/password requirements
 // - Hashes password before storing
 // - Returns created admin record (without password)
-async function registerAdmin(email, password, firstName = 'Admin', lastName = 'User') {
+async function registerAdmin(email, password, firstName = 'Admin', lastName = 'User', role = 'super_admin') {
   if (!email || !password) {
     throw new AppError('Email and password are required', 400);
   }
@@ -34,14 +34,14 @@ async function registerAdmin(email, password, firstName = 'Admin', lastName = 'U
     // Hash the password before storing
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Insert into admins table ONLY with superadmin role
+    // Insert into admins table with specified role
     const insert = `
-      INSERT INTO admins (email, password, role, first_name, last_name, is_verified, is_active, created_at, updated_at)
-      VALUES ($1, $2, 'super_admin', $3, $4, false, true, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
-      RETURNING id, email, role, first_name, last_name
+      INSERT INTO admins (email, password, role, first_name, last_name, is_verified, is_active, created_at)
+      VALUES ($1, $2, $3, $4, $5, true, true, CURRENT_TIMESTAMP)
+      RETURNING id, email, role, first_name, last_name, is_verified, is_active
     `;
 
-    const result = await pool.query(insert, [email, hashedPassword, firstName, lastName]);
+    const result = await pool.query(insert, [email, hashedPassword, role, firstName, lastName]);
     return result.rows[0];
   } catch (error) {
     if (error instanceof AppError) throw error;
@@ -55,7 +55,6 @@ async function registerAdmin(email, password, firstName = 'Admin', lastName = 'U
 // Authenticate an admin and produce a JWT token
 // - Queries ONLY public.admins table (CRITICAL for security)
 // - Verifies email and password
-// - Requires is_active = true
 // - Returns { token, user } with admin role information
 async function loginAdmin(email, password) {
   if (!email || !password) {
@@ -66,7 +65,7 @@ async function loginAdmin(email, password) {
     // Fetch admin record from admins table ONLY
     // SECURITY: Do NOT query users table here
     const { rows: adminRows } = await pool.query(
-      `SELECT id, email, password, role, first_name, last_name, is_active 
+      `SELECT id, email, password, role, first_name, last_name
        FROM admins 
        WHERE email = $1`,
       [email]
@@ -75,11 +74,6 @@ async function loginAdmin(email, password) {
     const admin = adminRows[0];
     if (!admin) {
       throw new AppError('Incorrect email or password', 401);
-    }
-
-    // Check if admin account is active
-    if (!admin.is_active) {
-      throw new AppError('Admin account is inactive', 403);
     }
 
     // Compare passwords
@@ -104,8 +98,8 @@ async function loginAdmin(email, password) {
         id: admin.id,
         email: admin.email,
         role: admin.role,
-        firstName: admin.first_name,
-        lastName: admin.last_name
+        first_name: admin.first_name,
+        last_name: admin.last_name
       }
     };
   } catch (error) {

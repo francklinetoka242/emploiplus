@@ -12,12 +12,11 @@ async function getAllServices(limit = 20, offset = 0, catalogId = null, visibleO
     }
 
     if (visibleOnly) {
-      conditions.push(`is_visible = true`);
+      conditions.push(`is_featured = true`);
     }
 
     let query = `
-      SELECT id, catalog_id, name, description, price, rating, is_promo, promo_text, 
-             is_visible, image_url, brochure_url, display_order, created_at, updated_at
+      SELECT id, catalog_id, name, description, price, duration, is_featured, created_at, updated_at
       FROM services
     `;
 
@@ -26,7 +25,7 @@ async function getAllServices(limit = 20, offset = 0, catalogId = null, visibleO
     }
 
     query += `
-      ORDER BY display_order ASC, created_at DESC
+      ORDER BY created_at DESC
       LIMIT $${params.length + 1} OFFSET $${params.length + 2}
     `;
 
@@ -44,8 +43,7 @@ async function getAllServices(limit = 20, offset = 0, catalogId = null, visibleO
 async function getServiceById(serviceId) {
   try {
     const query = `
-      SELECT id, catalog_id, name, description, price, rating, is_promo, promo_text, 
-             is_visible, image_url, brochure_url, display_order, created_at, updated_at
+      SELECT id, catalog_id, name, description, price, duration, is_featured, created_at, updated_at
       FROM services
       WHERE id = $1
     `;
@@ -61,8 +59,7 @@ async function getServiceById(serviceId) {
 async function searchServices(searchTerm, limit = 20) {
   try {
     const query = `
-      SELECT id, catalog_id, name, description, price, rating, is_promo, promo_text, 
-             is_visible, image_url, brochure_url, display_order, created_at, updated_at
+      SELECT id, catalog_id, name, description, price, duration, is_featured, created_at, updated_at
       FROM services
       WHERE name ILIKE $1 OR description ILIKE $1
       ORDER BY name ASC
@@ -109,8 +106,7 @@ async function createService(data) {
     const query = `
       INSERT INTO services (${columns.join(', ')})
       VALUES (${placeholders.join(', ')})
-      RETURNING id, catalog_id, name, description, price, rating, is_promo, promo_text, 
-                is_visible, image_url, brochure_url, display_order, created_at, updated_at
+      RETURNING id, catalog_id, name, description, price, duration, is_featured, created_at, updated_at
     `;
 
     const result = await pool.query(query, values);
@@ -140,8 +136,7 @@ async function updateService(serviceId, updates) {
       UPDATE services
       SET ${setClause}
       WHERE id = $${fields.length + 1}
-      RETURNING id, catalog_id, name, description, price, rating, is_promo, promo_text, 
-                is_visible, image_url, brochure_url, display_order, created_at, updated_at
+      RETURNING id, catalog_id, name, description, price, duration, is_featured, created_at, updated_at
     `;
     
     const result = await pool.query(query, values);

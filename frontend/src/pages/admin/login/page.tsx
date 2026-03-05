@@ -1,5 +1,5 @@
 // src/pages/admin/login/page.tsx
-import { useState } from "react";
+import { useState, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";        // ← LE "F" EST MAJUSCULE !
@@ -7,12 +7,14 @@ import { Card } from "@/components/ui/card";
 import { toast } from "sonner";
 import { Shield } from "lucide-react";
 import { buildApiUrl } from "@/lib/headers";
+import { AdminNavContext } from "@/context/AdminNavContext";
 
 export default function AdminLoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const adminNav = useContext(AdminNavContext);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -64,6 +66,32 @@ export default function AdminLoginPage() {
         });
 
         toast.success("Connecté avec succès !");
+
+        // update context if we have it available
+        if (adminNav && adminNav.setUserSession) {
+          const raw = apiPayload.admin || {};
+          const name =
+            raw.first_name && raw.last_name
+              ? `${raw.first_name} ${raw.last_name}`
+              : raw.prenom && raw.nom
+              ? `${raw.prenom} ${raw.nom}`
+              : raw.name || '';
+          const initials =
+            raw.initials ||
+            name
+              .split(' ')
+              .map((w: string) => w[0] || '')
+              .join('')
+              .toUpperCase();
+          adminNav.setUserSession({
+            id: String(raw.id),
+            name,
+            email: raw.email || '',
+            role: raw.role || 'admin',
+            photo: raw.photo,
+            initials,
+          });
+        }
 
         const role = apiPayload.admin?.role;
         switch (role) {

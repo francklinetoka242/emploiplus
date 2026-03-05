@@ -22,8 +22,8 @@ function LoadingFallback() {
 
 export function AdminMainContent() {
   return (
-    <main className="flex-1 bg-gray-50 overflow-auto">
-      <div className="container mx-auto">
+    <main className="flex-1 h-full bg-gray-50 overflow-auto">
+      <div className="container mx-auto h-full">
         <Suspense fallback={<LoadingFallback />}>
           <Outlet />
         </Suspense>
