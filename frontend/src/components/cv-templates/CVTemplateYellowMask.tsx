@@ -133,7 +133,7 @@ export const CVTemplateYellowMask: React.FC<CVTemplateYellowMaskProps> = ({ data
               <div className="grid grid-cols-2 gap-4">
                 {data.skills.map((skill, index) => (
                   <div key={index} className="text-sm">
-                    <p className="font-medium text-gray-800 mb-1">{skill}</p>
+                    <p className="font-medium text-gray-800 mb-1">{typeof skill === 'string' ? skill : skill?.name || 'Compétence'}</p>
                     <div className="flex gap-1">
                       {[1, 2, 3, 4, 5].map((star) => (
                         <Star

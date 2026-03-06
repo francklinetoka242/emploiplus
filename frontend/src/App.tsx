@@ -88,6 +88,8 @@ import BannerCreator from "./pages/services/BannerCreator";
 import BusinessCardEditor from "./pages/services/BusinessCardEditor";
 import BusinessCardModels from "./pages/services/BusinessCardModels";
 import PortfolioBuilder from "./pages/services/PortfolioBuilder";
+import PortfolioTemplates from "./pages/services/PortfolioTemplates";
+import PortfolioMinialisteEditor from "./pages/services/PortfolioMinialisteEditor";
 
 // Admin
 import AdminLogin from "./pages/admin/login/page";
@@ -209,6 +211,8 @@ const App = () => {
             <Route path="/services/business-card-editor" element={<BusinessCardEditor />} />
             <Route path="/services/business-card-models" element={<BusinessCardModels />} />
             <Route path="/services/portfolio-builder" element={<PortfolioBuilder />} />
+            <Route path="/services/portfolio-templates" element={<PortfolioTemplates />} />
+            <Route path="/services/portfolio-minimaliste-editor" element={<PortfolioMinialisteEditor />} />
           </Route>
 
           <Route path="/connexion" element={<LoginUser />} />

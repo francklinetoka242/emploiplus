@@ -115,7 +115,7 @@ export const CVTemplateInfographicBlueOrange: React.FC<CVTemplateInfographicBlue
                       75%
                     </text>
                   </svg>
-                  <p className="text-xs text-gray-100 font-semibold break-words">{skill}</p>
+                  <p className="text-xs text-gray-100 font-semibold break-words">{typeof skill === 'string' ? skill : skill?.name || 'Compétence'}</p>
                 </div>
               ))}
             </div>

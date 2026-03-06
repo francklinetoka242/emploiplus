@@ -58,7 +58,7 @@ export interface CVData {
     field: string;
     year: string;
   }>;
-  skills: string[];
+  skills: Array<{ name: string; level?: string }>;
   languages: Array<{ name: string; level: string }>;
   qualities: string[];
   template: string;

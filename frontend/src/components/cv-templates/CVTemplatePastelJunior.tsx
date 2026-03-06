@@ -73,7 +73,7 @@ export function CVTemplatePastelJunior({ data }: { data: CVData }) {
               <ul className="space-y-1">
                 {data.skills.map((skill, idx) => (
                   <li key={idx} className="text-xs text-gray-700">
-                    • {skill}
+                    • {typeof skill === 'string' ? skill : skill?.name || 'Compétence'}
                   </li>
                 ))}
               </ul>

@@ -156,13 +156,13 @@ export const CVTemplateResumeGrid: React.FC<CVTemplateResumeGridProps> = ({ data
               {data.skills.map((skill, index) => (
                 <div key={index}>
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm font-medium text-black">{skill.name}</span>
+                    <span className="text-sm font-medium text-black">{typeof skill === 'string' ? skill : skill?.name || 'Compétence'}</span>
                     <div className="flex gap-1">
                       {Array.from({ length: 5 }).map((_, i) => (
                         <div
                           key={i}
                           className={`w-2 h-2 rounded-full ${
-                            i < skill.level ? "bg-[#FCE4EC]" : "bg-gray-200"
+                            i < (typeof skill === 'object' ? skill?.level || 3 : 3) ? "bg-[#FCE4EC]" : "bg-gray-200"
                           }`}
                         ></div>
                       ))}

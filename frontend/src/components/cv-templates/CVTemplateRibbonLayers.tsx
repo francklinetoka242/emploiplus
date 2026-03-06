@@ -75,7 +75,7 @@ export const CVTemplateRibbonLayers: React.FC<CVTemplateRibbonLayersProps> = ({ 
             </h3>
             <div className="space-y-2 text-white text-sm">
               {data.skills.map((skill, index) => (
-                <p key={index}>• {skill}</p>
+                <p key={index}>• {typeof skill === 'string' ? skill : skill?.name || 'Compétence'}</p>
               ))}
             </div>
           </div>

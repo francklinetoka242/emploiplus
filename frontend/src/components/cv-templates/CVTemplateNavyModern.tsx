@@ -77,7 +77,7 @@ export const CVTemplateNavyModern: React.FC<CVTemplateNavyModernProps> = ({ data
                 {data.skills.map((skill, index) => (
                   <p key={index} className="flex items-center gap-2">
                     <span className="w-2 h-2 bg-[#000080] rounded-full"></span>
-                    {skill}
+                    {typeof skill === 'string' ? skill : skill?.name || 'Compétence'}
                   </p>
                 ))}
               </div>

@@ -89,7 +89,7 @@ export const CVTemplateHighEnd: React.FC<CVTemplateHighEndProps> = ({ data }) =>
               <div className="space-y-2">
                 {data.skills.map((skill, index) => (
                   <p key={index} className="text-sm text-gray-700 font-light">
-                    • {skill}
+                    • {typeof skill === 'string' ? skill : skill?.name || 'Compétence'}
                   </p>
                 ))}
               </div>

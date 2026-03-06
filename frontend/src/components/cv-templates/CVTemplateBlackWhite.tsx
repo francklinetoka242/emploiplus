@@ -76,7 +76,7 @@ export const CVTemplateBlackWhite: React.FC<CVTemplateBlackWhiteProps> = ({ data
             <div className="space-y-3">
               {data.skills.map((skill, index) => (
                 <div key={index}>
-                  <p className="text-xs text-gray-300 mb-2 font-semibold">{skill}</p>
+                  <p className="text-xs text-gray-300 mb-2 font-semibold">{typeof skill === 'string' ? skill : skill?.name || 'Compétence'}</p>
                   <div className="w-full bg-gray-700 rounded-full h-1.5">
                     <div className="bg-white h-1.5 rounded-full" style={{ width: "75%" }}></div>
                   </div>

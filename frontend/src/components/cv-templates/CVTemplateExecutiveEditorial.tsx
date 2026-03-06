@@ -189,7 +189,7 @@ export const CVTemplateExecutiveEditorial: React.FC<CVTemplateExecutiveEditorial
                 {data.skills.map((skill, index) => (
                   <div key={index} className="flex items-center gap-3">
                     <ArrowRight className="w-3 h-3 text-[#E1F4F0] flex-shrink-0" />
-                    <span className="text-sm">{skill.name}</span>
+                    <span className="text-sm">{typeof skill === 'string' ? skill : skill?.name || 'Compétence'}</span>
                   </div>
                 ))}
               </div>

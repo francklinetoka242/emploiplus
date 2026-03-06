@@ -144,7 +144,7 @@ export default function VisualCreation({ isLoggedIn = false }: VisualCreationPro
                   variant="outline" 
                   onClick={() => {
                     sendInteraction({ service: 'portfolio', event_type: 'view_templates' });
-                    navigate('/services/portfolio-builder');
+                    navigate('/services/portfolio-templates');
                   }}
                 >
                   Voir les modèles

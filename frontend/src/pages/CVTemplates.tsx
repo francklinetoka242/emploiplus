@@ -1,7 +1,8 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Edit, Trash2, Download, Eye, ChevronLeft, ChevronRight } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { ArrowRight, Edit, Trash2, Download, Eye, ChevronLeft, ChevronRight, Play } from "lucide-react";
 import { toast } from "sonner";
 import html2pdf from "html2pdf.js";
 import { CVTemplateFrancklyn } from "@/components/cv-templates/CVTemplateFrancklyn";
@@ -110,6 +111,7 @@ const CV_TEMPLATES = [
   },
   {
     id: "orangedynamic",
+    category: "moderne",
     name: "Modèle 6 - Orange Dynamique",
     description:
       "Design dynamique avec contraste orange/noir/blanc - Pour une présentation énergique et moderne",
@@ -123,6 +125,7 @@ const CV_TEMPLATES = [
   },
   {
     id: "modernribbon",
+    category: "moderne",
     name: "Modèle 7 - Ruban Moderne",
     description:
       "Design avec rubans et timeline moderne - Idéal pour un CV créatif et structuré",
@@ -136,6 +139,7 @@ const CV_TEMPLATES = [
   },
   {
     id: "pasteljunior",
+    category: "moderne",
     name: "Modèle 8 - Pastel Junior",
     description:
       "Design doux et aéré pour juniors/étudiants - Parfait pour les jeunes talents",
@@ -149,6 +153,7 @@ const CV_TEMPLATES = [
   },
   {
     id: "ribbonsidebar",
+    category: "moderne",
     name: "Modèle 9 - Ruban Latéral",
     description:
       "Design avec rubans gris qui dépassent + timeline verticale - Pour un CV structuré et moderne",
@@ -162,6 +167,7 @@ const CV_TEMPLATES = [
   },
   {
     id: "executive",
+    category: "moderne",
     name: "Modèle 10 - Cadre Professionnel",
     description:
       "Design haute performance pour cadres - Photo carrée, barre grise avec coordonnées",
@@ -175,6 +181,7 @@ const CV_TEMPLATES = [
   },
   {
     id: "navyblue",
+    category: "moderne",
     name: "Modèle 11 - Bleu Marine",
     description:
       "Design professionnel avec header bleu marine - Photo circulaire qui chevauche",
@@ -188,6 +195,7 @@ const CV_TEMPLATES = [
   },
   {
     id: "warmminimal",
+    category: "moderne",
     name: "Modèle 12 - Minimaliste Chaleureux",
     description:
       "Design doux avec palette beige - Expériences en blocs arrondis chaleureux",
@@ -201,6 +209,7 @@ const CV_TEMPLATES = [
   },
   {
     id: "turquoiseorange",
+    category: "moderne",
     name: "Modèle 13 - Turquoise & Orange",
     description:
       "Design vibrant avec barre latérale turquoise et accents orange - Photo avec bordure orange",
@@ -214,6 +223,7 @@ const CV_TEMPLATES = [
   },
   {
     id: "yellowmask",
+    category: "moderne",
     name: "Modèle 14 - Bloc Jaune & Masque",
     description:
       "Design moderne avec bloc jaune vif et photo qui dépasse - Timeline verticale jaune",
@@ -227,6 +237,7 @@ const CV_TEMPLATES = [
   },
   {
     id: "highend",
+    category: "moderne",
     name: "Modèle 15 - High-End Minimaliste",
     description:
       "Design premium ultra épuré - Header gris avec deux colonnes et ligne discrète",
@@ -240,6 +251,7 @@ const CV_TEMPLATES = [
   },
   {
     id: "navywhite",
+    category: "moderne",
     name: "Modèle 16 - Bleu Marine Bicolore",
     description:
       "Design bicolore professionnel - Barre latérale bleu marine avec photo en double cercle",
@@ -253,6 +265,7 @@ const CV_TEMPLATES = [
   },
   {
     id: "blackwhite",
+    category: "moderne",
     name: "Modèle 17 - Noir & Blanc Minimaliste",
     description:
       "Design épuré noir/blanc avec barre latérale noire et barres de progression",
@@ -266,6 +279,7 @@ const CV_TEMPLATES = [
   },
   {
     id: "yellowgeometric",
+    category: "moderne",
     name: "Modèle 18 - Jaune Géométrique",
     description:
       "Design moderne avec accents géométriques jaunes et ligne verticale de séparation",
@@ -279,6 +293,7 @@ const CV_TEMPLATES = [
   },
   {
     id: "infographicblueorange",
+    category: "moderne",
     name: "Modèle 19 - Infographique Bleu/Orange",
     description:
       "Design infographique avec vagues fluides, diagrammes circulaires et capsules oranges",
@@ -292,6 +307,7 @@ const CV_TEMPLATES = [
   },
   {
     id: "ribbonlayers",
+    category: "moderne",
     name: "Modèle 20 - Rubans Superposés",
     description:
       "Design avec rubans qui se chevauchent et arche pour la photo de profil",
@@ -305,6 +321,7 @@ const CV_TEMPLATES = [
   },
   {
     id: "turquoiseorangev2",
+    category: "moderne",
     name: "Modèle 21 - Turquoise Orange V2",
     description:
       "Design bicolore turquoise/orange avec barres fines et lignes de soulignement",
@@ -317,6 +334,7 @@ const CV_TEMPLATES = [
     image: "💎",
   },  {
     id: "executivecadre",
+    category: "moderne",
     name: "Modèle 22 - Exécutif Cadre",
     description:
       "Design professionnel pour cadre - Photo carrée, bloc gris anthracite, barre contact",
@@ -330,6 +348,7 @@ const CV_TEMPLATES = [
   },
   {
     id: "orangecreative",
+    category: "moderne",
     name: "Modèle 23 - Orange Créatif",
     description:
       "Design créatif bicolore - Grand bandeau orange, colonne noire, icônes sociales",
@@ -343,6 +362,7 @@ const CV_TEMPLATES = [
   },
   {
     id: "studentpastel",
+    category: "moderne",
     name: "Modèle 24 - Étudiant Pastel",
     description:
       "Design doux pour étudiants - Header rose pastel, sections noires, très aéré",
@@ -356,6 +376,7 @@ const CV_TEMPLATES = [
   },
   {
     id: "timeline",
+    category: "moderne",
     name: "Modèle 25 - Timeline Pointillée",
     description:
       "Design avec timeline infographique - Ligne pointillée, cercles jaunes d'accent",
@@ -369,6 +390,7 @@ const CV_TEMPLATES = [
   },
   {
     id: "navymodern",
+    category: "moderne",
     name: "Modèle 26 - Bleu Marine Moderne",
     description:
       "Design bicolore bleu marine - Photo circulaire qui chevauche le header",
@@ -563,12 +585,22 @@ export default function CVTemplates() {
   const [editorOpen, setEditorOpen] = useState(false);
   const [selectedTemplateId, setSelectedTemplateId] = useState<string | null>(null);
   const [editingCV, setEditingCV] = useState<CVData | null>(null);
-  const [previewCVId, setPreviewCVId] = useState<string | null>(null);
+  const [selectedTemplate, setSelectedTemplate] = useState<any>(null);
+  const scrollRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
 
   const handleNewCV = (templateId: string) => {
     setSelectedTemplateId(templateId);
     setEditingCV(null);
     setEditorOpen(true);
+  };
+
+  const handleUseTemplate = (template: any) => {
+    toast.success(`Modèle "${template.name}" sélectionné !`);
+    handleNewCV(template.id);
+  };
+
+  const handlePreview = (template: any) => {
+    setSelectedTemplate(template);
   };
 
   const handleEditCV = (cv: CVData) => {
@@ -597,69 +629,42 @@ export default function CVTemplates() {
   };
 
   const handleExportPDF = (cv: CVData) => {
-    const TemplateComponent = getTemplateComponent(cv.template);
-    const element = document.createElement("div");
-    const root = document.createElement("div");
-    element.appendChild(root);
-
-    // Render to a temporary container
-    const tempDiv = document.createElement("div");
-    document.body.appendChild(tempDiv);
-    tempDiv.innerHTML = `<div style="width: 210mm; aspect-ratio: 210/297;"></div>`;
-
-    const opt = {
-      margin: 0,
-      filename: `${cv.full_name || "CV"}.pdf`,
-      image: { type: "jpeg", quality: 0.98 },
-      html2canvas: { scale: 2 },
-      jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
-    };
-
-    // For PDF export, we'll use a simplified approach
     setTimeout(() => {
       window.print();
     }, 100);
-
     toast.success("Préparation de l'export PDF...");
   };
 
-  const scrollLeft = (sectionId: string) => {
-    const container = document.getElementById(sectionId);
-    if (container) {
-      container.scrollBy({ left: -400, behavior: 'smooth' });
+  const scrollLeft = (category: string) => {
+    const ref = scrollRefs.current[category];
+    if (ref) {
+      ref.scrollBy({ left: -300, behavior: 'smooth' });
     }
   };
 
-  const scrollRight = (sectionId: string) => {
-    const container = document.getElementById(sectionId);
-    if (container) {
-      container.scrollBy({ left: 400, behavior: 'smooth' });
+  const scrollRight = (category: string) => {
+    const ref = scrollRefs.current[category];
+    if (ref) {
+      ref.scrollBy({ left: 300, behavior: 'smooth' });
     }
   };
 
-  const moderneTemplates = CV_TEMPLATES.filter((t) => {
-    if (t.category) return t.category === 'moderne';
-    return true; // consider unspecified category as 'moderne' by default
-  }).map((template) => ({
-    ...template,
-    cvs: cvs.filter((cv) => cv.template === template.id),
-  }));
-
-  const classiqueTemplates = CV_TEMPLATES.filter((t) => t.category === 'classique').map((template) => ({
-    ...template,
-    cvs: cvs.filter((cv) => cv.template === template.id),
-  }));
+  const categories = ["moderne", "classique"];
+  
+  const templatesByCategory = categories.reduce((acc, category) => {
+    acc[category] = CV_TEMPLATES.filter(template => (template.category || 'moderne') === category);
+    return acc;
+  }, {} as { [key: string]: any[] });
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
-      {/* Header */}
-      <div className="bg-white shadow-sm border-b py-12">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">Modèles de CV</h1>
-          <p className="text-xl text-muted-foreground">
-            Choisissez parmi nos modèles professionnels et créez votre CV en quelques minutes
-          </p>
-        </div>
+    <div className="container mx-auto px-4 py-8">
+      <div className="text-center mb-12">
+        <h1 className="text-4xl font-bold text-gray-900 mb-4">
+          Galerie de Modèles de CV
+        </h1>
+        <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+          Choisissez parmi notre collection de modèles professionnels pour créer un CV qui vous ressemble
+        </p>
       </div>
 
       {/* Editor Modal */}
@@ -673,275 +678,145 @@ export default function CVTemplates() {
         />
       )}
 
-      {/* Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-16">
-        {/* Section CV Moderne */}
-        <div>
-          <div className="mb-8">
-            <h2 className="text-3xl font-bold text-gray-900 mb-2">CV Moderne</h2>
-            <p className="text-lg text-gray-600">Designs contemporains et innovants pour se démarquer</p>
-          </div>
+      {categories.map(category => (
+        <div key={category} className="mb-12">
+          <h2 className="text-2xl font-semibold text-gray-800 mb-6 capitalize">
+            {category === 'moderne' ? 'CV Moderne' : 'CV Classique'}
+          </h2>
 
-          {/* Navigation buttons and horizontal scroll container */}
-          <div className="relative">
-            {/* Left navigation button */}
+          <div className="relative group">
             <button
-              onClick={() => scrollLeft('moderne-section')}
-              className="absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-white shadow-lg rounded-full p-3 hover:bg-gray-50 transition-colors border border-gray-200"
+              onClick={() => scrollLeft(category)}
+              className="absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-white/80 hover:bg-white rounded-full p-2 shadow-md opacity-0 group-hover:opacity-100 transition-opacity duration-300"
             >
-              <ChevronLeft className="h-6 w-6 text-gray-600" />
+              <ChevronLeft className="w-6 h-6 text-gray-600" />
             </button>
 
-            {/* Horizontal scroll container */}
-            <div id="moderne-section" className="overflow-x-auto pb-4 px-12">
-              <div className="flex gap-6 min-w-max">
-                {moderneTemplates.map((template) => (
-                  <Card key={template.id} className="hover:shadow-2xl transition-all duration-300 overflow-hidden flex-shrink-0 w-80">
-                    <div className="p-4">
-                      {/* Template Preview */}
-                      <div className="flex items-center justify-center bg-gray-50 rounded-lg p-3 mb-4 h-80">
-                        {(() => {
-                          const TemplateComponent = getTemplateComponent(template.id);
-                          return (
-                            <div className="w-full h-full flex items-center justify-center">
-                              <div
-                                className="bg-white shadow-lg w-full h-full overflow-hidden rounded border transform scale-50 origin-top"
-                                style={{ aspectRatio: "210/297" }}
-                              >
-                                <TemplateComponent data={SAMPLE_CV_DATA} />
-                              </div>
-                            </div>
-                          );
-                        })()}
-                      </div>
-
-                      {/* Template Info */}
-                      <div className="space-y-3">
-                        <div>
-                          <h3 className="text-lg font-bold text-gray-900 mb-1">
-                            {template.name}
-                          </h3>
-                          <p className="text-sm text-gray-600 line-clamp-2">
-                            {template.description}
-                          </p>
+            <div
+              ref={(el) => (scrollRefs.current[category] = el)}
+              className="flex overflow-x-auto scrollbar-hide gap-6 pb-4 snap-x snap-mandatory"
+              style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+            >
+              {templatesByCategory[category].map(template => (
+                <Card
+                  key={template.id}
+                  className="flex-shrink-0 w-80 snap-center shadow-md hover:shadow-lg transition-shadow duration-300 group/card overflow-hidden"
+                >
+                  <div className="relative overflow-hidden rounded-t-lg bg-gray-50 h-48">
+                    {(() => {
+                      const TemplateComponent = getTemplateComponent(template.id);
+                      return (
+                        <div className="w-full h-full flex items-center justify-center">
+                          <div
+                            className="bg-white shadow-lg w-full h-full overflow-hidden transform scale-50 origin-top"
+                            style={{ aspectRatio: "210/297" }}
+                          >
+                            <TemplateComponent data={SAMPLE_CV_DATA} />
+                          </div>
                         </div>
-
-                        {/* Features */}
-                        <div>
-                          <h4 className="font-semibold text-gray-900 mb-2 text-sm">
-                            Caractéristiques
-                          </h4>
-                          <ul className="space-y-1">
-                            {template.features.slice(0, 3).map((feature, idx) => (
-                              <li
-                                key={idx}
-                                className="flex items-center gap-2 text-xs text-gray-700"
-                              >
-                                <span className="h-1.5 w-1.5 rounded-full bg-blue-600 flex-shrink-0"></span>
-                                <span className="line-clamp-1">{feature}</span>
-                              </li>
-                            ))}
-                            {template.features.length > 3 && (
-                              <li className="text-xs text-gray-500">
-                                +{template.features.length - 3} autres...
-                              </li>
-                            )}
-                          </ul>
-                        </div>
-
-                        {/* Action Button */}
+                      );
+                    })()}
+                    <div className="absolute inset-0 bg-black/0 group-hover/card:bg-black/20 transition-colors duration-300 flex items-center justify-center opacity-0 group-hover/card:opacity-100">
+                      <div className="flex gap-2">
                         <Button
-                          className="w-full bg-blue-600 hover:bg-blue-700"
                           size="sm"
-                          onClick={() => handleNewCV(template.id)}
+                          onClick={() => handleUseTemplate(template)}
+                          className="bg-blue-600 hover:bg-blue-700"
                         >
-                          <ArrowRight className="h-4 w-4 mr-2" />
-                          Créer un CV
+                          <Play className="w-4 h-4 mr-1" />
+                          Utiliser
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="secondary"
+                          onClick={() => handlePreview(template)}
+                        >
+                          <Eye className="w-4 h-4 mr-1" />
+                          Aperçu
                         </Button>
                       </div>
                     </div>
-                  </Card>
-                ))}
-              </div>
+                  </div>
+
+                  <div className="p-4">
+                    <div className="flex items-center gap-2 mb-2">
+                      <h3 className="font-semibold text-lg">{template.name}</h3>
+                      <Badge variant="outline">{category}</Badge>
+                    </div>
+                    <p className="text-sm text-gray-600">{template.description}</p>
+                  </div>
+                </Card>
+              ))}
             </div>
 
-            {/* Right navigation button */}
             <button
-              onClick={() => scrollRight('moderne-section')}
-              className="absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-white shadow-lg rounded-full p-3 hover:bg-gray-50 transition-colors border border-gray-200"
+              onClick={() => scrollRight(category)}
+              className="absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-white/80 hover:bg-white rounded-full p-2 shadow-md opacity-0 group-hover:opacity-100 transition-opacity duration-300"
             >
-              <ChevronRight className="h-6 w-6 text-gray-600" />
+              <ChevronRight className="w-6 h-6 text-gray-600" />
             </button>
           </div>
         </div>
-
-        {/* Section CV Classique */}
-        <div>
-          <div className="mb-8">
-            <h2 className="text-3xl font-bold text-gray-900 mb-2">CV Classique</h2>
-            <p className="text-lg text-gray-600">Designs traditionnels et professionnels pour tous secteurs</p>
-          </div>
-
-          {/* Navigation buttons and horizontal scroll container */}
-          {classiqueTemplates.length === 0 ? (
-            <div className="text-center text-gray-600 py-12 bg-gray-50 rounded-lg">
-              <p className="text-lg">Modèles classiques en développement...</p>
-              <p className="text-sm mt-2">Bientôt disponibles !</p>
-            </div>
-          ) : (
-            <div className="relative">
-              {/* Left navigation button */}
-              <button
-                onClick={() => scrollLeft('classique-section')}
-                className="absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-white shadow-lg rounded-full p-3 hover:bg-gray-50 transition-colors border border-gray-200"
-              >
-                <ChevronLeft className="h-6 w-6 text-gray-600" />
-              </button>
-
-              {/* Horizontal scroll container */}
-              <div id="classique-section" className="overflow-x-auto pb-4 px-12">
-                <div className="flex gap-6 min-w-max">
-                  {classiqueTemplates.map((template) => (
-                    <Card key={template.id} className="hover:shadow-2xl transition-all duration-300 overflow-hidden flex-shrink-0 w-80">
-                      <div className="p-4">
-                        {/* Template Preview */}
-                        <div className="flex items-center justify-center bg-gray-50 rounded-lg p-3 mb-4 h-80">
-                          {(() => {
-                            const TemplateComponent = getTemplateComponent(template.id);
-                            return (
-                              <div className="w-full h-full flex items-center justify-center">
-                                <div
-                                  className="bg-white shadow-lg w-full h-full overflow-hidden rounded border transform scale-50 origin-top"
-                                  style={{ aspectRatio: "210/297" }}
-                                >
-                                  <TemplateComponent data={SAMPLE_CV_DATA} />
-                                </div>
-                              </div>
-                            );
-                          })()}
-                        </div>
-
-                        {/* Template Info */}
-                        <div className="space-y-3">
-                          <div>
-                            <h3 className="text-lg font-bold text-gray-900 mb-1">
-                              {template.name}
-                            </h3>
-                            <p className="text-sm text-gray-600 line-clamp-2">
-                              {template.description}
-                            </p>
-                          </div>
-
-                          {/* Features */}
-                          <div>
-                            <h4 className="font-semibold text-gray-900 mb-2 text-sm">
-                              Caractéristiques
-                            </h4>
-                            <ul className="space-y-1">
-                              {template.features.slice(0, 3).map((feature, idx) => (
-                                <li
-                                  key={idx}
-                                  className="flex items-center gap-2 text-xs text-gray-700"
-                                >
-                                  <span className="h-1.5 w-1.5 rounded-full bg-blue-600 flex-shrink-0"></span>
-                                  <span className="line-clamp-1">{feature}</span>
-                                </li>
-                              ))}
-                              {template.features.length > 3 && (
-                                <li className="text-xs text-gray-500">
-                                  +{template.features.length - 3} autres...
-                                </li>
-                              )}
-                            </ul>
-                          </div>
-
-                          {/* Action Button */}
-                          <Button
-                            className="w-full bg-blue-600 hover:bg-blue-700"
-                            size="sm"
-                            onClick={() => handleNewCV(template.id)}
-                          >
-                            <ArrowRight className="h-4 w-4 mr-2" />
-                            Créer un CV
-                          </Button>
-                        </div>
-                      </div>
-                    </Card>
-                  ))}
-                </div>
-              </div>
-
-              {/* Right navigation button */}
-              <button
-                onClick={() => scrollRight('classique-section')}
-                className="absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-white shadow-lg rounded-full p-3 hover:bg-gray-50 transition-colors border border-gray-200"
-              >
-                <ChevronRight className="h-6 w-6 text-gray-600" />
-              </button>
-            </div>
-          )}
-        </div>
-      </div>
+      ))}
 
       {/* Preview Modal */}
-      {previewCVId && (
-        <div className="fixed inset-0 bg-black/50 z-50 overflow-y-auto">
-          <div className="min-h-screen p-4 flex items-center justify-center">
-            <Card className="w-full max-w-4xl bg-white relative">
-              <button
-                onClick={() => setPreviewCVId(null)}
-                className="absolute top-4 right-4 z-10 bg-white rounded-full p-2 shadow-lg hover:bg-gray-100"
+      {selectedTemplate && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg max-w-6xl w-full max-h-[90vh] overflow-auto">
+            <div className="flex justify-between items-center p-6 border-b sticky top-0 bg-white">
+              <h3 className="text-2xl font-bold">{selectedTemplate.name}</h3>
+              <Button
+                variant="ghost"
+                onClick={() => setSelectedTemplate(null)}
               >
-                <span className="text-2xl">×</span>
-              </button>
+                ✕
+              </Button>
+            </div>
 
-              <div className="p-8">
-                {(() => {
-                  const cv = cvs.find((c) => c.id === previewCVId);
-                  if (!cv) return null;
-
-                  const TemplateComponent = getTemplateComponent(cv.template);
-                  return (
-                    <div>
-                      <div className="mb-6">
-                        <h2 className="text-2xl font-bold mb-2">
-                          Aperçu - {cv.full_name}
-                        </h2>
-                        <div className="flex gap-4">
-                          <Button
-                            onClick={() => {
-                              handleEditCV(cv);
-                              setPreviewCVId(null);
-                            }}
-                            className="gap-2"
-                          >
-                            <Edit className="w-4 h-4" />
-                            Éditer
-                          </Button>
-                          <Button
-                            onClick={() => handleExportPDF(cv)}
-                            variant="outline"
-                            className="gap-2"
-                          >
-                            <Download className="w-4 h-4" />
-                            PDF
-                          </Button>
-                        </div>
-                      </div>
-
-                      <div className="border rounded-lg bg-gray-50 p-4 max-h-[80vh] overflow-auto">
-                        <div
-                          className="mx-auto bg-white shadow-lg"
-                          style={{ width: "210mm", aspectRatio: "210/297" }}
-                        >
-                          <TemplateComponent data={cv} />
-                        </div>
+            <div className="p-6">
+              {(() => {
+                const TemplateComponent = getTemplateComponent(selectedTemplate.id);
+                return (
+                  <>
+                    <div className="border rounded-lg overflow-hidden mb-6" style={{ minHeight: "600px" }}>
+                      <div
+                        className="mx-auto bg-white"
+                        style={{ width: "210mm", aspectRatio: "210/297" }}
+                      >
+                        <TemplateComponent data={SAMPLE_CV_DATA} />
                       </div>
                     </div>
-                  );
-                })()}
-              </div>
-            </Card>
+                    
+                    <div className="space-y-3 text-gray-600">
+                      <div>
+                        <h4 className="font-semibold text-gray-900 mb-2">Description</h4>
+                        <p>{selectedTemplate.description}</p>
+                      </div>
+                      <div>
+                        <h4 className="font-semibold text-gray-900 mb-2">Caractéristiques</h4>
+                        <ul className="space-y-1">
+                          {selectedTemplate.features.map((feature: string, idx: number) => (
+                            <li key={idx} className="flex gap-2">
+                              <span>•</span>
+                              <span>{feature}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    </div>
+
+                    <div className="mt-6 flex gap-4">
+                      <Button onClick={() => handleUseTemplate(selectedTemplate)}>
+                        Utiliser ce modèle
+                      </Button>
+                      <Button variant="outline" onClick={() => setSelectedTemplate(null)}>
+                        Fermer
+                      </Button>
+                    </div>
+                  </>
+                );
+              })()}
+            </div>
           </div>
         </div>
       )}
