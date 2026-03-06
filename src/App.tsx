@@ -111,7 +111,8 @@ import CatalogsPage from "./pages/admin/catalogs/page";
 import VerifyRequestsPage from "./pages/admin/verify-requests/page";
 import Contact from "./pages/Contact";
 import AdminNotificationsPage from "./pages/admin/notifications/page";
-import { Messages } from "./pages/Messages";
+import ThankYou from "./pages/ThankYou";
+
 
 const queryClient = new QueryClient();
 
@@ -163,6 +164,7 @@ const App = () => {
             <Route path="/documents" element={<DocumentationPage />} />
             <Route path="/company/:id" element={<CompanyPage />} />
             <Route path="/recrutement/postuler/:id" element={<ApplyJob />} />
+            <Route path="/merci" element={<ThankYou />} />
             <Route path="/candidature-intelligente/:jobId" element={<CandidatureIntelligente />} />
             <Route path="/notifications" element={<Notifications />} />
             <Route path="/test-competence" element={<CompetenceTest />} />

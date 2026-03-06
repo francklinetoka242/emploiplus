@@ -1,4 +1,5 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -582,11 +583,22 @@ const getTemplateComponent = (templateId: string) => {
 
 export default function CVTemplates() {
   const { cvs, addCV, updateCV, deleteCV } = useCVStorage();
+  const [searchParams] = useSearchParams();
+  const templateParam = searchParams.get('template');
+  
   const [editorOpen, setEditorOpen] = useState(false);
-  const [selectedTemplateId, setSelectedTemplateId] = useState<string | null>(null);
+  const [selectedTemplateId, setSelectedTemplateId] = useState<string | null>(templateParam ? templateParam : null);
   const [editingCV, setEditingCV] = useState<CVData | null>(null);
   const [selectedTemplate, setSelectedTemplate] = useState<any>(null);
   const scrollRefs = useRef<{ [key: string]: HTMLDivElement | null }>({});
+
+  // Auto-open editor si un modèle est spécifié dans l'URL
+  useEffect(() => {
+    if (templateParam) {
+      setSelectedTemplateId(templateParam);
+      setEditorOpen(true);
+    }
+  }, [templateParam]);
 
   const handleNewCV = (templateId: string) => {
     setSelectedTemplateId(templateId);

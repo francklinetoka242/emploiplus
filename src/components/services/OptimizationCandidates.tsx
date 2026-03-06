@@ -25,7 +25,7 @@ export default function OptimizationCandidates() {
       title: 'Lettre de motivation',
       description: 'Rédigez une lettre de motivation impactante avec nos outils et modèles personnalisables.',
       actions: [
-        { label: '✍️ Créer ma lettre', href: '/letter-generator', primary: true },
+        { label: '✍️ Créer ma lettre', href: '/letter-modeles?template=sidebarblack', primary: true },
         { label: '📄 Voir les modèles', href: '/letter-modeles', primary: false },
       ]
     },

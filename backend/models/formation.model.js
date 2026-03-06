@@ -2,7 +2,7 @@ import pool from '../config/db.js';
 
 // retrieve all formations with pagination and optional publication filter
 // `published` may be true/false or undefined (no filter).
-async function getAllFormations(limit = 20, offset = 0, published) {
+async function getAllFormations(limit = 20, offset = 0, published, filters = {}) {
   try {
     // build dynamic WHERE clause
     const conditions = [];
@@ -13,8 +13,26 @@ async function getAllFormations(limit = 20, offset = 0, published) {
       params.push(published);
     }
 
+    // Search by title or description
+    if (filters.search) {
+      conditions.push(`(title ILIKE $${params.length + 1} OR description ILIKE $${params.length + 1})`);
+      params.push(`%${filters.search}%`);
+    }
+
+    // Filter by category
+    if (filters.category) {
+      conditions.push(`category ILIKE $${params.length + 1}`);
+      params.push(`%${filters.category}%`);
+    }
+
+    // Filter by level
+    if (filters.level) {
+      conditions.push(`level ILIKE $${params.length + 1}`);
+      params.push(`%${filters.level}%`);
+    }
+
     let query = `
-      SELECT id, title, description, duration, level, price, image_url, published, created_at, updated_at
+      SELECT id, title, description, category, level, duration, price, image_url, published, created_at, updated_at
       FROM formations
     `;
 
@@ -22,10 +40,18 @@ async function getAllFormations(limit = 20, offset = 0, published) {
       query += ` WHERE ${conditions.join(' AND ')}`;
     }
 
-    query += `
-      ORDER BY created_at DESC
-      LIMIT $${params.length + 1} OFFSET $${params.length + 2}
-    `;
+    // Handle sorting
+    const sortBy = filters.sortBy || 'created_at';
+    const sortOrder = (filters.sortOrder || 'DESC').toUpperCase();
+    if (!['ASC', 'DESC'].includes(sortOrder)) {
+      throw new Error('Invalid sort order');
+    }
+    if (!['created_at', 'title', 'price'].includes(sortBy)) {
+      throw new Error('Invalid sort field');
+    }
+    
+    query += ` ORDER BY ${sortBy} ${sortOrder}`;
+    query += ` LIMIT $${params.length + 1} OFFSET $${params.length + 2}`;
 
     params.push(limit, offset);
 

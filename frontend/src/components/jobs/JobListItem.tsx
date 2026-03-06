@@ -84,7 +84,18 @@ export function JobListItem({
   const shareUrl = typeof window !== 'undefined' ? `${window.location.origin}/#/emplois/${job.id}` : `/#/emplois/${job.id}`;
   const title = String(job.title || 'Offre');
   const company = String(job.company || '');
-  const text = `${title} - ${company}`;
+
+  // format a professional message used for WhatsApp and email
+  const shareMessage = `📄 *Offre d'emploi trouvée sur Emploi+*
+*Poste :* ${title}
+*Entreprise :* ${company}
+*Lien pour postuler :* ${window.location.origin}/#/jobs/${job.id}/apply
+-----------------------------------
+🚀 Offres d'emploi consultées sur : www.emploiplus-group.com/#/emplois
+📢 Offres gratuites sur WhatsApp : https://whatsapp.com/channel/0029Vb5270VycKAb1tc631
+📍 Adresse : Brazzaville, République du Congo
+📧 Email : contact@emploiplus-group.com
+📞 Contact : +242 06 731 10 33`;
 
   const handleCopyLink = () => {
     navigator.clipboard.writeText(shareUrl);
@@ -93,7 +104,14 @@ export function JobListItem({
   };
 
   const handleShareWhatsApp = () => {
-    window.open(`https://wa.me/?text=${encodeURIComponent(text + '\n' + shareUrl)}`, '_blank');
+    window.open(`https://wa.me/?text=${encodeURIComponent(shareMessage)}`, '_blank');
+    setShowShareMenu(false);
+  };
+
+  const handleShareEmail = () => {
+    const subject = encodeURIComponent(title);
+    const body = encodeURIComponent(shareMessage);
+    window.open(`mailto:?subject=${subject}&body=${body}`);
     setShowShareMenu(false);
   };
 
@@ -159,12 +177,21 @@ export function JobListItem({
 
                       <button
                         onClick={handleShareWhatsApp}
-                        className="w-full flex items-center gap-3 px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-md transition-colors"
+                        className="w-full flex items-center gap-3 px-3 py-2 text-sm text-green-600 hover:bg-green-50 rounded-md transition-colors"
                       >
                         <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
                           <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.67-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.076 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421-7.403h-.004a9.87 9.87 0 00-4.946 1.348l-.355.214-3.68-.965.984 3.595-.235.374a9.86 9.86 0 001.45 5.383c3.02 5.233 9.304 7.973 15.226 6.744 1.401-.33 2.714-.881 3.886-1.622l.342-.214 3.596.981-.942-3.45.236-.374A9.87 9.87 0 0012.051 2a9.858 9.858 0 00-9.52 7.579z" />
                         </svg>
                         <span>WhatsApp</span>
+                      </button>
+                      <button
+                        onClick={handleShareEmail}
+                        className="w-full flex items-center gap-3 px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-md transition-colors"
+                      >
+                        <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+                          <path d="M2 4a2 2 0 012-2h16a2 2 0 012 2v16a2 2 0 01-2 2H4a2 2 0 01-2-2V4zm2 .217L12 11l8-6.783V4H4v.217zM4 6.383v11.234l7.553-5.326L4 6.383zm9.447 5.928L20 17.617V6.383l-6.553 5.928z" />
+                        </svg>
+                        <span>Email</span>
                       </button>
 
                       <button
@@ -300,7 +327,7 @@ export function JobListItem({
                     }
                   }} 
                   disabled={isDeadlinePassed()}
-                  className="flex-1" 
+                  className="flex-1 text-sm py-2" 
                   size="sm"
                 >
                   <ExternalLink className="w-4 h-4 mr-2" />
@@ -310,7 +337,7 @@ export function JobListItem({
                 <Button 
                   onClick={onApply}
                   disabled={isDeadlinePassed()}
-                  className="flex-1" 
+                  className="flex-1 text-sm py-2" 
                   size="sm"
                 >
                   Postuler via EmploiPlus
@@ -322,7 +349,7 @@ export function JobListItem({
                   onClick={onSmartApply}
                   disabled={isDeadlinePassed()}
                   variant="outline"
-                  className="flex-1"
+                  className="flex-1 text-sm py-2"
                   size="sm"
                 >
                   <Sparkles className="w-4 h-4 mr-2" />
@@ -330,16 +357,7 @@ export function JobListItem({
                 </Button>
               )}
             </div>
-            <div className="flex justify-center">
-              <Button
-                variant="outline"
-                onClick={onToggle}
-                size="sm"
-                className="w-full"
-              >
-                Fermer
-              </Button>
-            </div>
+
           </div>
         )}
       </CardContent>

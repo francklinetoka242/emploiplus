@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -33,6 +34,7 @@ const DEMO_TEMPLATES = [
 ];
 
 export default function LetterGenerator() {
+  const [searchParams] = useSearchParams();
   const [letters, setLetters] = useState<LetterData[]>([]);
   const [isLoggedIn] = useState(!!localStorage.getItem("token"));
   const [selectedLetter, setSelectedLetter] = useState<LetterData | null>(null);
@@ -44,6 +46,25 @@ export default function LetterGenerator() {
       setLetters(JSON.parse(saved));
     }
   }, []);
+
+  // Auto-preload template from URL if no letter is selected
+  useEffect(() => {
+    const templateParam = searchParams.get("template") as "white" | "blue" | "orange" | "red" | "yellow" | null;
+    if (templateParam && !selectedLetter && letters.length > 0) {
+      // If letters exist but none is selected, select the first one with the matching template
+      const foundLetter = letters.find((l) => l.template === templateParam);
+      if (foundLetter) {
+        setSelectedLetter(foundLetter);
+        // Clean up the URL parameter after processing
+        window.history.replaceState({}, "", "/letter-generator");
+      }
+    } else if (templateParam && letters.length === 0) {
+      // If no letters exist and template is in URL, create one with that template
+      createNewLetter(templateParam);
+      // Clean up the URL parameter after processing
+      window.history.replaceState({}, "", "/letter-generator");
+    }
+  }, [searchParams, selectedLetter, letters]);
 
   // Persist letters to localStorage whenever they change
   useEffect(() => {

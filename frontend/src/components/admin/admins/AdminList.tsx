@@ -16,14 +16,14 @@ export default function AdminList() {
   useEffect(() => {
     fetch("/api/admins")
       .then(res => res.json())
-      .then(data => setAdmins(data));
+      .then(data => setAdmins(Array.isArray(data) ? data : []));
   }, []);
 
   return (
     <div>
       <h1 className="text-4xl font-bold mb-10">Administrateurs</h1>
       <div className="space-y-6">
-        {admins.length === 0 ? (
+        {!Array.isArray(admins) || admins.length === 0 ? (
           <p className="text-center text-muted-foreground text-xl py-20">
             Aucun administrateur
           </p>

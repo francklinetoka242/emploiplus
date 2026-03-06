@@ -43,6 +43,9 @@ const Jobs = () => {
     recent: true,
   });
 
+  // keep track of which job card is expanded (null = none)
+  const [expandedJobId, setExpandedJobId] = useState<string | null>(null);
+
   // Ensure page resets to 1 when ANY filter changes
   const prevFiltersRef = useRef(filters);
   useEffect(() => {
@@ -256,11 +259,22 @@ const Jobs = () => {
                           <JobListItem
                             key={String(jobItem.id)}
                             job={jobItem}
-                            isExpanded={true}
-                            onToggle={() => {}}
+                            isExpanded={expandedJobId === String(jobItem.id)}
+                            onToggle={() =>
+                              setExpandedJobId(
+                                expandedJobId === String(jobItem.id) ? null : String(jobItem.id)
+                              )
+                            }
                             onApply={() => {
-                              toast.info("Connectez-vous pour postuler");
-                              navigate("/connexion");
+                              const dl = jobItem.deadline
+                                ? new Date(String(jobItem.deadline)).getTime()
+                                : null;
+                              const expired = dl ? dl < Date.now() : false;
+                              if (!expired) {
+                                navigate(`/recrutement/postuler/${String(jobItem.id)}`);
+                              } else {
+                                toast.error("Date limite dépassée");
+                              }
                             }}
                             onSmartApply={() => {
                               const dl = jobItem.deadline
@@ -387,8 +401,12 @@ const Jobs = () => {
                         <JobListItem
                           key={String(jobItem.id)}
                           job={jobItem}
-                          isExpanded={true}
-                          onToggle={() => {}}
+                          isExpanded={expandedJobId === String(jobItem.id)}
+                          onToggle={() =>
+                            setExpandedJobId(
+                              expandedJobId === String(jobItem.id) ? null : String(jobItem.id)
+                            )
+                          }
                           onApply={() => {
                             const dl = jobItem.deadline
                               ? new Date(String(jobItem.deadline)).getTime()

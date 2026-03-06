@@ -47,7 +47,16 @@ async function getFormations(query = {}) {
       publishedFilter = true;
     }
 
-    const formations = await FormationModel.getAllFormations(limit, offset, publishedFilter);
+    // Gather additional filters
+    const filters = {
+      search: query.q || query.search || '',
+      category: query.category || '',
+      level: query.level || '',
+      sortBy: query.sortBy || 'created_at',
+      sortOrder: query.sortOrder || 'DESC',
+    };
+
+    const formations = await FormationModel.getAllFormations(limit, offset, publishedFilter, filters);
     return formations;
   } catch (err) {
     console.error('getFormations service error:', err);

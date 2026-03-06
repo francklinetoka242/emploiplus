@@ -140,7 +140,7 @@ export default function ApplyJob() {
       }
 
       toast.success('Candidature envoyée');
-      navigate('/emplois');
+      navigate('/merci');
     } catch (err) {
       const e = err as Error;
       toast.error(e.message || 'Erreur');

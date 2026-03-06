@@ -33,6 +33,7 @@ import pool from './config/db.js';
 
 // importer les middlewares personnalisés
 import errorHandler from './middleware/errorHandler.js';
+import { auditLoggingMiddleware } from './middleware/auditLogging.middleware.js';
 
 // importer les gestionnaires de routes
 import authRoutes from './routes/auth.routes.js';
@@ -51,8 +52,10 @@ import adminManagementRoutes from './routes/admin-management.routes.js';
 import adminsRoutes from './routes/admins.routes.js';
 import siteNotificationsRoutes from './routes/site-notifications.routes.js';
 import loginHistoryRoutes from './routes/login-history.routes.js';
+import auditLogRoutes from './routes/audit-log.routes.js';
 import documentationRoutes from './routes/documentation.routes.js';
 import aiRoutes from './routes/ai.routes.js';
+import jobApplicationRoutes from './routes/job-application.routes.js';
 import { requireAdmin, requireRoles, requireSuperAdmin } from './middleware/auth.middleware.js';
 import { exportStats as adminExportStats } from './controllers/admin.controller.js';
 import { getHealth, getHealthDB, getHealthAPI, getHealthSystem } from './controllers/dashboard.controller.js';
@@ -120,6 +123,9 @@ app.use((req, res, next) => {
 
 // ===== VÉRIFICATION D'ÉTAT =====
 
+// Audit logging middleware for admin actions
+app.use(auditLoggingMiddleware);
+
 // point de terminaison racine pour vérifier l'état
 app.get('/', (req, res) => {
   res.json({ success: true, message: 'Backend server is running' });
@@ -129,6 +135,8 @@ app.get('/', (req, res) => {
 
 app.use('/api/auth', authRoutes);
 app.use('/api/jobs', jobRoutes);
+// job applications handling (email notifications & admin management)
+app.use('/api/job-applications', jobApplicationRoutes);
 
 // admin portal needs a dedicated path for managing job offers
 // we mount the same router under /api/admin/jobs and protect all endpoints
@@ -185,6 +193,9 @@ app.use('/api/admin/site-notifications', requireAdmin, requireRoles('super_admin
 
 // login history
 app.use('/api/admin/login-history', requireAdmin, requireRoles('super_admin'), loginHistoryRoutes);
+
+// audit logs (read-only, super admin only)
+app.use('/api/admin/audit-logs', requireAdmin, requireRoles('super_admin'), auditLogRoutes);
 
 // documentations (public read, admin write)
 app.use('/api/documentations', documentationRoutes);

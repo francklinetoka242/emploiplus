@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Edit, Trash2, Download, Eye } from "lucide-react";
@@ -125,11 +126,24 @@ const SAMPLE_LETTER: MotivationLetterData = {
 };
 
 export default function MotivationLetters() {
+  const [searchParams] = useSearchParams();
   const { letters, addLetter, updateLetter, deleteLetter } = useLetterStorage();
   const [editorOpen, setEditorOpen] = useState(false);
   const [selectedTemplateId, setSelectedTemplateId] = useState<string | null>(null);
   const [editingLetter, setEditingLetter] = useState<MotivationLetterData | null>(null);
   const [previewLetterId, setPreviewLetterId] = useState<string | null>(null);
+
+  // Auto-open editor with template from URL parameter
+  useEffect(() => {
+    const templateParam = searchParams.get("template");
+    if (templateParam) {
+      setSelectedTemplateId(templateParam);
+      setEditingLetter(null);
+      setEditorOpen(true);
+      // Clean up the URL parameter
+      window.history.replaceState({}, "", "/letter-modeles");
+    }
+  }, [searchParams]);
 
   const handleNewLetter = (templateId: string) => {
     setSelectedTemplateId(templateId);

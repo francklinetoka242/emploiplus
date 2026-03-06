@@ -13,6 +13,7 @@ interface UserSession {
   role: 'super-admin' | 'admin' | 'content-admin';
   photo?: string;
   initials: string;
+  permissions?: string[];
 }
 
 interface AdminNavContextType {
@@ -68,9 +69,10 @@ export function AdminNavProvider({ children }: { children: ReactNode }) {
             id: String(raw.id),
             name,
             email: raw.email || '',
-            role: raw.role || 'admin',
+            role: (raw.role || 'admin').replace(/_/g, '-') as any,
             photo: raw.photo,
             initials,
+            permissions: raw.permissions || [],
           });
         }
       } catch {

@@ -35,9 +35,10 @@ const AdminsModule: React.FC<AdminsModuleProps> = ({ token }) => {
       });
       if (!response.ok) throw new Error('Failed to fetch admins');
       const data = await response.json();
-      setAdmins(data);
+      setAdmins(Array.isArray(data) ? data : []);
     } catch (error) {
       console.error('Error fetching admins:', error);
+      setAdmins([]);
     } finally {
       setLoading(false);
     }
@@ -175,7 +176,7 @@ const AdminsModule: React.FC<AdminsModuleProps> = ({ token }) => {
             </tr>
           </thead>
           <tbody>
-            {admins.map((admin) => (
+            {Array.isArray(admins) && admins.map((admin) => (
               <tr key={admin.id} className="border-b hover:bg-gray-50">
                 <td className="px-6 py-3">{admin.first_name} {admin.last_name}</td>
                 <td className="px-6 py-3">{admin.email}</td>

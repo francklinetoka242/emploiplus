@@ -1,1 +1,30 @@
-test content
+explique moi comment mon site pourra envoyer des message sur WhatsApp 
+L'Option "Postuler plus tard" par Email
+Certains visiteurs voient l'offre sur leur téléphone dans le bus, mais leur CV est sur leur ordinateur.
+
+La recommandation : Ajoute un petit bouton "M'envoyer cette offre par Email/WhatsApp". Cela lui permet de retrouver l'offre facilement quand il sera prêt à postuler avec ses documents.
+
+
+
+
+
+
+
+
+
+
+
+- Le "Magic Link" de Suivi
+Comme le visiteur n'a pas de tableau de bord pour voir l'état de sa candidature, il risque de se sentir dans le noir après avoir cliqué sur "Envoyer".
+
+La solution : Une fois la candidature envoyée, affiche un message : "Candidature envoyée
+
+- La Sauvegarde Temporaire (Local Persistence)
+Si un visiteur commence à remplir sa candidature, part créer son CV, et que son navigateur se rafraîchit par erreur ou qu'il perd sa connexion (fréquent en mobilité), il perd tout.
+
+La recommandation : Sauvegarde le contenu du champ "Message d'accompagnement" dans le localStorage en temps réel. S'il revient sur la page, il retrouve son texte.
+
+- Validation Visuelle Immédiate
+Les visiteurs font souvent des erreurs sur les types de fichiers.
+
+La recommandation : Ajoute une vérification instantanée. S'il tente d'uploader un fichier .png à la place d'un .pdf, affiche une petite alerte subtile avant même qu'il ne clique sur envoyer.

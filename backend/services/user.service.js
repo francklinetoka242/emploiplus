@@ -14,7 +14,7 @@ async function getUsers(query = {}) {
     }
 
     // fetch users from database
-    const sql = 'SELECT id, full_name, email, user_type, is_blocked, created_at FROM users ORDER BY created_at DESC LIMIT $1 OFFSET $2';
+    const sql = 'SELECT id, full_name, email, user_type, created_at FROM users ORDER BY created_at DESC LIMIT $1 OFFSET $2';
     console.log('[userService] executing getAllUsers:', sql, [limit, offset]);
     const users = await UserModel.getAllUsers(limit, offset);
     console.log('[userService] got', users.length, 'users');

@@ -12,9 +12,6 @@ function validateJobData(data, isUpdate = false) {
     if (!data.title || typeof data.title !== 'string' || data.title.trim().length === 0) {
       throw new Error('Job title is required and must be a non-empty string');
     }
-    if (!data.description || typeof data.description !== 'string') {
-      throw new Error('Job description is required');
-    }
     if (!data.location || typeof data.location !== 'string') {
       throw new Error('Job location is required');
     }
@@ -74,6 +71,10 @@ async function getJobs(query = {}) {
       }
     } else {
       offset = parseInt(query.offset) || 0;
+      // Ensure offset is a valid number, default to 0 if not
+      if (isNaN(offset) || offset < 0) {
+        offset = 0;
+      }
       pageNum = Math.floor(offset / limit) + 1;
     }
 
@@ -245,9 +246,30 @@ async function createJob(jobData) {
     // validate the minimal required fields
     validateJobData(jobData, false);
 
-    // if company name provided, translate to ID (same logic as before)
-    let companyId = jobData.company_id;
-    if (!companyId && jobData.company) {
+    // companyId will be used in payload.  We support either a numeric ID or a
+    // name string.  When an ID is provided we make sure the referenced
+    // company actually exists; if not we throw a user-friendly error rather
+    // than letting Postgres give us a foreign-key violation later.
+    let companyId = null;
+
+    if (jobData.company_id !== undefined && jobData.company_id !== null && jobData.company_id !== '') {
+      // try to coerce to integer
+      companyId = parseInt(jobData.company_id, 10);
+      if (isNaN(companyId)) {
+        const error = new Error('Invalid company_id');
+        error.status = 400;
+        throw error;
+      }
+      const existingComp = await CompanyModel.getCompanyById(companyId);
+      if (!existingComp) {
+        const error = new Error('company_id does not reference an existing company');
+        error.status = 400;
+        throw error;
+      }
+    }
+
+    // if no numeric id but a name was provided, look it up / create it
+    if ((companyId === null || companyId === undefined) && jobData.company) {
       const name = String(jobData.company).trim();
       const existing = await CompanyModel.getCompanyByName(name);
       if (existing) {
@@ -258,8 +280,14 @@ async function createJob(jobData) {
       }
     }
 
-    // prepare payload for model (spread all fields, override company_id)
-    const payload = { ...jobData, company_id: companyId };
+    // prepare payload for model; drop the `company` field because the jobs
+    // table doesn't actually have a column with that name.
+    const payload = { ...jobData };
+    delete payload.company;
+    if (companyId !== null) {
+      payload.company_id = companyId;
+    }
+
     if (payload.published && !payload.published_at) {
       payload.published_at = new Date();
     }
@@ -282,8 +310,27 @@ async function updateJob(jobId, jobData) {
     // validate update data
     validateJobData(jobData, true);
 
-    // if company name provided, translate to ID
-    if (!jobData.company_id && jobData.company) {
+    // if a numeric company_id is provided we ensure it references an
+    // existing company.  A bad id should result in a 400 error rather than a
+    // cryptic database exception.
+    if (jobData.company_id !== undefined && jobData.company_id !== null && jobData.company_id !== '') {
+      const cid = parseInt(jobData.company_id, 10);
+      if (isNaN(cid)) {
+        const error = new Error('Invalid company_id');
+        error.status = 400;
+        throw error;
+      }
+      const existingComp = await CompanyModel.getCompanyById(cid);
+      if (!existingComp) {
+        const error = new Error('company_id does not reference an existing company');
+        error.status = 400;
+        throw error;
+      }
+      jobData.company_id = cid;
+    }
+
+    // if no id but a company name was supplied, lookup/create as before
+    if ((jobData.company_id === undefined || jobData.company_id === null) && jobData.company) {
       const name = String(jobData.company).trim();
       const existingComp = await CompanyModel.getCompanyByName(name);
       if (existingComp) {
@@ -299,6 +346,15 @@ async function updateJob(jobId, jobData) {
     if (!existing) {
       throw new Error('Job not found');
     }
+
+    // if the existing job has a company_id but the company no longer exists,
+    // set company_id to null to avoid foreign key violation
+    if (existing.company_id && !existing.company) {
+      jobData.company_id = null;
+    }
+
+    // strip company field before passing to model (it's not a real column)
+    delete jobData.company;
 
     // update job in database (only provided fields)
     const updated = await JobModel.updateJob(jobId, jobData);

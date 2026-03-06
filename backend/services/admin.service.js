@@ -194,8 +194,8 @@ async function updateAdminPermissions(adminId, permissions) {
     if (!admin) {
       throw new AppError('Admin not found', 404);
     }
-    // permissions should be a JSON object or array
-    const updated = await AdminModel.updateAdmin(adminId, { permissions: JSON.stringify(permissions) });
+    // permissions should be an array of strings
+    const updated = await AdminModel.updateAdmin(adminId, { permissions });
     return updated;
   } catch (err) {
     console.error('updateAdminPermissions service error:', err);

@@ -32,7 +32,7 @@ async function createJob(req, res) {
     res.status(201).json({ data: newJob });
   } catch (err) {
     console.error('createJob error', err);
-    const status = /required|must/i.test(err.message) ? 400 : 500;
+    const status = err.status || (/required|must/i.test(err.message) ? 400 : 500);
     res.status(status).json({ message: err.message || 'Internal server error' });
   }
 }
@@ -43,7 +43,7 @@ async function updateJob(req, res) {
     res.json({ data: updated });
   } catch (err) {
     console.error('updateJob error', err);
-    const status = /required|must/i.test(err.message) ? 400 : 500;
+    const status = err.status || (/required|must/i.test(err.message) ? 400 : 500);
     res.status(status).json({ message: err.message || 'Internal server error' });
   }
 }
@@ -62,7 +62,9 @@ async function publishJob(req, res) {
   try {
     const { published } = req.body;
     if (typeof published !== 'boolean') {
-      throw new Error('Published flag must be boolean');
+      const error = new Error('Published flag must be boolean');
+      error.status = 400;
+      throw error;
     }
     const updates = { published };
     if (published) {
@@ -74,7 +76,7 @@ async function publishJob(req, res) {
     res.json({ data: updated });
   } catch (err) {
     console.error('publishJob error:', err);
-    const status = /required|must/i.test(err.message) ? 400 : 500;
+    const status = err.status || (/required|must/i.test(err.message) ? 400 : 500);
     res.status(status).json({ message: err.message || 'Internal server error' });
   }
 }

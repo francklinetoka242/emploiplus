@@ -35,6 +35,7 @@ export default function JobForm({ job, onSuccess }: JobFormProps) {
     description: "",
     requirements: "",
     application_url: "",
+    application_email: "",
     application_via_emploi: false,
     image: null as File | null,
     deadline_date: '' as string | '',
@@ -47,7 +48,7 @@ export default function JobForm({ job, onSuccess }: JobFormProps) {
     if (job) {
       setForm({
         title: job.title || "",
-        company: job.company || "",
+        company: job.company || (job.company_id ? "[Entreprise supprimée - veuillez en sélectionner une nouvelle]" : ""),
         location: job.location || "",
         sector: job.sector || "",
         type: job.type || "CDI",
@@ -55,6 +56,7 @@ export default function JobForm({ job, onSuccess }: JobFormProps) {
         description: job.description || "",
         requirements: job.requirements || "",
         application_url: job.application_url || "",
+        application_email: job.application_email || "",
         application_via_emploi: job.application_via_emploi || false,
         image: null,
         deadline_date: job.deadline_date ? String(job.deadline_date).split('T')[0] : '',
@@ -86,6 +88,7 @@ export default function JobForm({ job, onSuccess }: JobFormProps) {
       requirements: form.requirements || null,
       experience_level: form.experience_level || null,
       application_url: form.application_url || null,
+      application_email: form.application_email || null,
       application_via_emploi: !!form.application_via_emploi,
       deadline_date: form.deadline_date || null,
       // Parse salary range
@@ -285,6 +288,16 @@ export default function JobForm({ job, onSuccess }: JobFormProps) {
               />
             </div>
 
+            <div className="space-y-2">
+              <Label>Email de candidature (facultatif)</Label>
+              <Input
+                type="email"
+                value={form.application_email || ""}
+                onChange={(e) => setForm({ ...form, application_email: e.target.value })}
+                placeholder="recrutement@entreprise.com"
+              />
+            </div>
+
             <div className="space-y-3">
               <div className="flex items-center gap-3">
                 <input
@@ -313,12 +326,11 @@ export default function JobForm({ job, onSuccess }: JobFormProps) {
         </div>
 
         <div className="space-y-2">
-          <Label>Description complète *</Label>
+          <Label>Description complète (facultatif)</Label>
           <Textarea
             rows={12}
             value={form.description}
             onChange={(e) => setForm({ ...form, description: e.target.value })}
-            required
             placeholder="Décrivez les missions, compétences requises, avantages..."
           />
         </div>

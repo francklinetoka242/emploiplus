@@ -83,13 +83,16 @@ export default function AdminLoginPage() {
               .map((w: string) => w[0] || '')
               .join('')
               .toUpperCase();
+          // Normaliser le rôle : remplacer les underscores par des tirets
+          const normalizedRole = (raw.role || 'admin').replace(/_/g, '-');
           adminNav.setUserSession({
             id: String(raw.id),
             name,
             email: raw.email || '',
-            role: raw.role || 'admin',
+            role: normalizedRole,
             photo: raw.photo,
             initials,
+            permissions: raw.permissions || [],
           });
         }
 

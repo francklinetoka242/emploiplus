@@ -13,7 +13,7 @@ export default function OptimizationCandidates() {
       title: 'Créer un CV professionnel',
       description: 'Créez votre CV en ligne et générez-le en PDF ou Word avec nos modèles professionnels.',
       actions: [
-        { label: '✏️ Créer mon CV', href: '/cv-generator', primary: true },
+        { label: '✏️ Créer mon CV', href: '/cv-modeles?template=francklyn', primary: true },
         { label: '📋 Voir les modèles', href: '/cv-modeles', primary: false },
       ]
     },
@@ -25,7 +25,7 @@ export default function OptimizationCandidates() {
       title: 'Lettre de motivation',
       description: 'Rédigez une lettre de motivation impactante avec nos outils et modèles personnalisables.',
       actions: [
-        { label: '✍️ Créer ma lettre', href: '/letter-generator', primary: true },
+        { label: '✍️ Créer ma lettre', href: '/letter-modeles?template=sidebarblack', primary: true },
         { label: '📄 Voir les modèles', href: '/letter-modeles', primary: false },
       ]
     },
@@ -37,7 +37,7 @@ export default function OptimizationCandidates() {
       title: 'Assistance par experts',
       description: 'Nos experts en recrutement vous accompagnent pour optimiser vos documents et vos chances.',
       actions: [
-        { label: '🎯 En savoir plus', href: '/services/conseil-recrutement', primary: true },
+        { label: '🎯 En savoir plus', href: 'http://localhost:5173/#/contact', primary: true, external: true },
       ]
     }
   ];
@@ -74,10 +74,17 @@ export default function OptimizationCandidates() {
                         size="sm"
                         className={action.primary ? `bg-gradient-to-r ${item.color} text-white hover:opacity-90` : ''}
                       >
-                        <Link to={action.href} className="flex items-center gap-1">
-                          {action.label}
-                          {action.primary && <ArrowRight className="h-3 w-3" />}
-                        </Link>
+                        {action.external ? (
+                          <a href={action.href} className="flex items-center gap-1">
+                            {action.label}
+                            {action.primary && <ArrowRight className="h-3 w-3" />}
+                          </a>
+                        ) : (
+                          <Link to={action.href} className="flex items-center gap-1">
+                            {action.label}
+                            {action.primary && <ArrowRight className="h-3 w-3" />}
+                          </Link>
+                        )}
                       </Button>
                     ))}
                   </div>

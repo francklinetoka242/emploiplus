@@ -4,7 +4,8 @@ import pool from '../config/db.js';
 async function getAllUsers(limit = 10, offset = 0) {
   try {
     // Return commonly used fields in the admin UI schema
-    const query = 'SELECT id, full_name, email, user_type, is_blocked, created_at FROM users ORDER BY created_at DESC LIMIT $1 OFFSET $2';
+    // Note: is_blocked column may not exist in all database schemas
+    const query = 'SELECT id, full_name, email, user_type, created_at FROM users ORDER BY created_at DESC LIMIT $1 OFFSET $2';
     console.log('[user.model] getAllUsers query:', query, [limit, offset]);
     const result = await pool.query(query, [limit, offset]);
     return result.rows;

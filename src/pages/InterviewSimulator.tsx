@@ -14,6 +14,13 @@ interface Message {
   content: string;
 }
 
+interface FeedbackData {
+  strengths: string[];
+  improvements: string[];
+  score: number;
+}
+
+// fallback questions used when AI is unavailable
 const INTERVIEW_QUESTIONS = [
   "Parlez-moi de votre expérience professionnelle.",
   "Quels sont vos points forts?",
@@ -25,19 +32,60 @@ const INTERVIEW_QUESTIONS = [
   "Avez-vous des questions pour moi?",
 ];
 
+// simple circular progress SVG component
+const ScoreCircle = ({ percentage, size = 120, strokeWidth = 12 }: { percentage: number; size?: number; strokeWidth?: number }) => {
+  const radius = (size - strokeWidth) / 2;
+  const circumference = 2 * Math.PI * radius;
+  const offset = circumference - (percentage / 100) * circumference;
+  return (
+    <svg width={size} height={size} className="mx-auto">
+      <circle
+        cx={size/2}
+        cy={size/2}
+        r={radius}
+        stroke="#e5e7eb"
+        strokeWidth={strokeWidth}
+        fill="none"
+      />
+      <circle
+        cx={size/2}
+        cy={size/2}
+        r={radius}
+        stroke={percentage >= 80 ? '#10b981' : percentage >= 60 ? '#3b82f6' : '#f59e0b'}
+        strokeWidth={strokeWidth}
+        fill="none"
+        strokeDasharray={circumference}
+        strokeDashoffset={offset}
+        strokeLinecap="round"
+        className="transition-all duration-500"
+        transform={`rotate(-90 ${size/2} ${size/2})`}
+      />
+      <text
+        x="50%"
+        y="50%"
+        dominantBaseline="central"
+        textAnchor="middle"
+        className="text-xl font-bold text-gray-800"
+      >
+        {percentage}%
+      </text>
+    </svg>
+  );
+};
+
 export default function InterviewSimulator() {
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const [stage, setStage] = useState<"intro" | "interview" | "feedback">("intro");
   const [position, setPosition] = useState("");
   const [company, setCompany] = useState("");
-  const [roleType, setRoleType] = useState("Technique");
-  const [difficulty, setDifficulty] = useState<"standard"|"advanced">("standard");
+  const [severity, setSeverity] = useState<'Sympa'|'Neutre'|'Très exigeant'>('Neutre');
   const [messages, setMessages] = useState<Message[]>([]);
+  const [interviewQuestions, setInterviewQuestions] = useState<string[]>([]);
   const [currentAnswer, setCurrentAnswer] = useState("");
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [loading, setLoading] = useState(false);
-  const [feedback, setFeedback] = useState<string>("");
+  const [feedbackData, setFeedbackData] = useState<FeedbackData | null>(null);
 
   useEffect(() => {
     const testTaken = localStorage.getItem("interview_sim_taken");
@@ -46,22 +94,43 @@ export default function InterviewSimulator() {
     }
   }, [user]);
 
-  const startInterview = () => {
+  const startInterview = async () => {
     if (!position.trim()) {
       toast.error("Veuillez entrer le poste visé");
       return;
     }
-    // customize initial questions based on roleType/difficulty
-    let intro = `Bonjour! Je suis votre interviewer. Vous postulez pour le poste de ${position}${company ? ` chez ${company}` : ""}.`;
-    if(roleType==='Technique') intro += ' Nous allons couvrir des questions techniques et comportementales.';
-    if(difficulty==='advanced') intro += ' Niveau avancé: attendez-vous à des questions de profondeur.';
-    setMessages([
-      {
-        role: "interviewer",
-        content: `${intro} ${INTERVIEW_QUESTIONS[0]}`,
-      },
-    ]);
-    setStage("interview");
+
+    setLoading(true);
+    try {
+      const res = await fetch('/api/ai/generate-interview', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ position, severity })
+      });
+      const data = await res.json();
+      if (data.success && Array.isArray(data.questions) && data.questions.length) {
+        setInterviewQuestions(data.questions);
+        setMessages([{ role: 'interviewer', content: data.questions[0] }]);
+        setCurrentQuestionIndex(0);
+        setStage('interview');
+      } else {
+        // fallback to builtin list
+        const first = INTERVIEW_QUESTIONS[0];
+        setInterviewQuestions(INTERVIEW_QUESTIONS.slice(0, 5));
+        setMessages([{ role: 'interviewer', content: first }]);
+        setStage('interview');
+      }
+    } catch (err) {
+      console.error('startInterview error', err);
+      toast.error("Impossible de démarrer la simulation (mode offline).");
+      // fallback similar
+      const first = INTERVIEW_QUESTIONS[0];
+      setInterviewQuestions(INTERVIEW_QUESTIONS.slice(0, 5));
+      setMessages([{ role: 'interviewer', content: first }]);
+      setStage('interview');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleSubmitAnswer = async () => {
@@ -70,39 +139,43 @@ export default function InterviewSimulator() {
       return;
     }
 
-    // Add user message
-    const newMessages: Message[] = [
-      ...messages,
-      { role: "user", content: currentAnswer },
-    ];
+    const userMsg: Message = { role: 'user', content: currentAnswer };
+    const newMessages = [...messages, userMsg];
     setMessages(newMessages);
-    setCurrentAnswer("");
+    setCurrentAnswer('');
     setLoading(true);
 
-    // Simulate AI response
-    setTimeout(() => {
-      const nextIndex = currentQuestionIndex + 1;
-
-      if (nextIndex >= INTERVIEW_QUESTIONS.length) {
-        // Interview is complete
-        const mockFeedback = `Excellente simulation d'entretien!\n\nRésumé de la performance:\n- Communication: Très bon\n- Pertinence des réponses: Bon\n- Structure (STAR): À améliorer\n- Confiance: Bon\n\nConseils personnalisés:\n1) Répondez avec la méthode STAR (Situation, Tâche, Action, Résultat).\n2) Ajoutez un exemple mesurable pour chaque compétence.\n3) Préparez 3 questions à poser à la fin.\n\nVous pouvez relancer la simulation en sélectionnant un niveau différent pour augmenter la difficulté.`;
-
-        setFeedback(mockFeedback);
-        setStage("feedback");
-        localStorage.setItem("interview_sim_taken", "true");
-      } else {
-        // Ask next question
-        const nextQuestion = INTERVIEW_QUESTIONS[nextIndex];
-        newMessages.push({
-          role: "interviewer",
-          content: nextQuestion,
+    const nextIndex = currentQuestionIndex + 1;
+    if (nextIndex >= interviewQuestions.length) {
+      // finished - request feedback from server
+      try {
+        const res = await fetch('/api/ai/interview-feedback', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ questions: interviewQuestions, answers: newMessages.filter(m => m.role === 'user').map(m => m.content) })
         });
-        setMessages(newMessages);
-        setCurrentQuestionIndex(nextIndex);
+        const data = await res.json();
+        if (data.success) {
+          setFeedbackData({
+            strengths: data.strengths || [],
+            improvements: data.improvements || [],
+            score: data.score || 0
+          });
+        }
+      } catch (err) {
+        console.error('feedback fetch error', err);
       }
 
+      setStage('feedback');
+      localStorage.setItem('interview_sim_taken', 'true');
       setLoading(false);
-    }, 1000);
+    } else {
+      // ask next interview question
+      const nextQuestion = interviewQuestions[nextIndex] || INTERVIEW_QUESTIONS[nextIndex];
+      setMessages([...newMessages, { role: 'interviewer', content: nextQuestion }]);
+      setCurrentQuestionIndex(nextIndex);
+      setLoading(false);
+    }
   };
 
   if (authLoading) {
@@ -156,11 +229,30 @@ export default function InterviewSimulator() {
                     onChange={(e) => setCompany(e.target.value)}
                   />
                 </div>
+
+                <div>
+                  <label className="block text-sm font-medium mb-2">Sévérité du recruteur</label>
+                  <select
+                    className="w-full border border-gray-300 rounded-md p-2"
+                    value={severity}
+                    onChange={(e) => setSeverity(e.target.value as any)}
+                  >
+                    <option>Sympa</option>
+                    <option>Neutre</option>
+                    <option>Très exigeant</option>
+                  </select>
+                </div>
               </div>
 
-              <Button onClick={startInterview} className="w-full">
-                Commencer la simulation
-                <ArrowRight className="ml-2 h-4 w-4" />
+              <Button onClick={startInterview} className="w-full" disabled={loading}>
+                {loading ? (
+                  <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Démarrage...</>
+                ) : (
+                  <>
+                    Commencer la simulation
+                    <ArrowRight className="ml-2 h-4 w-4" />
+                  </>
+                )}
               </Button>
             </Card>
           </div>
@@ -169,6 +261,10 @@ export default function InterviewSimulator() {
         {stage === "interview" && (
           <div className="max-w-3xl mx-auto">
             <Card className="p-4 mb-6 max-h-[60vh] md:max-h-[70vh] overflow-y-auto space-y-4">
+              <p className="text-xs text-muted-foreground mb-2">
+                Question {currentQuestionIndex + 1} / {interviewQuestions.length || INTERVIEW_QUESTIONS.length}
+              </p>
+
               {messages.map((msg, idx) => (
                 <div
                   key={idx}
@@ -185,6 +281,13 @@ export default function InterviewSimulator() {
                   </div>
                 </div>
               ))}
+              {loading && (
+                <div className="flex justify-start">
+                  <div className="bg-gray-100 text-gray-900 p-4 rounded-lg">
+                    <Loader2 className="h-5 w-5 animate-spin" />
+                  </div>
+                </div>
+              )}
               {loading && (
                 <div className="flex justify-start">
                   <div className="bg-gray-100 text-gray-900 p-4 rounded-lg">
@@ -228,33 +331,63 @@ export default function InterviewSimulator() {
                 </div>
               </div>
 
-              <p className="text-xs text-muted-foreground mt-4">
-                Question {currentQuestionIndex + 1} / {INTERVIEW_QUESTIONS.length}
-              </p>
             </Card>
           </div>
         )}
 
         {stage === "feedback" && (
           <div className="max-w-2xl mx-auto">
-            <Card className="p-8">
-              <h2 className="text-2xl font-bold mb-4">Votre retour</h2>
+            <Card className="p-8 text-center">
+              <h2 className="text-2xl font-bold mb-4">Analyse de votre entretien</h2>
 
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 mb-6 whitespace-pre-wrap text-sm leading-relaxed">
-                {feedback}
-              </div>
+              {feedbackData ? (
+                <>
+                  <div className="mb-6">
+                    <ScoreCircle percentage={feedbackData.score} />
+                  </div>
 
-              <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
-                <p className="text-green-700 font-semibold mb-2">Prochaines étapes:</p>
-                <ul className="text-green-700 text-sm space-y-1">
-                  <li>✓ Pratiquez les réponses comportementales (STAR)</li>
-                  <li>✓ Préparez des questions pertinentes</li>
-                  <li>✓ Faites des recherches sur l'entreprise</li>
-                  <li>✓ Entraînez-vous devant un miroir ou un ami</li>
-                </ul>
-              </div>
+                  <div className="grid grid-cols-2 gap-4 text-left mb-6">
+                    <div>
+                      <h3 className="font-semibold mb-2">Points forts</h3>
+                      <ul className="list-disc list-inside text-sm">
+                        {feedbackData.strengths.map((s, i) => (
+                          <li key={i}>{s}</li>
+                        ))}
+                      </ul>
+                    </div>
+                    <div>
+                      <h3 className="font-semibold mb-2">Points à améliorer</h3>
+                      <ul className="list-disc list-inside text-sm">
+                        {feedbackData.improvements.map((i, idx) => (
+                          <li key={idx}>{i}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  </div>
 
-              <div className="flex gap-3">
+                  {feedbackData.score >= 80 && (
+                    <Button
+                      className="mb-6"
+                      onClick={() => {
+                        const text = `Certificat de réussite - Score : ${feedbackData.score}%`;
+                        const blob = new Blob([text], { type: 'text/plain' });
+                        const url = URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = `certificat-entretien-${Date.now()}.txt`;
+                        a.click();
+                        URL.revokeObjectURL(url);
+                      }}
+                    >
+                      Télécharger mon certificat de réussite
+                    </Button>
+                  )}
+                </>
+              ) : (
+                <p className="text-sm text-gray-700">Analyse indisponible.</p>
+              )}
+
+              <div className="flex gap-3 mt-6 flex-col sm:flex-row">
                 <Button
                   variant="outline"
                   onClick={() => navigate("/")}

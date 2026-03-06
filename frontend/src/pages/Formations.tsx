@@ -174,16 +174,6 @@ export default function Formations() {
     return () => observer.disconnect();
   }, [hasMore, isLoading, loadMore]);
 
-  const { data: jobs = [] } = useQuery({
-    queryKey: ["jobs", { limit: 5 }],
-    queryFn: async () => {
-      const res = await api.getJobs({ limit: 5, page: 1, sortBy: 'created_at', sortOrder: 'DESC' });
-      const unwrap = (r: any) => Array.isArray(r) ? r : (r?.data?.data ?? r?.data ?? r);
-      return unwrap(res) || [];
-    },
-    staleTime: 1000 * 60 * 5,
-  });
-
   const isDeadlinePassed = (deadline?: string) => {
     if (!deadline) return false;
     return new Date(deadline) < new Date();
@@ -296,21 +286,6 @@ export default function Formations() {
                     ) : null}
                   </div>
                 </div>
-
-                {/* JOB OFFERS SECTION */}
-                {jobs && jobs.length > 0 && (
-                  <div className="mt-12">
-                    <h2 className="text-2xl font-bold mb-4">Offres d'emploi</h2>
-                    <div className="space-y-4">
-                      {jobs.map((job: any) => (
-                        <JobListItem key={job.id} job={job} />
-                      ))}
-                    </div>
-                    <Button asChild variant="link" className="mt-4">
-                      <Link to="/jobs">Voir toutes les offres</Link>
-                    </Button>
-                  </div>
-                )}
               </>
             ) : (
               <div className="text-center py-24">

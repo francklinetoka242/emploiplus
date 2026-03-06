@@ -55,7 +55,9 @@ const JobsModule: React.FC<JobsModuleProps> = ({ token }) => {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify({ ...formData, company_id: 1 })
+        // we no longer hardcode a company id; the backend service will assign
+        // a company based on a name string (or leave it unset) as appropriate.
+        body: JSON.stringify(formData)
       });
       if (!response.ok) throw new Error('Failed to save');
       await fetchJobs();

@@ -166,6 +166,9 @@ router.use((error, req, res, next) => {
  *   }
  * }
  */
+router.post('/generate-interview', express.json(), aiController.generateInterview);
+router.post('/interview-feedback', express.json(), aiController.interviewFeedback);
+router.post('/generate-test', express.json(), aiController.generateTest);
 router.post('/send-application', aiController.sendApplication);
 
 export default router;

@@ -796,6 +796,167 @@ Cordialement,`
 }
 
 /**
+ * POST /api/ai/generate-interview
+ * Mock/AI generator for interview questions
+ */
+async function generateInterview(req, res) {
+  try {
+    const { position = 'poste', severity = 'Neutre' } = req.body || {};
+    console.log('[AI] generateInterview called', { position, severity });
+
+    const qCount = 5 + Math.floor(Math.random() * 3);
+    let questions = [];
+    let reportTemplate = '';
+
+    if (useMock || !model) {
+      const baseQuestions = [
+        'Parlez‑moi de votre expérience liée à ce poste.',
+        'Pourquoi souhaitez‑vous travailler ici ?',
+        'Comment gérez‑vous les situations de stress ?',
+        'Donnez un exemple d&apos;un projet réussi et votre rôle.',
+        'Comment travaillez‑vous en équipe ?',
+        'Comment réagissez‑vous face à une critique ?',
+        'Avez‑vous des questions pour moi ?',
+        'Quelles sont vos forces et faiblesses ?',
+        'Où vous voyez‑vous dans 5 ans ?',
+      ];
+      questions = baseQuestions.sort(() => 0.5 - Math.random()).slice(0, qCount);
+      reportTemplate = `Points forts:\n- ...\nPoints à améliorer:\n- ...\nNote globale: /100`;
+    } else {
+      const systemPrompt = `Tu es un recruteur expérimenté au Congo, capable de jouer plusieurs
+niveaux de sévérité (Sympa, Neutre, Très exigeant). Génère ${qCount} questions
+cohérentes pour un candidat postulant au poste de ${position}. Réponds uniquement
+avec un objet JSON contenant : { questions: ["..."] , reportTemplate: "..." }.`;
+      const userPrompt = `Contexte marché du travail : République du Congo,
+focalise sur secteur local et attentes des employeurs.`;
+      const call = await model.generateContent({
+        contents: [{ role: 'user', parts: [{ text: systemPrompt + '\n\n' + userPrompt }] }]
+      });
+      const responseText = call.response.text();
+      const extracted = extractJsonFromGeminiResponse(responseText);
+      if (extracted && Array.isArray(extracted.questions)) {
+        questions = extracted.questions.slice(0, qCount);
+        reportTemplate = extracted.reportTemplate || reportTemplate;
+      } else {
+        console.log('[AI] ⚠️ generateInterview parsing failed, using mock');
+        const base = [
+          'Parlez‑moi de votre expérience liée à ce poste.',
+          'Pourquoi souhaitez‑vous travailler ici ?',
+          'Comment gérez‑vous les situations de stress ?',
+          'Donnez un exemple d&apos;un projet réussi et votre rôle.',
+          'Comment travaillez‑vous en équipe ?',
+          'Comment réagissez‑vous face à une critique ?',
+          'Avez‑vous des questions pour moi ?',
+        ];
+        questions = base.sort(() => 0.5 - Math.random()).slice(0, qCount);
+      }
+    }
+    res.status(200).json({ success: true, questions, reportTemplate });
+  } catch (err) {
+    console.error('[AI] generateInterview error', err.message);
+    res.status(500).json({ success: false, message: 'Erreur serveur' });
+  }
+}
+
+/**
+ * POST /api/ai/interview-feedback
+ */
+async function interviewFeedback(req, res) {
+  try {
+    const { questions = [], answers = [] } = req.body || {};
+    let strengths = [];
+    let improvements = [];
+    let score = 0;
+    if (useMock || !model) {
+      strengths = ['Bonne communication', 'Esprit d’équipe'];
+      improvements = ['Fournir des exemples chiffrés', 'Structurer avec STAR'];
+      score = 50 + Math.floor(Math.random() * 51);
+    } else {
+      const sys = `Tu es un assistant qui évalue des réponses d'entretien. Fournis :
+strengths (liste), improvements (liste), score (0‑100). Ne renvoie que JSON.`;
+      const user = `Questions:\n${questions.join('\n')}\n\nRéponses:\n${answers.join('\n')}\n`;
+      const call = await model.generateContent({
+        contents: [{ role: 'user', parts: [{ text: sys + '\n\n' + user }] }]
+      });
+      const parsed = extractJsonFromGeminiResponse(call.response.text());
+      if (parsed) {
+        strengths = parsed.strengths || strengths;
+        improvements = parsed.improvements || improvements;
+        score = parsed.score || score;
+      } else {
+        strengths = ['Bonne communication', 'Esprit d’équipe'];
+        improvements = ['Fournir des exemples chiffrés', 'Structurer avec STAR'];
+        score = 50 + Math.floor(Math.random() * 51);
+      }
+    }
+    res.status(200).json({ success: true, strengths, improvements, score });
+  } catch (err) {
+    console.error('[AI] interviewFeedback error', err.message);
+    res.status(500).json({ success: false, message: 'Erreur serveur' });
+  }
+}
+
+/**
+ * POST /api/ai/generate-test
+ */
+async function generateTest(req, res) {
+  try {
+    const { category = 'it' } = req.body || {};
+    let test = null;
+    if (useMock || !model) {
+      test = {
+        testTitle: `Test de compétences ${category}`,
+        domain: category,
+        difficulty: 'Intermédiaire',
+        questions: []
+      };
+      for (let i = 1; i <= 10; i++) {
+        test.questions.push({
+          id: i,
+          question: `Question ${i} pour la catégorie ${category}?`,
+          options: ['Option A','Option B','Option C','Option D'],
+          correctAnswer: 'Option A',
+          explanation: 'Explication générique.'
+        });
+      }
+    } else {
+      const prompt = `Génère un test de 10 questions QCM pour la catégorie ${category}.
+Format JSON strict : { testTitle:string, domain:string, difficulty:string, questions:[{id,question,options:[4],correctAnswer,explanation}] }.
+Le contexte : marché du travail en République du Congo.
+Réponds uniquement en JSON.`;
+      const call = await model.generateContent({
+        contents: [{ role:'user', parts:[{ text: prompt }] }]
+      });
+      const parsed = extractJsonFromGeminiResponse(call.response.text());
+      if (parsed && parsed.questions && Array.isArray(parsed.questions)) {
+        test = parsed;
+      } else {
+        console.log('[AI] generateTest parsing failed, using mock');
+        test = {
+          testTitle: `Test de compétences ${category}`,
+          domain: category,
+          difficulty: 'Intermédiaire',
+          questions: []
+        };
+        for (let i = 1; i <= 10; i++) {
+          test.questions.push({
+            id: i,
+            question: `Question ${i} pour la catégorie ${category}?`,
+            options: ['Option A','Option B','Option C','Option D'],
+            correctAnswer: 'Option A',
+            explanation: 'Explication générique.'
+          });
+        }
+      }
+    }
+    res.status(200).json({ success: true, test });
+  } catch (err) {
+    console.error('[AI] generateTest error', err.message);
+    res.status(500).json({ success: false, message: 'Erreur serveur' });
+  }
+}
+
+/**
  * Sends an application with the analyzed CV and motivation letter
  * Stores the application in the database
  */
@@ -886,5 +1047,8 @@ async function sendApplication(req, res) {
 export default {
   analyzeCv,
   extractCvData,
-  sendApplication
+  sendApplication,
+  generateInterview,
+  interviewFeedback,
+  generateTest
 };

@@ -11,6 +11,7 @@ export type MenuItemId =
   | 'users'
   | 'notifications'
   | 'admins'
+  | 'audit-logs'
   | 'login-history'
   | 'faq'
   | 'documentation'
@@ -24,6 +25,9 @@ export interface MenuItem {
   icon: string;
   path: string;
   description?: string;
+  requiredPermission?: string;
+  module?: string;
+  action?: 'view' | 'edit' | 'delete' | 'special' | 'all';
 }
 
 export const ADMIN_MENU_ITEMS: MenuItem[] = [
@@ -39,77 +43,108 @@ export const ADMIN_MENU_ITEMS: MenuItem[] = [
     label: 'Offres d\'emploi',
     icon: 'Briefcase',
     path: '/admin/jobs',
-    description: 'Gestion des offres d\'emploi'
+    description: 'Gestion des offres d\'emploi',
+    module: 'jobs',
+    action: 'view'
   },
   {
     id: 'formations',
     label: 'Formations',
     icon: 'BookOpen',
     path: '/admin/formations',
-    description: 'Gestion des formations'
+    description: 'Gestion des formations',
+    module: 'formations',
+    action: 'view'
   },
   {
     id: 'catalogs',
     label: 'Catalogues & Services',
     icon: 'Layers',
     path: '/admin/catalogues-services',
-    description: 'Catalogues et services'
+    description: 'Catalogues et services',
+    module: 'catalogues',
+    action: 'view'
   },
   {
     id: 'users',
     label: 'Utilisateurs',
     icon: 'Users',
     path: '/admin/users',
-    description: 'Gestion des utilisateurs'
+    description: 'Gestion des utilisateurs',
+    module: 'users',
+    action: 'view'
   },
   {
     id: 'notifications',
     label: 'Notifications',
     icon: 'Bell',
     path: '/admin/notifications',
-    description: 'Gestion des notifications'
+    description: 'Gestion des notifications',
+    module: 'notifications',
+    action: 'view'
   },
   {
     id: 'admins',
     label: 'Administrateurs',
     icon: 'Shield',
     path: '/admin/admins',
-    description: 'Gestion des administrateurs'
+    description: 'Gestion des administrateurs',
+    module: 'admins',
+    action: 'view'
+  },
+  {
+    id: 'audit-logs',
+    label: 'Historique d\'Audit',
+    icon: 'FileText',
+    path: '/admin/audit-logs',
+    description: 'Journalisation complète des actions administrateur',
+    module: 'audit',
+    action: 'view'
   },
   {
     id: 'login-history',
     label: 'Historique de connexion',
     icon: 'History',
     path: '/admin/login-history',
-    description: 'Historique des connexions'
+    description: 'Historique des connexions',
+    module: 'history',
+    action: 'view'
   },
   {
     id: 'faq',
     label: 'FAQ',
     icon: 'HelpCircle',
     path: '/admin/faqs',
-    description: 'Questions fréquemment posées'
+    description: 'Questions fréquemment posées',
+    module: 'faq',
+    action: 'view'
   },
   {
     id: 'documentation',
     label: 'Documentation',
     icon: 'FileText',
     path: '/admin/documents',
-    description: 'Documentation du système'
+    description: 'Documentation du système',
+    module: 'faq',
+    action: 'view'
   },
   {
     id: 'documentations',
     label: 'Documentations',
     icon: 'Shield',
     path: '/admin/documentations',
-    description: 'Politiques et documents légaux'
+    description: 'Politiques et documents légaux',
+    module: 'faq',
+    action: 'view'
   },
   {
     id: 'system-health',
     label: 'Santé du Système',
     icon: 'Activity',
     path: '/admin/system-health',
-    description: 'État de la santé du système'
+    description: 'État de la santé du système',
+    module: 'system',
+    action: 'view'
   },
   {
     id: 'settings',

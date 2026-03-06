@@ -48,6 +48,7 @@ import Newsfeed from "./pages/Newsfeed";
 import MyPublications from "./pages/MyPublications";
 import PublicationReportPage from "./pages/PublicationReportPage";
 import PublicationHidePage from "./pages/PublicationHidePage";
+import { Messages } from "./pages/Messages";
 import PublicationSharePage from "./pages/PublicationSharePage";
 import CompanyValidations from "./pages/CompanyValidations";
 import Login from "./pages/Login";
@@ -57,6 +58,7 @@ import Notifications from "./pages/Notifications";
 import NotFound from "./pages/NotFound";
 import { AuthCallback } from "./pages/AuthCallback";
 import { MatchingDemo } from "./pages/MatchingDemo";
+import ThankYou from "./pages/ThankYou";
 import { Connections } from "./pages/Connections";
 import Privacy from "./pages/Privacy";
 import Legal from "./pages/Legal";
@@ -85,6 +87,7 @@ import GraphiqueServices from "./pages/services/Graphique";
 import FlyerCreator from "./pages/services/FlyerCreator";
 import FlyerGallery from "./pages/services/FlyerGallery";
 import BannerCreator from "./pages/services/BannerCreator";
+import BannerTemplates from "./pages/services/BannerTemplates";
 import BusinessCardEditor from "./pages/services/BusinessCardEditor";
 import BusinessCardModels from "./pages/services/BusinessCardModels";
 import PortfolioBuilder from "./pages/services/PortfolioBuilder";
@@ -106,6 +109,7 @@ import SystemHealthPage from "./pages/admin/system-health/page";
 import JobsPage from "./pages/admin/jobs/page";
 import UsersPage from "./pages/admin/users/page";
 import AdminsPage from "./pages/admin/admins/page";
+import AuditLogsPage from "./pages/admin/audit-logs/page";
 import FormationsPage from "./pages/admin/formations/page";
 import ServicesPage from "./pages/admin/services/page";
 import AdminFaqsPage from "./pages/admin/faqs/page";
@@ -123,7 +127,9 @@ import AdminParametresPage from "./pages/admin/parametres/page";
 import DocumentationsPage from "./pages/admin/documentations/page";
 import { AdminExport } from "./pages/admin/AdminExport";
 import AdminProfilePage from "./pages/admin/profile/page";
-import { Messages } from "./pages/Messages";
+import AdminManagement from "./pages/AdminManagement";
+import AccessDenied from "./pages/AccessDenied";
+import { RouteGuard } from "@/components/RouteGuard";
 
 const queryClient = new QueryClient();
 
@@ -175,6 +181,7 @@ const App = () => {
             <Route path="/documents" element={<DocumentationPage />} />
             <Route path="/company/:id" element={<CompanyPage />} />
             <Route path="/recrutement/postuler/:id" element={<ApplyJob />} />
+            <Route path="/merci" element={<ThankYou />} />
             <Route path="/candidature-intelligente/:jobId" element={<CandidatureIntelligente />} />
             <Route path="/notifications" element={<Notifications />} />
             <Route path="/test-competence" element={<CompetenceTest />} />
@@ -208,6 +215,7 @@ const App = () => {
             <Route path="/services/flyers" element={<FlyerGallery />} />
             <Route path="/services/flyer-creator" element={<FlyerCreator />} />
             <Route path="/services/banner-creator" element={<BannerCreator />} />
+            <Route path="/services/banner-templates" element={<BannerTemplates />} />
             <Route path="/services/business-card-editor" element={<BusinessCardEditor />} />
             <Route path="/services/business-card-models" element={<BusinessCardModels />} />
             <Route path="/services/portfolio-builder" element={<PortfolioBuilder />} />
@@ -245,11 +253,11 @@ const App = () => {
               </ProtectedRoute>
             } />
             
-            {/* Jobs — super_admin et admin_offres */}
+            {/* Jobs — accès selon permissions */}
             <Route path="jobs" element={
-              <ProtectedRoute requiredRoles={["super_admin", "admin_offres"]}>
+              <RouteGuard module="jobs" action="view">
                 <JobsPage />
-              </ProtectedRoute>
+              </RouteGuard>
             } />
             
             {/* Publications — super_admin et content_admin */}
@@ -259,11 +267,11 @@ const App = () => {
               </ProtectedRoute>
             } />
             
-            {/* Users — super_admin et admin_users */}
+            {/* Users — accès selon permissions */}
             <Route path="users" element={
-              <ProtectedRoute requiredRoles={["super_admin", "admin_users"]}>
+              <RouteGuard module="users" action="view">
                 <UsersPage />
-              </ProtectedRoute>
+              </RouteGuard>
             } />
             
             {/* User Profile (Admin) — super_admin et admin_billing */}
@@ -284,6 +292,13 @@ const App = () => {
             <Route path="admins" element={
               <ProtectedRoute requiredRoles={["super_admin"]}>
                 <AdminsPage />
+              </ProtectedRoute>
+            } />
+            
+            {/* Audit Logs — super_admin uniquement */}
+            <Route path="audit-logs" element={
+              <ProtectedRoute requiredRoles={["super_admin"]}>
+                <AuditLogsPage />
               </ProtectedRoute>
             } />
             
@@ -376,6 +391,13 @@ const App = () => {
                 <AdminProfilePage />
               </ProtectedRoute>
             } />
+            
+            {/* Gestion des Administrateurs — super_admin uniquement */}
+            <Route path="admin-management" element={
+              <ProtectedRoute requiredRoles={["super_admin"]}>
+                <AdminManagement />
+              </ProtectedRoute>
+            } />
           </Route>
 
           {/* Pages spéciales */}
@@ -385,6 +407,7 @@ const App = () => {
           <Route path="/admin/register/super-admin" element={<SuperAdminRegister />} />
           <Route path="/admin/register/content-admin" element={<ContentAdminRegister />} />
           <Route path="/admin/register/user-admin" element={<UserAdminRegister />} />
+          <Route path="/admin/access-denied" element={<AccessDenied />} />
 
           <Route path="*" element={<NotFound />} />
         </Routes>

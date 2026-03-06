@@ -13,7 +13,7 @@ export default function OptimizationCandidates() {
       title: 'Créer un CV professionnel',
       description: 'Créez votre CV en ligne et générez-le en PDF ou Word avec nos modèles professionnels.',
       actions: [
-        { label: '📋 Voir les modèles', href: '/cv-modeles', primary: true },
+        { label: '✏️ Créer mon CV', href: '/cv-modeles?template=francklyn', primary: true },
         { label: '📋 Voir les modèles', href: '/cv-modeles', primary: false },
       ]
     },
@@ -25,7 +25,7 @@ export default function OptimizationCandidates() {
       title: 'Lettre de motivation',
       description: 'Rédigez une lettre de motivation impactante avec nos outils et modèles personnalisables.',
       actions: [
-        { label: '📄 Voir les modèles', href: '/letter-modeles', primary: true },
+        { label: '✍️ Créer ma lettre', href: '/letter-modeles?template=sidebarblack', primary: true },
         { label: '📄 Voir les modèles', href: '/letter-modeles', primary: false },
       ]
     },

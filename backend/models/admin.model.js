@@ -39,7 +39,7 @@ async function getAllAdmins(filters = {}, limit = 20, offset = 0) {
   try {
     const params = [];
     // Use base fields that always exist
-    const selectClause = 'id, first_name, last_name, email, role, status, created_at';
+    const selectClause = 'id, first_name, last_name, email, role, status, created_at, permissions';
 
     const filterClause = buildFilterClause(filters, params, new Set(['status', 'role_level', 'search', 'admin_id', 'admin_level', 'date_from', 'date_to']));
     const query = `
@@ -51,7 +51,12 @@ async function getAllAdmins(filters = {}, limit = 20, offset = 0) {
     `;
     params.push(limit, offset);
     const result = await pool.query(query, params);
-    return result.rows;
+    
+    // Normalize permissions: ensure they're always an array, never null/undefined
+    return result.rows.map(admin => ({
+      ...admin,
+      permissions: admin.permissions && Array.isArray(admin.permissions) ? admin.permissions : [],
+    }));
   } catch (err) {
     console.error('getAllAdmins query error:', err);
     throw err;
@@ -62,21 +67,28 @@ async function getAllAdmins(filters = {}, limit = 20, offset = 0) {
 async function getAdminById(adminId) {
   try {
     // Start with basic fields that always exist
-    const baseFields = ['id', 'first_name', 'last_name', 'email', 'role', 'status', 'created_at'];
+    const baseFields = ['id', 'first_name', 'last_name', 'email', 'role', 'status', 'created_at', 'permissions'];
     
     // Optionally add fields if they exist
     const optionalFields = ['role_level', 'updated_at', 'token_expires_at', 'phone', 'country', 'profile_photo', 'account_type'];
     
     // Try to get all fields but fall back to base fields if error
     const query = `
-      SELECT id, first_name, last_name, email, role, role_level, status, created_at, updated_at, token_expires_at, phone, country, profile_photo, account_type
+      SELECT id, first_name, last_name, email, role, role_level, status, created_at, updated_at, token_expires_at, phone, country, profile_photo, account_type, permissions
       FROM admins
       WHERE id = $1
     `;
     
     try {
       const result = await pool.query(query, [adminId]);
-      return result.rows[0] || null;
+      const admin = result.rows[0];
+      if (!admin) return null;
+      
+      // Normalize permissions: ensure they're always an array, never null/undefined
+      return {
+        ...admin,
+        permissions: admin.permissions && Array.isArray(admin.permissions) ? admin.permissions : [],
+      };
     } catch (fieldError) {
       // If query fails, try with just base fields
       console.log('Retrying with base fields only');
@@ -86,7 +98,14 @@ async function getAdminById(adminId) {
         WHERE id = $1
       `;
       const fallbackResult = await pool.query(fallbackQuery, [adminId]);
-      return fallbackResult.rows[0] || null;
+      const admin = fallbackResult.rows[0];
+      if (!admin) return null;
+      
+      // Normalize permissions: ensure they're always an array, never null/undefined
+      return {
+        ...admin,
+        permissions: admin.permissions && Array.isArray(admin.permissions) ? admin.permissions : [],
+      };
     }
   } catch (err) {
     console.error('getAdminById query error:', err);

@@ -22,6 +22,10 @@ router.post('/', requireRoles('super_admin','admin_offres'), createJob);
 // requires admin token (only admins with appropriate role)
 router.put('/:id', requireRoles('super_admin','admin_offres'), updateJob);
 
+// PATCH /api/jobs/:id - update an existing job posting (protected)
+// requires admin token (only admins with appropriate role)
+router.patch('/:id', requireRoles('super_admin','admin_offres'), updateJob);
+
 // PATCH /api/jobs/:id/publish - change publication status
 router.patch('/:id/publish', requireRoles('super_admin','admin_offres'), publishJob);
 

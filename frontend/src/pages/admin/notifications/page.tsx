@@ -25,8 +25,8 @@ const AdminNotificationsPage = () => {
     try {
       const res = await fetch('/api/site-notifications', { headers: authHeaders() });
       if (res.ok) {
-        const data = await res.json();
-        setList(data || []);
+        const response = await res.json();
+        setList(response.data || []);
       }
     } catch (e) {
       console.error('Fetch site notifications error', e);

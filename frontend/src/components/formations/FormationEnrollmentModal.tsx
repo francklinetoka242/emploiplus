@@ -17,19 +17,9 @@ interface Formation {
   enrollment_deadline?: string;
 }
 
-interface Job {
-  id: number;
-  title: string;
-  company: string;
-  location: string;
-  salary?: string;
-  type?: string;
-}
-
 interface FormationEnrollmentModalProps {
   formation: Formation;
   otherFormations?: Formation[];
-  jobs?: Job[];
   onClose: () => void;
   onEnrollmentComplete: () => void;
 }
@@ -39,7 +29,6 @@ type PaymentMethod = "momo" | "airtel" | "onyfast" | null;
 export default function FormationEnrollmentModal({
   formation,
   otherFormations = [],
-  jobs = [],
   onClose,
   onEnrollmentComplete,
 }: FormationEnrollmentModalProps) {
@@ -427,22 +416,6 @@ export default function FormationEnrollmentModal({
                       <p className="text-gray-500 mt-1">
                         {f.price?.toLocaleString("fr-FR")} FCFA • {f.duration}
                       </p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Job Offers */}
-            {jobs.length > 0 && (
-              <div>
-                <h3 className="font-bold text-gray-900 mb-3 text-sm">💼 Offres d'emploi</h3>
-                <div className="space-y-2">
-                  {jobs.slice(0, 4).map((job) => (
-                    <div key={job.id} className="bg-white rounded-lg p-2 border border-gray-200 text-xs">
-                      <p className="font-semibold text-gray-900 line-clamp-1">{job.title}</p>
-                      <p className="text-gray-500">{job.company}</p>
-                      <p className="text-gray-400 text-xs">📍 {job.location}</p>
                     </div>
                   ))}
                 </div>

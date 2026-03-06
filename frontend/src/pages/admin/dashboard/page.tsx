@@ -1,6 +1,6 @@
 // src/pages/admin/dashboard/page.tsx
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -14,6 +14,7 @@ import {
   ArrowRight,
 } from "lucide-react";
 import { api } from "@/lib/api";
+import { usePermissions } from "@/components/PermissionGuard";
 
 interface Stats {
   jobs: number;
@@ -32,12 +33,23 @@ interface RecentActivity {
 
 export default function DashboardPage() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const { hasModuleAccess, userSession } = usePermissions();
   const [stats, setStats] = useState<Stats>({ jobs: 0, formations: 0, admins: 0, users: 0 });
   const [history, setHistory] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [historyLoading, setHistoryLoading] = useState(true);
   const admin = JSON.parse(localStorage.getItem("admin") || "{}");
   const displayName = admin?.first_name && admin?.last_name ? `${admin.first_name} ${admin.last_name}` : (admin?.prenom && admin?.nom ? `${admin.prenom} ${admin.nom}` : (admin?.email || 'Admin'));
+
+  // Vérifier si on vient d'une redirection d'accès refusé
+  useEffect(() => {
+    if (location.state?.accessDenied) {
+      toast.error("Accès refusé : vous n'avez pas les permissions nécessaires pour accéder à cette page.");
+      // Nettoyer l'état pour éviter le message répété
+      navigate(location.pathname, { replace: true, state: {} });
+    }
+  }, [location, navigate]);
 
   useEffect(() => {
     fetchStats();
@@ -80,32 +92,49 @@ export default function DashboardPage() {
     navigate("/admin/login");
   };
 
-  const statCards = [
+  const allStatCards = [
     {
       title: "Offres d'emploi",
       value: stats.jobs,
       icon: Briefcase,
       link: "/admin/jobs",
+      module: "jobs",
+      action: "view" as const,
     },
     {
       title: "Formations",
       value: stats.formations,
       icon: BookOpen,
       link: "/admin/formations",
+      module: "formations",
+      action: "view" as const,
     },
     {
       title: "Utilisateurs",
       value: stats.users,
       icon: Users,
       link: "/admin/users",
+      module: "users",
+      action: "view" as const,
     },
     {
       title: "Administrateurs",
       value: stats.admins,
       icon: Users,
       link: "/admin/admins",
+      module: "admins",
+      action: "view" as const,
     },
   ];
+
+  // Filtrer les cartes selon les permissions
+  const statCards = allStatCards.filter(card => {
+    // La gestion des admins est réservée aux super-admins
+    if (card.module === 'admins') {
+      return userSession?.role === 'super-admin';
+    }
+    return hasModuleAccess(card.module, card.action);
+  });
 
   return (
     <div className="min-h-screen bg-white">

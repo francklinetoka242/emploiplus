@@ -8,6 +8,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { ChevronRight, LayoutDashboard, Briefcase, BookOpen, Layers, Users, Bell, Shield, History, HelpCircle, FileText, Activity, Settings } from 'lucide-react';
 import { useAdminNav } from '@/context/AdminNavContext';
 import { ADMIN_MENU_ITEMS } from '@/types/admin-menu';
+import { usePermissions } from '@/components/PermissionGuard';
 
 // Icon mapping for menu items
 const ICON_MAP: Record<string, React.ComponentType<any>> = {
@@ -28,6 +29,7 @@ const ICON_MAP: Record<string, React.ComponentType<any>> = {
 export function AdminSidebar() {
   const { sidebarOpen, activeMenu, setActiveMenu, userSession } = useAdminNav();
   const location = useLocation();
+  const { hasModuleAccess, isSuperAdmin } = usePermissions();
 
   const getRoleLabel = () => {
     if (!userSession) return 'Admin';
@@ -46,16 +48,33 @@ export function AdminSidebar() {
     setActiveMenu(menuId);
   };
 
+  // Filtrer les éléments de menu selon les permissions
+  const filteredMenuItems = ADMIN_MENU_ITEMS.filter(item => {
+    // Dashboard toujours visible
+    if (item.id === 'dashboard') return true;
+
+    // Super admin voit tout
+    if (isSuperAdmin) return true;
+
+    // Vérifier les permissions pour les autres éléments
+    if (item.module && item.action) {
+      return hasModuleAccess(item.module, item.action);
+    }
+
+    // Si pas de module/action défini, visible par défaut
+    return true;
+  });
+
   return (
     <>
       {/* Sidebar */}
       <aside
-        className={`fixed left-0 top-0 h-screen bg-gradient-to-b from-slate-900 to-slate-800 border-r border-slate-700 transition-all duration-300 ease-in-out z-50 ${
+        className={`fixed left-0 top-0 h-screen bg-gradient-to-b from-slate-900 to-slate-800 border-r border-slate-700 transition-all duration-300 ease-in-out z-50 flex flex-col ${
           sidebarOpen ? 'w-72' : 'w-20'
         }`}
       >
         {/* Logo Section */}
-        <div className="h-20 flex items-center justify-center border-b border-slate-700">
+        <div className="flex-shrink-0 h-20 flex items-center justify-center border-b border-slate-700">
           <div className={`flex items-center gap-3 transition-all duration-300 ${!sidebarOpen && 'justify-center w-full'}`}>
             <div className="w-10 h-10 bg-gradient-to-br from-blue-400 to-blue-600 rounded-lg flex items-center justify-center">
               <span className="text-white font-bold text-lg">{userSession?.initials || 'SA'}</span>
@@ -70,9 +89,9 @@ export function AdminSidebar() {
         </div>
 
         {/* Menu Items */}
-        <nav className="flex-1 overflow-y-auto py-6">
-          <div className="space-y-2 px-3">
-            {ADMIN_MENU_ITEMS.map((item) => {
+        <nav className="flex-1 overflow-y-auto overflow-x-hidden py-6">
+          <div className="space-y-2 px-3 pr-2">
+            {filteredMenuItems.map((item) => {
               const Icon = ICON_MAP[item.icon];
               const isActive = location.pathname === item.path;
 
@@ -114,7 +133,7 @@ export function AdminSidebar() {
         </nav>
 
         {/* Footer Section */}
-        <div className={`border-t border-slate-700 p-4 ${!sidebarOpen && 'flex justify-center'}`}>
+        <div className={`flex-shrink-0 border-t border-slate-700 p-4 ${!sidebarOpen && 'flex justify-center'}`}>
           <div className={`text-xs text-slate-400 text-center ${!sidebarOpen && 'hidden'}`}>
             <p>Super Admin Panel</p>
             <p className="mt-1 text-slate-500">v1.0</p>

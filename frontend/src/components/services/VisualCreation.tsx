@@ -113,7 +113,7 @@ export default function VisualCreation({ isLoggedIn = false }: VisualCreationPro
                   asChild
                   onClick={() => sendInteraction({ service: 'banners', event_type: 'view_templates' })}
                 >
-                  <Link to="/services/banner-creator">Voir</Link>
+                  <Link to="/services/banner-templates">Voir</Link>
                 </Button>
               </div>
             </div>
