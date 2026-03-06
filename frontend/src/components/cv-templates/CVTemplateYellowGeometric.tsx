@@ -16,8 +16,12 @@ export const CVTemplateYellowGeometric: React.FC<CVTemplateYellowGeometricProps>
           <div className="relative w-1/3">
             <div className="h-40 bg-[#f39c12] absolute top-0 left-0 right-0 rounded-br-3xl"></div>
             <div className="pt-8 px-8 relative z-10">
-              <div className="w-32 h-32 rounded-full bg-gray-300 flex items-center justify-center text-4xl border-4 border-white shadow-lg ml-4">
-                👤
+              <div className="w-32 h-32 rounded-full bg-gray-300 flex items-center justify-center text-4xl border-4 border-white shadow-lg ml-4 overflow-hidden">
+                {data.profile_image_url ? (
+                  <img src={data.profile_image_url} alt="Profile" className="w-full h-full object-cover" />
+                ) : (
+                  "👤"
+                )}
               </div>
             </div>
           </div>
@@ -73,7 +77,7 @@ export const CVTemplateYellowGeometric: React.FC<CVTemplateYellowGeometricProps>
               <div className="space-y-3">
                 {data.skills.map((skill, index) => (
                   <div key={index}>
-                    <p className="text-xs font-semibold text-gray-700 mb-1">{skill}</p>
+                    <p className="text-xs font-semibold text-gray-700 mb-1">{typeof skill === 'string' ? skill : skill.name}</p>
                     <div className="w-full bg-[#b2bec3] rounded-full h-2">
                       <div className="bg-[#f39c12] h-2 rounded-full" style={{ width: "70%" }}></div>
                     </div>

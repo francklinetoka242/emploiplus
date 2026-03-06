@@ -7,6 +7,7 @@ interface CVData {
   email: string;
   location: string;
   summary?: string;
+  profile_image_url?: string;
   experiences?: Array<{
     company: string;
     position: string;
@@ -30,8 +31,12 @@ export function CVTemplateWarmMinimal({ data }: { data: CVData }) {
       {/* Header */}
       <div className="bg-white p-6 flex items-center gap-6 mb-6">
         {/* Profile Photo */}
-        <div className="w-20 h-20 rounded-full bg-amber-200 flex items-center justify-center text-3xl font-bold flex-shrink-0">
-          {data.full_name.charAt(0)}
+        <div className="w-20 h-20 rounded-full bg-amber-200 flex items-center justify-center text-3xl font-bold flex-shrink-0 overflow-hidden">
+          {data.profile_image_url ? (
+            <img src={data.profile_image_url} alt="Profile" className="w-full h-full object-cover" />
+          ) : (
+            data.full_name.charAt(0)
+          )}
         </div>
 
         {/* Name and Title */}
@@ -135,7 +140,7 @@ export function CVTemplateWarmMinimal({ data }: { data: CVData }) {
                     key={idx}
                     className="bg-amber-200 text-amber-900 text-xs px-2 py-1 rounded-full"
                   >
-                    {skill}
+                    {typeof skill === 'string' ? skill : skill.name}
                   </span>
                 ))}
               </div>

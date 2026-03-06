@@ -318,7 +318,7 @@ export default function CVCreator() {
               <div>
                 <Label>Nom et Prénom *</Label>
                 <Input
-                  placeholder="Jean Dupont"
+                  placeholder="Jean Marc"
                   value={formData.full_name}
                   onChange={(e) => handleInputChange("full_name", e.target.value)}
                 />
@@ -343,7 +343,7 @@ export default function CVCreator() {
               <div>
                 <Label>Téléphone</Label>
                 <Input
-                  placeholder="+33 6 12 34 56 78"
+                  placeholder="+242 06 731 10 33"
                   value={formData.phone}
                   onChange={(e) => handleInputChange("phone", e.target.value)}
                 />
@@ -351,7 +351,7 @@ export default function CVCreator() {
               <div>
                 <Label>Localisation</Label>
                 <Input
-                  placeholder="Paris, France"
+                  placeholder="Brazzaville, Congo"
                   value={formData.location}
                   onChange={(e) => handleInputChange("location", e.target.value)}
                 />

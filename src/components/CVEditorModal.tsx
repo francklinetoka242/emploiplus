@@ -33,6 +33,7 @@ import { CVTemplateOrangeCreative } from "./cv-templates/CVTemplateOrangeCreativ
 import { CVTemplateStudentPastel } from "./cv-templates/CVTemplateStudentPastel";
 import { CVTemplateTimeline } from "./cv-templates/CVTemplateTimeline";
 import { CVTemplateNavyModern } from "./cv-templates/CVTemplateNavyModern";
+import { CVTemplateClassicMinimalist } from "./cv-templates/CVTemplateClassicMinimalist";
 
 export interface CVData {
   id: string;
@@ -126,6 +127,8 @@ const getTemplateComponent = (templateId: string) => {
       return CVTemplateTimeline;
     case "navymodern":
       return CVTemplateNavyModern;
+    case "classicminimalist":
+      return CVTemplateClassicMinimalist;
     default:
       return CVTemplateFrancklyn;
   }
@@ -390,7 +393,7 @@ export function CVEditorModal({
                     onChange={(e) =>
                       handleBasicInfoChange("phone", e.target.value)
                     }
-                    placeholder="+33 6 12 34 56 78"
+                    placeholder="+242 06 731 10 33"
                   />
                 </div>
               </div>
@@ -402,7 +405,7 @@ export function CVEditorModal({
                   onChange={(e) =>
                     handleBasicInfoChange("location", e.target.value)
                   }
-                  placeholder="Paris, France"
+                  placeholder="Brazzaville, Congo"
                 />
               </div>
 

@@ -1,5 +1,5 @@
 // src/components/admin/Sidebar.tsx
-import { LogOut, Shield, Users, Briefcase, BookOpen, LayoutDashboard, UserPlus, FileCheck, ShoppingBag, Bell, ShoppingCart, AlertTriangle } from "lucide-react";
+import { LogOut, Shield, Users, Briefcase, BookOpen, LayoutDashboard, UserPlus, FileCheck, ShoppingBag, Bell, ShoppingCart, AlertTriangle, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate, useLocation } from "react-router-dom";
 import { toast } from "sonner";
@@ -10,6 +10,8 @@ export function Sidebar() {
 
   const admin = JSON.parse(localStorage.getItem("admin") || "{}");
   const role = admin.role || "admin";
+
+  console.log("Admin role:", role); // Debug log
 
   const logout = () => {
     localStorage.removeItem("adminToken");
@@ -39,6 +41,10 @@ export function Sidebar() {
     ...(role === "super_admin" || role === "admin_users" || role === "admin" ? [
       { label: "FAQ", icon: FileCheck, path: "/admin/faqs" },
     ] : []),
+    // Paramètres available to all admins
+    ...(role === "super_admin" || role === "admin_users" || role === "admin_offres" || role === "admin" ? [
+      { label: "Paramètres", icon: Settings, path: "/admin/parametres" },
+    ] : []),
     // Catalogs management available to all admins
     ...(role === "super_admin" || role === "admin_offres" ? [
       { label: "Catalogue Services", icon: ShoppingBag, path: "/admin/catalogs" },
@@ -52,6 +58,8 @@ export function Sidebar() {
       { label: "Santé du Système", icon: AlertTriangle, path: "/admin?tab=health" },
     ] : []),
   ];
+
+  console.log("Menu items:", menuItems); // Debug log
 
   const currentPath = location.pathname;
 
@@ -70,7 +78,7 @@ export function Sidebar() {
         <div className="flex items-center gap-4 mb-12">
           <Shield className="h-12 w-12" />
           <div>
-            <h1 className="text-2xl font-bold">Admin Panel</h1>
+            <h1 className="text-2xl font-bold">Admin Panel v2.0</h1>
             <p className="text-sm opacity-90 capitalize">{role.replace("_", " ")}</p>
           </div>
         </div>

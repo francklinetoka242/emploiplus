@@ -23,9 +23,13 @@ export const CVTemplateBlackWhite: React.FC<CVTemplateBlackWhiteProps> = ({ data
       {/* Left Sidebar - Black */}
       <div className="w-1/3 bg-[#1a1a1a] text-white p-8 overflow-auto">
         {/* Profile Photo */}
-        <div className="flex justify-center mb-8">
-          <div className="w-36 h-36 rounded-3xl bg-gray-400 flex items-center justify-center text-4xl shadow-lg">
-            👤
+        <div className="flex justify-center mb-8 overflow-hidden">
+          <div className="w-36 h-36 rounded-3xl bg-gray-400 flex items-center justify-center text-4xl shadow-lg overflow-hidden">
+            {data.profile_image_url ? (
+              <img src={data.profile_image_url} alt="Profile" className="w-full h-full object-cover" />
+            ) : (
+              "👤"
+            )}
           </div>
         </div>
 

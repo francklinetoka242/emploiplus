@@ -1,5 +1,5 @@
 // src/pages/admin/jobs/page.tsx
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Plus, Briefcase, Search } from "lucide-react";
@@ -16,6 +16,9 @@ export default function JobsPage() {
   const [searchText, setSearchText] = useState("");
   const [filterPeriod, setFilterPeriod] = useState<FilterPeriod>("all");
   const [filterCompany, setFilterCompany] = useState("");
+  const [filterExpired, setFilterExpired] = useState(false);
+  const [filterTraining, setFilterTraining] = useState(false);
+  const [selectedJobs, setSelectedJobs] = useState<string[]>([]);
 
   const { data: jobs = [] } = useQuery({
     queryKey: ["admin-jobs"],
@@ -25,6 +28,16 @@ export default function JobsPage() {
   // Filter jobs based on criteria
   const filteredJobs = useMemo(() => {
     let result = jobs;
+
+    const isExpired = (job: any) => {
+      if (!job.deadline) return false;
+      const dl = new Date(String(job.deadline)).getTime();
+      return dl < Date.now();
+    };
+
+    if (!filterExpired) {
+      result = result.filter((job) => !isExpired(job));
+    }
 
     // Date filtering
     if (filterPeriod !== "all") {
@@ -57,6 +70,13 @@ export default function JobsPage() {
       );
     }
 
+    // Training offers filter (sector contains "formation")
+    if (filterTraining) {
+      result = result.filter((job) =>
+        job.sector?.toLowerCase().includes("formation")
+      );
+    }
+
     // Search text filtering (title + description)
     if (searchText) {
       const search = searchText.toLowerCase();
@@ -67,7 +87,11 @@ export default function JobsPage() {
     }
 
     return result;
-  }, [jobs, filterPeriod, filterCompany, searchText]);
+  }, [jobs, filterPeriod, filterCompany, filterTraining, filterExpired, searchText]);
+
+  useEffect(() => {
+    setSelectedJobs((s) => s.filter((id) => filteredJobs.some((j) => j.id === id)));
+  }, [filteredJobs]);
 
   return (
     <div className="flex flex-col h-screen bg-gray-50">
@@ -139,11 +163,79 @@ export default function JobsPage() {
               />
             </div>
 
-            {/* Results count */}
-            <div className="flex items-end">
+            {/* Expired filter */}
+            <div className="flex items-center space-x-2">
+              <input
+                type="checkbox"
+                id="filter-expired"
+                checked={filterExpired}
+                onChange={(e) => setFilterExpired(e.target.checked)}
+                className="h-4 w-4 text-primary border-gray-300 rounded"
+              />
+              <label htmlFor="filter-expired" className="text-sm font-medium">
+                Voir offres expirées
+              </label>
+            </div>
+
+            {/* Training filter */}
+            <div className="flex items-center space-x-2">
+              <input
+                type="checkbox"
+                id="filter-training"
+                checked={filterTraining}
+                onChange={(e) => setFilterTraining(e.target.checked)}
+                className="h-4 w-4 text-primary border-gray-300 rounded"
+              />
+              <label htmlFor="filter-training" className="text-sm font-medium">
+                Offres de formation
+              </label>
+            </div>
+
+            {/* Results count + bulk actions */}
+            <div className="flex items-center justify-between">
               <p className="text-sm font-medium text-muted-foreground">
                 {filteredJobs.length} offre{filteredJobs.length !== 1 ? "s" : ""} trouvée{filteredJobs.length !== 1 ? "s" : ""}
               </p>
+              <div className="flex items-center space-x-2">
+                {selectedJobs.length > 0 && (
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    onClick={async () => {
+                      if (!window.confirm(`Supprimer ${selectedJobs.length} offre(s) ?`)) return;
+                      for (const id of selectedJobs) {
+                        await fetch(`/api/jobs/${id}`, { method: "DELETE" });
+                      }
+                      setSelectedJobs([]);
+                      queryClient.invalidateQueries(["admin-jobs"]);
+                    }}
+                  >
+                    Supprimer sélection
+                  </Button>
+                )}
+
+                {jobs.some((j) => {
+                  const dl = j.deadline ? new Date(String(j.deadline)).getTime() : null;
+                  return dl !== null && dl < Date.now();
+                }) && (
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    onClick={async () => {
+                      if (!window.confirm("Supprimer toutes les offres expirées ?")) return;
+                      for (const j of jobs) {
+                        const dl = j.deadline ? new Date(String(j.deadline)).getTime() : null;
+                        if (dl !== null && dl < Date.now()) {
+                          await fetch(`/api/jobs/${j.id}`, { method: "DELETE" });
+                        }
+                      }
+                      queryClient.invalidateQueries(["admin-jobs"]);
+                    }}
+                  >
+                    Supprimer expirées
+                  </Button>
+                )}
+              </div>
             </div>
           </div>
         </div>
@@ -188,7 +280,15 @@ export default function JobsPage() {
             <p className="text-lg text-muted-foreground">Aucune offre ne correspond à vos filtres</p>
           </div>
         ) : (
-          <JobList jobs={filteredJobs} />
+          <JobList
+            jobs={filteredJobs}
+            selectedIds={selectedJobs}
+            onToggleSelect={(id) => {
+              setSelectedJobs((s) =>
+                s.includes(id) ? s.filter((x) => x !== id) : [...s, id]
+              );
+            }}
+          />
         )}
       </div>
     </div>

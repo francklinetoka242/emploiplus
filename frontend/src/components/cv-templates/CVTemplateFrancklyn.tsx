@@ -121,7 +121,7 @@ export const CVTemplateFrancklyn: React.FC<CVTemplateFrancklynProps> = ({ data }
                 {data.skills.slice(0, 8).map((skill, idx) => (
                   <p key={idx} className="flex items-center">
                     <span className="w-2 h-2 bg-blue-400 rounded-full mr-2"></span>
-                    {skill}
+                    {typeof skill === 'string' ? skill : skill.name}
                   </p>
                 ))}
               </div>

@@ -1,6 +1,6 @@
 // src/components/admin/Sidebar.tsx
 // PHASE 5: Admin Sidebar with 5-level authorization
-import { LogOut, Shield, Users, Briefcase, BookOpen, LayoutDashboard, Bell, ShoppingBag, AlertTriangle, BarChart3, DollarSign, Zap, HelpCircle, FileText } from "lucide-react";
+import { LogOut, Shield, Users, Briefcase, BookOpen, LayoutDashboard, Bell, ShoppingBag, AlertTriangle, BarChart3, DollarSign, Zap, HelpCircle, FileText, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate, useLocation } from "react-router-dom";
 import { toast } from "sonner";
@@ -97,6 +97,11 @@ export function Sidebar() {
     ...(adminLevel === 1 ? [
       { label: "Santé du Système", icon: AlertTriangle, path: "/admin?tab=health", levels: [1] },
     ] : []),
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // ALL LEVELS: SETTINGS
+    // ═══════════════════════════════════════════════════════════════════════
+    { label: "Paramètres", icon: Settings, path: "/admin/parametres", levels: [1, 2, 3, 4, 5] },
   ];
 
   const currentPath = location.pathname;

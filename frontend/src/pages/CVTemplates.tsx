@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Edit, Trash2, Download, Eye } from "lucide-react";
+import { ArrowRight, Edit, Trash2, Download, Eye, ChevronLeft, ChevronRight } from "lucide-react";
 import { toast } from "sonner";
 import html2pdf from "html2pdf.js";
 import { CVTemplateFrancklyn } from "@/components/cv-templates/CVTemplateFrancklyn";
@@ -30,12 +30,17 @@ import { CVTemplateOrangeCreative } from "@/components/cv-templates/CVTemplateOr
 import { CVTemplateStudentPastel } from "@/components/cv-templates/CVTemplateStudentPastel";
 import { CVTemplateTimeline } from "@/components/cv-templates/CVTemplateTimeline";
 import { CVTemplateNavyModern } from "@/components/cv-templates/CVTemplateNavyModern";
+import { CVTemplateClassicMinimalist } from "@/components/cv-templates/CVTemplateClassicMinimalist";
+import { CVTemplateOliviaWilson } from "@/components/cv-templates/CVTemplateOliviaWilson";
+import { CVTemplateExecutiveEditorial } from "@/components/cv-templates/CVTemplateExecutiveEditorial";
+import { CVTemplateResumeGrid } from "@/components/cv-templates/CVTemplateResumeGrid";
 import { CVEditorModal, CVData } from "@/components/CVEditorModal";
 import { useCVStorage } from "@/hooks/useCVStorage";
 
 const CV_TEMPLATES = [
   {
     id: "francklyn",
+    category: "moderne",
     name: "Modèle 1 - Francklin Sylver",
     description:
       "Design professionnel deux colonnes avec barre latérale - Idéal pour mettre en valeur vos compétences et expériences",
@@ -49,6 +54,7 @@ const CV_TEMPLATES = [
   },
   {
     id: "minimalist",
+    category: "moderne",
     name: "Modèle 2 - Minimaliste",
     description:
       "Design minimaliste noir et blanc épuré avec deux colonnes distinctes - Idéal pour un CV classique et professionnel",
@@ -61,6 +67,7 @@ const CV_TEMPLATES = [
     image: "⬛",
   },
   {
+    category: "moderne",
     id: "geometric",
     name: "Modèle 3 - Géométrique",
     description:
@@ -74,6 +81,7 @@ const CV_TEMPLATES = [
     image: "🟨",
   },
   {
+    category: "moderne",
     id: "infographic",
     name: "Modèle 4 - Infographique",
     description:
@@ -87,6 +95,7 @@ const CV_TEMPLATES = [
     image: "📊",
   },
   {
+    category: "moderne",
     id: "classicsober",
     name: "Modèle 5 - Classique Sobre",
     description:
@@ -370,53 +379,118 @@ const CV_TEMPLATES = [
       "Titres bleus avec lignes de soulignement fines",
     ],
     image: "🌀",
+  },
+  {
+    id: "oliviawilson",
+    category: "classique",
+    name: "Modèle Classique 1 - Olivia Wilson",
+    description:
+      "Design élégant et professionnel avec photo circulaire, barre de contact horizontale et layout asymétrique - Idéal pour les profils de communication et marketing",
+    features: [
+      "Photo circulaire avec bordure bleu ciel",
+      "Barre de contact horizontale stylisée",
+      "Layout asymétrique deux colonnes",
+      "Éléments graphiques modernes",
+      "Typographie raffinée et aérée",
+    ],
+    image: "👩",
+  },
+  {
+    id: "executiveeditorial",
+    category: "classique",
+    name: "Modèle Classique 2 - Executive Editorial",
+    description:
+      "Design haut de gamme avec élément géométrique et layout 3 colonnes - Parfait pour les cadres et directeurs, respire l'élégance et la sérénité",
+    features: [
+      "Éléments géométriques en vert menthe pastel",
+      "Layout 3 colonnes asymétrique (25-75)",
+      "Ombre portée ultra-réaliste",
+      "Barres de progression minimalistes",
+      "Espaces blancs maximisés",
+    ],
+    image: "✨",
+  },
+  {
+    id: "resumegrid",
+    category: "classique",
+    name: "Modèle Classique 3 - Resume Grid",
+    description:
+      "Design moderne et modulaire avec grille bien définie et accents rose pastel - Idéal pour les profils créatifs et modernes",
+    features: [
+      "Photo carrée arrondie avec ligne de séparation",
+      "Grille modulaire 60/40 bien structurée",
+      "Pastilles de niveau pour les compétences",
+      "Typographie mixte serif/sans-serif élégante",
+      "Accents rose poudré distincts",
+    ],
+    image: "🎯",
   },];
 
 // Données d'exemple pour le prévisualisation
 const SAMPLE_CV_DATA = {
-  full_name: "Jean Dupont",
-  job_title: "Développeur Full Stack Senior",
-  phone: "+33 6 12 34 56 78",
-  email: "jean.dupont@email.com",
+  full_name: "Sophie Laurent",
+  job_title: "Directrice Créative",
+  phone: "+33 6 78 34 56 01",
+  email: "sophie.laurent@email.com",
+  website: "www.sophielaurent.fr",
   location: "Paris, France",
-  summary: "Développeur passionné avec 8 années d'expérience dans le développement web. Spécialisé en React, Node.js et architecture microservices. Aime les défis techniques et travailler en équipe.",
+  summary: "Directrice créative passionnée avec 10 années d'expérience dans le design graphique et la création de campagnes visuelles innovantes. Spécialisée en identité de marque et direction artistique, je crée des expériences visuelles mémorables qui connectent les audiences.",
   experiences: [
     {
-      company: "TechCorp",
-      position: "Développeur Full Stack Senior",
-      startDate: "2021",
+      company: "Creative & Co Design Studio",
+      position: "Directrice Créative",
+      startDate: "2019",
       endDate: "Présent",
-      description: "Leadership technique sur les projets web. Implémentation d'architectures scalables avec React et Node.js.",
+      description: "Pilotage de la vision créative et direction artistique de tous les projets clients. Gestion d'une équipe de 12 designers et création de campagnes visuelles pour grandes marques. Augmentation de la clientèle de 60% grâce à la qualité des réalisations et l'innovation créative.",
     },
     {
-      company: "WebSolutions",
-      position: "Développeur Full Stack",
-      startDate: "2018",
-      endDate: "2021",
-      description: "Développement d'applications e-commerce. Optimisation des performances. Mentorat des juniors.",
+      company: "Design Forward Agency",
+      position: "Designer Senior & Lead Créatif",
+      startDate: "2015",
+      endDate: "2019",
+      description: "Conception d'identités visuelles complètes et campagnes de marketing créatives. Collaboration avec clients Fortune 500 et startups innovantes. Mentorship des designers juniors et standardisation des processus créatifs.",
+    },
+    {
+      company: "Visual Design Studio",
+      position: "Graphiste Designer",
+      startDate: "2012",
+      endDate: "2015",
+      description: "Création de designs graphiques pour print et digital. Développement de compétences en design thinking et méthodologies créatives agiles.",
     },
   ],
   education: [
     {
-      school: "École Nationale Supérieure d'Informatique",
-      degree: "Master Informatique",
-      field: "Développement Logiciel",
-      year: "2016",
+      school: "École Supérieure d'Art et Design",
+      degree: "Master Design Graphique & Direction Artistique",
+      startDate: "2010",
+      endDate: "2012",
     },
     {
-      school: "Université de Technologie",
-      degree: "Licence Informatique",
-      field: "Programmation et Systèmes",
-      year: "2014",
+      school: "Université Paris Ouest",
+      degree: "Licence Arts Plastiques & Design",
+      startDate: "2007",
+      endDate: "2010",
     },
   ],
-  skills: ["React", "Node.js", "TypeScript", "MongoDB", "PostgreSQL", "Docker", "AWS", "GraphQL"],
-  languages: [
-    { name: "Français", level: "Expert" },
-    { name: "Anglais", level: "Avancé" },
-    { name: "Espagnol", level: "Intermédiaire" },
+  skills: [
+    { name: "Direction Artistique", level: 5 },
+    { name: "Identité Visuelle", level: 5 },
+    { name: "Design Graphique", level: 5 },
+    { name: "Adobe Creative Suite", level: 5 },
+    { name: "Branding Strategy", level: 4 },
+    { name: "UX/UI Design", level: 4 },
   ],
-  qualities: ["Leadership", "Communication", "Créativité", "Résolution de problèmes", "Rigueur"],
+  software: [
+    { name: "Adobe XD", level: 5 },
+    { name: "Figma", level: 5 },
+    { name: "Illustrator", level: 5 },
+    { name: "Photoshop", level: 5 },
+  ],
+  languages: [
+    { name: "Français", level: "Langue maternelle" },
+    { name: "Anglais", level: "Courant" },
+    { name: "Allemand", level: "Intermédiaire" },
+  ],
 };
 
 const getTemplateComponent = (templateId: string) => {
@@ -473,6 +547,12 @@ const getTemplateComponent = (templateId: string) => {
       return CVTemplateTimeline;
     case "navymodern":
       return CVTemplateNavyModern;
+    case "oliviawilson":
+      return CVTemplateOliviaWilson;
+    case "executiveeditorial":
+      return CVTemplateExecutiveEditorial;
+    case "resumegrid":
+      return CVTemplateResumeGrid;
     default:
       return CVTemplateFrancklyn;
   }
@@ -543,7 +623,29 @@ export default function CVTemplates() {
     toast.success("Préparation de l'export PDF...");
   };
 
-  const cvsByTemplate = CV_TEMPLATES.map((template) => ({
+  const scrollLeft = (sectionId: string) => {
+    const container = document.getElementById(sectionId);
+    if (container) {
+      container.scrollBy({ left: -400, behavior: 'smooth' });
+    }
+  };
+
+  const scrollRight = (sectionId: string) => {
+    const container = document.getElementById(sectionId);
+    if (container) {
+      container.scrollBy({ left: 400, behavior: 'smooth' });
+    }
+  };
+
+  const moderneTemplates = CV_TEMPLATES.filter((t) => {
+    if (t.category) return t.category === 'moderne';
+    return true; // consider unspecified category as 'moderne' by default
+  }).map((template) => ({
+    ...template,
+    cvs: cvs.filter((cv) => cv.template === template.id),
+  }));
+
+  const classiqueTemplates = CV_TEMPLATES.filter((t) => t.category === 'classique').map((template) => ({
     ...template,
     cvs: cvs.filter((cv) => cv.template === template.id),
   }));
@@ -572,152 +674,212 @@ export default function CVTemplates() {
       )}
 
       {/* Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        {/* Templates Grid */}
-        <div className="grid grid-cols-1 gap-12">
-          {cvsByTemplate.map((templateGroup) => (
-            <div key={templateGroup.id}>
-              <div className="mb-8">
-                <h2 className="text-2xl font-bold text-gray-900 mb-2">
-                  {templateGroup.name}
-                </h2>
-                <p className="text-gray-600 mb-4">{templateGroup.description}</p>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-16">
+        {/* Section CV Moderne */}
+        <div>
+          <div className="mb-8">
+            <h2 className="text-3xl font-bold text-gray-900 mb-2">CV Moderne</h2>
+            <p className="text-lg text-gray-600">Designs contemporains et innovants pour se démarquer</p>
+          </div>
 
-                {/* Template Preview Card */}
-                <Card className="hover:shadow-2xl transition overflow-hidden mb-6">
-                  <div className="grid grid-cols-2 gap-8 p-8">
-                    {/* Aperçu visuel du CV */}
-                    <div className="flex items-center justify-center bg-gray-100 rounded-lg p-4">
-                      {(() => {
-                        const TemplateComponent = getTemplateComponent(
-                          templateGroup.id
-                        );
-                        return (
-                          <div
-                            className="w-full max-w-xs"
-                            style={{ aspectRatio: "210/297" }}
-                          >
-                            <div
-                              className="bg-white shadow-lg h-full overflow-hidden rounded border"
-                              style={{ scale: "0.8", transformOrigin: "top" }}
-                            >
-                              <TemplateComponent data={SAMPLE_CV_DATA} />
+          {/* Navigation buttons and horizontal scroll container */}
+          <div className="relative">
+            {/* Left navigation button */}
+            <button
+              onClick={() => scrollLeft('moderne-section')}
+              className="absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-white shadow-lg rounded-full p-3 hover:bg-gray-50 transition-colors border border-gray-200"
+            >
+              <ChevronLeft className="h-6 w-6 text-gray-600" />
+            </button>
+
+            {/* Horizontal scroll container */}
+            <div id="moderne-section" className="overflow-x-auto pb-4 px-12">
+              <div className="flex gap-6 min-w-max">
+                {moderneTemplates.map((template) => (
+                  <Card key={template.id} className="hover:shadow-2xl transition-all duration-300 overflow-hidden flex-shrink-0 w-80">
+                    <div className="p-4">
+                      {/* Template Preview */}
+                      <div className="flex items-center justify-center bg-gray-50 rounded-lg p-3 mb-4 h-80">
+                        {(() => {
+                          const TemplateComponent = getTemplateComponent(template.id);
+                          return (
+                            <div className="w-full h-full flex items-center justify-center">
+                              <div
+                                className="bg-white shadow-lg w-full h-full overflow-hidden rounded border transform scale-50 origin-top"
+                                style={{ aspectRatio: "210/297" }}
+                              >
+                                <TemplateComponent data={SAMPLE_CV_DATA} />
+                              </div>
                             </div>
-                          </div>
-                        );
-                      })()}
-                    </div>
-
-                    {/* Informations du modèle */}
-                    <div className="flex flex-col justify-center">
-                      <h3 className="text-3xl font-bold text-gray-900 mb-2">
-                        {templateGroup.name}
-                      </h3>
-                      <p className="text-muted-foreground mb-6">
-                        {templateGroup.description}
-                      </p>
-
-                      {/* Caractéristiques */}
-                      <div className="mb-8">
-                        <h4 className="font-semibold text-gray-900 mb-3">
-                          Caractéristiques
-                        </h4>
-                        <ul className="space-y-2">
-                          {templateGroup.features.map((feature, idx) => (
-                            <li
-                              key={idx}
-                              className="flex items-center gap-2 text-sm text-gray-700"
-                            >
-                              <span className="h-2 w-2 rounded-full bg-blue-600"></span>
-                              {feature}
-                            </li>
-                          ))}
-                        </ul>
+                          );
+                        })()}
                       </div>
 
-                      {/* Boutons */}
-                      <Button
-                        className="w-full bg-blue-600 hover:bg-blue-700"
-                        size="lg"
-                        onClick={() => handleNewCV(templateGroup.id)}
-                      >
-                        <ArrowRight className="h-4 w-4 mr-2" />
-                        Créer un CV avec ce modèle
-                      </Button>
-                    </div>
-                  </div>
-                </Card>
+                      {/* Template Info */}
+                      <div className="space-y-3">
+                        <div>
+                          <h3 className="text-lg font-bold text-gray-900 mb-1">
+                            {template.name}
+                          </h3>
+                          <p className="text-sm text-gray-600 line-clamp-2">
+                            {template.description}
+                          </p>
+                        </div>
 
-                {/* CVs créés avec ce modèle */}
-                {templateGroup.cvs.length > 0 && (
-                  <div>
-                    <h3 className="text-lg font-bold text-gray-900 mb-4">
-                      Vos CVs avec ce modèle ({templateGroup.cvs.length})
-                    </h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                      {templateGroup.cvs.map((cv) => (
-                        <Card
-                          key={cv.id}
-                          className="p-4 hover:shadow-lg transition flex flex-col"
+                        {/* Features */}
+                        <div>
+                          <h4 className="font-semibold text-gray-900 mb-2 text-sm">
+                            Caractéristiques
+                          </h4>
+                          <ul className="space-y-1">
+                            {template.features.slice(0, 3).map((feature, idx) => (
+                              <li
+                                key={idx}
+                                className="flex items-center gap-2 text-xs text-gray-700"
+                              >
+                                <span className="h-1.5 w-1.5 rounded-full bg-blue-600 flex-shrink-0"></span>
+                                <span className="line-clamp-1">{feature}</span>
+                              </li>
+                            ))}
+                            {template.features.length > 3 && (
+                              <li className="text-xs text-gray-500">
+                                +{template.features.length - 3} autres...
+                              </li>
+                            )}
+                          </ul>
+                        </div>
+
+                        {/* Action Button */}
+                        <Button
+                          className="w-full bg-blue-600 hover:bg-blue-700"
+                          size="sm"
+                          onClick={() => handleNewCV(template.id)}
                         >
-                          <div className="mb-4 flex-1">
-                            <h4 className="text-lg font-bold text-gray-900 mb-1">
-                              {cv.full_name}
-                            </h4>
-                            <p className="text-sm text-gray-600 mb-2">
-                              {cv.job_title}
-                            </p>
-                            <p className="text-xs text-gray-500">
-                              Créé le:{" "}
-                              {new Date(cv.createdAt).toLocaleDateString("fr-FR")}
-                            </p>
-                          </div>
-
-                          <div className="flex gap-2 pt-4 border-t">
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              className="flex-1 gap-2"
-                              onClick={() => setPreviewCVId(cv.id)}
-                            >
-                              <Eye className="w-4 h-4" />
-                              Voir
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              className="flex-1 gap-2"
-                              onClick={() => handleEditCV(cv)}
-                            >
-                              <Edit className="w-4 h-4" />
-                              Éditer
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              className="flex-1 gap-2"
-                              onClick={() => handleExportPDF(cv)}
-                            >
-                              <Download className="w-4 h-4" />
-                              PDF
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              className="text-red-600 hover:bg-red-50"
-                              onClick={() => handleDeleteCV(cv.id)}
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </Button>
-                          </div>
-                        </Card>
-                      ))}
+                          <ArrowRight className="h-4 w-4 mr-2" />
+                          Créer un CV
+                        </Button>
+                      </div>
                     </div>
-                  </div>
-                )}
+                  </Card>
+                ))}
               </div>
             </div>
-          ))}
+
+            {/* Right navigation button */}
+            <button
+              onClick={() => scrollRight('moderne-section')}
+              className="absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-white shadow-lg rounded-full p-3 hover:bg-gray-50 transition-colors border border-gray-200"
+            >
+              <ChevronRight className="h-6 w-6 text-gray-600" />
+            </button>
+          </div>
+        </div>
+
+        {/* Section CV Classique */}
+        <div>
+          <div className="mb-8">
+            <h2 className="text-3xl font-bold text-gray-900 mb-2">CV Classique</h2>
+            <p className="text-lg text-gray-600">Designs traditionnels et professionnels pour tous secteurs</p>
+          </div>
+
+          {/* Navigation buttons and horizontal scroll container */}
+          {classiqueTemplates.length === 0 ? (
+            <div className="text-center text-gray-600 py-12 bg-gray-50 rounded-lg">
+              <p className="text-lg">Modèles classiques en développement...</p>
+              <p className="text-sm mt-2">Bientôt disponibles !</p>
+            </div>
+          ) : (
+            <div className="relative">
+              {/* Left navigation button */}
+              <button
+                onClick={() => scrollLeft('classique-section')}
+                className="absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-white shadow-lg rounded-full p-3 hover:bg-gray-50 transition-colors border border-gray-200"
+              >
+                <ChevronLeft className="h-6 w-6 text-gray-600" />
+              </button>
+
+              {/* Horizontal scroll container */}
+              <div id="classique-section" className="overflow-x-auto pb-4 px-12">
+                <div className="flex gap-6 min-w-max">
+                  {classiqueTemplates.map((template) => (
+                    <Card key={template.id} className="hover:shadow-2xl transition-all duration-300 overflow-hidden flex-shrink-0 w-80">
+                      <div className="p-4">
+                        {/* Template Preview */}
+                        <div className="flex items-center justify-center bg-gray-50 rounded-lg p-3 mb-4 h-80">
+                          {(() => {
+                            const TemplateComponent = getTemplateComponent(template.id);
+                            return (
+                              <div className="w-full h-full flex items-center justify-center">
+                                <div
+                                  className="bg-white shadow-lg w-full h-full overflow-hidden rounded border transform scale-50 origin-top"
+                                  style={{ aspectRatio: "210/297" }}
+                                >
+                                  <TemplateComponent data={SAMPLE_CV_DATA} />
+                                </div>
+                              </div>
+                            );
+                          })()}
+                        </div>
+
+                        {/* Template Info */}
+                        <div className="space-y-3">
+                          <div>
+                            <h3 className="text-lg font-bold text-gray-900 mb-1">
+                              {template.name}
+                            </h3>
+                            <p className="text-sm text-gray-600 line-clamp-2">
+                              {template.description}
+                            </p>
+                          </div>
+
+                          {/* Features */}
+                          <div>
+                            <h4 className="font-semibold text-gray-900 mb-2 text-sm">
+                              Caractéristiques
+                            </h4>
+                            <ul className="space-y-1">
+                              {template.features.slice(0, 3).map((feature, idx) => (
+                                <li
+                                  key={idx}
+                                  className="flex items-center gap-2 text-xs text-gray-700"
+                                >
+                                  <span className="h-1.5 w-1.5 rounded-full bg-blue-600 flex-shrink-0"></span>
+                                  <span className="line-clamp-1">{feature}</span>
+                                </li>
+                              ))}
+                              {template.features.length > 3 && (
+                                <li className="text-xs text-gray-500">
+                                  +{template.features.length - 3} autres...
+                                </li>
+                              )}
+                            </ul>
+                          </div>
+
+                          {/* Action Button */}
+                          <Button
+                            className="w-full bg-blue-600 hover:bg-blue-700"
+                            size="sm"
+                            onClick={() => handleNewCV(template.id)}
+                          >
+                            <ArrowRight className="h-4 w-4 mr-2" />
+                            Créer un CV
+                          </Button>
+                        </div>
+                      </div>
+                    </Card>
+                  ))}
+                </div>
+              </div>
+
+              {/* Right navigation button */}
+              <button
+                onClick={() => scrollRight('classique-section')}
+                className="absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-white shadow-lg rounded-full p-3 hover:bg-gray-50 transition-colors border border-gray-200"
+              >
+                <ChevronRight className="h-6 w-6 text-gray-600" />
+              </button>
+            </div>
+          )}
         </div>
       </div>
 

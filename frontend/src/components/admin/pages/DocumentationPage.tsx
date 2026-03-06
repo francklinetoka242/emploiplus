@@ -39,12 +39,12 @@ export default function DocumentationPage() {
   // Form state
   const [formData, setFormData] = useState<{
     slug: string;
-    title: string;
+    name: string;
     content: string;
     type: 'privacy' | 'terms' | 'cookies' | 'other';
   }>({
     slug: '',
-    title: '',
+    name: '',
     content: '',
     type: 'other',
   });
@@ -66,7 +66,7 @@ export default function DocumentationPage() {
   // Filter documents by search
   const filteredDocs = documents.filter(
     (doc) =>
-      doc.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      doc.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       doc.slug.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
@@ -75,7 +75,7 @@ export default function DocumentationPage() {
     setEditingId(doc.id);
     setFormData({
       slug: doc.slug,
-      title: doc.title,
+      name: doc.name,
       content: doc.content,
       type: doc.type,
     });
@@ -84,7 +84,7 @@ export default function DocumentationPage() {
 
   // Handle save
   const handleSave = async () => {
-    if (!formData.title.trim() || !formData.content.trim()) {
+    if (!formData.name.trim() || !formData.content.trim()) {
       alert('Le titre et le contenu sont obligatoires');
       return;
     }
@@ -92,7 +92,8 @@ export default function DocumentationPage() {
     if (editingId) {
       // Update
       updateMutation.mutate({
-        title: formData.title,
+        slug: formData.slug,
+        name: formData.name,
         content: formData.content,
         type: formData.type,
       });
@@ -110,7 +111,7 @@ export default function DocumentationPage() {
       alert('Vous ne pouvez pas supprimer les documents par défaut');
       return;
     }
-    if (window.confirm(`Êtes-vous sûr de vouloir supprimer "${doc.title}"?`)) {
+    if (window.confirm(`Êtes-vous sûr de vouloir supprimer "${doc.name}"?`)) {
       deleteMutation.mutate(doc.id);
     }
   };
@@ -121,7 +122,7 @@ export default function DocumentationPage() {
     setShowNewForm(false);
     setFormData({
       slug: '',
-      title: '',
+      name: '',
       content: '',
       type: 'other',
     });
@@ -252,8 +253,8 @@ export default function DocumentationPage() {
               </label>
               <input
                 type="text"
-                value={formData.title}
-                onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                value={formData.name}
+                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                 placeholder="Titre du document"
                 className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
               />
@@ -339,8 +340,8 @@ export default function DocumentationPage() {
                     </label>
                     <input
                       type="text"
-                      value={formData.title}
-                      onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                      value={formData.name}
+                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                       placeholder="Titre du document"
                       className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
                     />
@@ -402,7 +403,7 @@ export default function DocumentationPage() {
                     <div className="flex-1">
                       <div className="flex items-center gap-3 mb-2">
                         <h3 className="text-lg font-semibold text-slate-900">
-                          {doc.title}
+                          {doc.name}
                         </h3>
                         <span
                           className={`px-2 py-1 text-xs font-medium rounded border ${getDocumentTypeColor(

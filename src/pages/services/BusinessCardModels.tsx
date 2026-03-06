@@ -192,10 +192,10 @@ export const TEMPLATES = [
 ];
 
 const SAMPLE_CARD: BusinessCardData = {
-  candidateName: 'Jean Dupont',
+  candidateName: 'Jean Marc',
   position: 'Développeur Full Stack',
-  email: 'jean.dupont@example.com',
-  phone: '+33 6 12 34 56 78',
+  email: 'jean.marc@example.com',
+  phone: '+242 06 731 10 33',
   location: 'Paris, France',
   template: 'black-orange',
 };

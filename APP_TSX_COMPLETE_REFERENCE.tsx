@@ -112,6 +112,7 @@ import PortfoliosAdminPage from "./pages/admin/portfolios/page";
 import CatalogsPage from "./pages/admin/catalogs/page";
 import VerifyRequestsPage from "./pages/admin/verify-requests/page";
 import AdminNotificationsPage from "./pages/admin/notifications/page";
+import AdminParametresPage from "./pages/admin/parametres/page";
 
 // Other pages
 import Contact from "./pages/Contact";
@@ -288,6 +289,13 @@ const App = () => {
               <Route path="notifications" element={
                 <ProtectedRoute>
                   <AdminNotificationsPage />
+                </ProtectedRoute>
+              } />
+
+              {/* Paramètres — tous authentifiés */}
+              <Route path="parametres" element={
+                <ProtectedRoute>
+                  <AdminParametresPage />
                 </ProtectedRoute>
               } />
 

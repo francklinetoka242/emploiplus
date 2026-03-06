@@ -2,6 +2,26 @@
 import dotenv from 'dotenv';
 dotenv.config();
 
+// ===== GESTIONNAIRES D'ERREUR GLOBAUX =====
+// Éviter que le serveur ne crash complètement en cas d'erreur non gérée
+
+process.on('uncaughtException', (err) => {
+  console.error('❌ UNCAUGHT EXCEPTION:', err);
+  console.error('Stack:', err.stack);
+  // Ne pas quitter le processus en production, juste logger
+  if (process.env.NODE_ENV === 'production') {
+    console.error('Continuing execution despite uncaught exception...');
+  } else {
+    process.exit(1);
+  }
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('❌ UNHANDLED REJECTION at:', promise, 'reason:', reason);
+  // Ne pas quitter le processus, juste logger
+  console.error('Continuing execution despite unhandled rejection...');
+});
+
 // importer les middlewares et utilitaires tiers
 import express from 'express';
 import cors from 'cors';
@@ -31,8 +51,11 @@ import adminManagementRoutes from './routes/admin-management.routes.js';
 import adminsRoutes from './routes/admins.routes.js';
 import siteNotificationsRoutes from './routes/site-notifications.routes.js';
 import loginHistoryRoutes from './routes/login-history.routes.js';
+import documentationRoutes from './routes/documentation.routes.js';
+import aiRoutes from './routes/ai.routes.js';
 import { requireAdmin, requireRoles, requireSuperAdmin } from './middleware/auth.middleware.js';
 import { exportStats as adminExportStats } from './controllers/admin.controller.js';
+import { getHealth, getHealthDB, getHealthAPI, getHealthSystem } from './controllers/dashboard.controller.js';
 import { fileURLToPath } from 'url';
 
 // ESM does not provide __dirname; derive it from import.meta.url
@@ -46,18 +69,18 @@ const app = express();
 // récupérer le port depuis l'environnement ou utiliser la valeur par défaut
 const PORT = process.env.PORT || 5000;
 
-// ===== PILE DE MIDDLEWARES =====
+// ===== MIDDLEWARES DE BASE (avant les routes multer) =====
 
 // simple request logger for debugging
 app.use((req, res, next) => {
-  console.log('[HTTP]', req.method, req.path);
+  console.log('[HTTP]', req.method, req.path, 'Content-Length:', req.headers['content-length']);
   next();
 });
 
-// sécurité : utiliser helmet pour définir divers en-têtes HTTP
+// sécurité : utiliser helmet pour définir divers en-têtes HTTP
 app.use(helmet());
 
-// cross-origin : configurer la politique CORS
+// cross-origin : configurer la politique CORS
 const corsOptions = {
   origin: process.env.CORS_ORIGIN || '*',
   credentials: true,
@@ -66,8 +89,34 @@ const corsOptions = {
 };
 app.use(cors(corsOptions));
 
-// analyse du corps : parser les corps de requête JSON entrants
-app.use(express.json());
+// ===== ROUTES UTILISANT MULTER (AVANT les parsers body globaux) =====
+// ✅ ORDRE CRITIQUE : Les routes multipart doivent être définies AVANT express.json()
+// pour éviter que express.json() ne tente de parser le multipart/form-data comme du JSON
+
+// AI services for CV analysis (utilise multer pour les uploads PDF)
+app.use('/api/ai', aiRoutes);
+
+// File upload endpoints (utilise multer)
+app.use('/api/uploads', uploadRoutes);
+
+// ===== PARSERS DE CORPS GLOBAUX (APRÈS les routes multer) =====
+// ✅ Ces middlewares viennent APRÈS les routes multer
+// Les requêtes multipart/form-data ont déjà été traitées par multer
+
+// JSON body parser
+app.use(express.json({ limit: '50mb' }));
+
+// URL-encoded form parser
+app.use(express.urlencoded({ limit: '50mb', extended: true }));
+
+// Middleware for handling large payloads timeout
+app.use((req, res, next) => {
+  if (req.headers['content-type']?.includes('multipart/form-data')) {
+    // 5 minutes timeout for file uploads
+    req.setTimeout(300000);
+  }
+  next();
+});
 
 // ===== VÉRIFICATION D'ÉTAT =====
 
@@ -76,7 +125,7 @@ app.get('/', (req, res) => {
   res.json({ success: true, message: 'Backend server is running' });
 });
 
-// ===== ROUTES DE L'API =====
+// ===== ROUTES DE L'API (après les parsers body) =====
 
 app.use('/api/auth', authRoutes);
 app.use('/api/jobs', jobRoutes);
@@ -121,6 +170,12 @@ app.use('/api/admins', adminsRoutes);
 // Reuses the existing exportStats controller but exposed at a shorter path
 app.get('/api/admin/stats', requireAdmin, requireRoles('super_admin'), adminExportStats);
 
+// Health check endpoints for admin panel
+app.get('/api/admin/health', requireAdmin, requireRoles('super_admin'), getHealth);
+app.get('/api/admin/health/db', requireAdmin, requireRoles('super_admin'), getHealthDB);
+app.get('/api/admin/health/api', requireAdmin, requireRoles('super_admin'), getHealthAPI);
+app.get('/api/admin/health/system', requireAdmin, requireRoles('super_admin'), getHealthSystem);
+
 // Dashboard stats endpoint (protected)
 app.get('/api/dashboard/stats', requireAdmin, adminExportStats);
 
@@ -130,10 +185,13 @@ app.use('/api/admin/site-notifications', requireAdmin, requireRoles('super_admin
 
 // login history
 app.use('/api/admin/login-history', requireAdmin, requireRoles('super_admin'), loginHistoryRoutes);
+
+// documentations (public read, admin write)
+app.use('/api/documentations', documentationRoutes);
+app.use('/api/admin/documentations', requireAdmin, requireRoles('super_admin','admin'), documentationRoutes);
+
 // servir les fichiers uploadés en statique (pour que le client puisse accéder à `/uploads/...`)
 app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
-// points de terminaison d'upload
-app.use('/api/uploads', uploadRoutes);
 
 // ===== SERVIR LA FRONTEND (SPA) =====
 

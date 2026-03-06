@@ -5,7 +5,7 @@
 
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { ChevronRight, LayoutDashboard, Briefcase, BookOpen, Layers, Users, Bell, Shield, History, HelpCircle, FileText, Activity } from 'lucide-react';
+import { ChevronRight, LayoutDashboard, Briefcase, BookOpen, Layers, Users, Bell, Shield, History, HelpCircle, FileText, Activity, Settings } from 'lucide-react';
 import { useAdminNav } from '@/context/AdminNavContext';
 import { ADMIN_MENU_ITEMS } from '@/types/admin-menu';
 
@@ -21,7 +21,8 @@ const ICON_MAP: Record<string, React.ComponentType<any>> = {
   'History': History,
   'HelpCircle': HelpCircle,
   'FileText': FileText,
-  'Activity': Activity
+  'Activity': Activity,
+  'Settings': Settings
 };
 
 export function AdminSidebar() {

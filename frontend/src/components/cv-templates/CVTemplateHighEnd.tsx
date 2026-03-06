@@ -21,8 +21,12 @@ export const CVTemplateHighEnd: React.FC<CVTemplateHighEndProps> = ({ data }) =>
           )}
         </div>
         {/* Profile Photo */}
-        <div className="w-32 h-32 rounded-full bg-gray-300 flex items-center justify-center flex-shrink-0 text-4xl ml-8">
-          👤
+        <div className="w-32 h-32 rounded-full bg-gray-300 flex items-center justify-center flex-shrink-0 text-4xl ml-8 overflow-hidden">
+          {data.profile_image_url ? (
+            <img src={data.profile_image_url} alt="Profile" className="w-full h-full object-cover" />
+          ) : (
+            "👤"
+          )}
         </div>
       </div>
 

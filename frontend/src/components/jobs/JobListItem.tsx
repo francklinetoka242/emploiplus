@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { MapPin, Briefcase, Calendar, ChevronDown, ChevronUp, Clock, Share2, Copy, ExternalLink } from "lucide-react";
+import { MapPin, Briefcase, Calendar, ChevronDown, ChevronUp, Clock, Share2, Copy, ExternalLink, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { MatchScoreBadge } from "./MatchScoreBadge";
 import { toast } from "sonner";
@@ -12,6 +12,7 @@ interface JobItemProps {
   isExpanded: boolean;
   onToggle: () => void;
   onApply: () => void;
+  onSmartApply?: () => void;
   isSaved?: boolean;
   onSave?: () => void;
 }
@@ -21,6 +22,7 @@ export function JobListItem({
   isExpanded,
   onToggle,
   onApply,
+  onSmartApply,
   isSaved,
   onSave,
 }: JobItemProps) {
@@ -315,11 +317,25 @@ export function JobListItem({
                 </Button>
               )}
 
+              {onSmartApply && (
+                <Button
+                  onClick={onSmartApply}
+                  disabled={isDeadlinePassed()}
+                  variant="outline"
+                  className="flex-1"
+                  size="sm"
+                >
+                  <Sparkles className="w-4 h-4 mr-2" />
+                  Candidature Intelligente
+                </Button>
+              )}
+            </div>
+            <div className="flex justify-center">
               <Button
                 variant="outline"
                 onClick={onToggle}
                 size="sm"
-                className="flex-1"
+                className="w-full"
               >
                 Fermer
               </Button>

@@ -12,9 +12,13 @@ export const CVTemplateTurquoiseOrangeV2: React.FC<CVTemplateTurquoiseOrangeV2Pr
       {/* Left Sidebar - Turquoise */}
       <div className="w-2/5 bg-[#2bb0ac] text-white p-8 overflow-auto">
         {/* Profile Photo with Orange Border */}
-        <div className="flex justify-center mb-8">
-          <div className="w-40 h-40 rounded-full border-8 border-[#f39c12] bg-gray-300 flex items-center justify-center text-5xl shadow-lg">
-            👤
+        <div className="flex justify-center mb-8 overflow-hidden">
+          <div className="w-40 h-40 rounded-full border-8 border-[#f39c12] bg-gray-300 flex items-center justify-center text-5xl shadow-lg overflow-hidden">
+            {data.profile_image_url ? (
+              <img src={data.profile_image_url} alt="Profile" className="w-full h-full object-cover" />
+            ) : (
+              "👤"
+            )}
           </div>
         </div>
 
@@ -66,7 +70,7 @@ export const CVTemplateTurquoiseOrangeV2: React.FC<CVTemplateTurquoiseOrangeV2Pr
             <div className="space-y-3">
               {data.skills.map((skill, index) => (
                 <div key={index}>
-                  <p className="text-xs font-semibold text-gray-100 mb-1.5">{skill}</p>
+                  <p className="text-xs font-semibold text-gray-100 mb-1.5">{typeof skill === 'string' ? skill : skill.name}</p>
                   <div className="w-full bg-[#1e7a77] rounded-full h-1.5">
                     <div className="bg-white h-1.5 rounded-full" style={{ width: "70%" }}></div>
                   </div>

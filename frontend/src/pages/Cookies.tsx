@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
+import { DocumentPageViewer } from '@/components/DocumentPageViewer';
 
-const texts: Record<string, any> = {
+const fallbackTexts: Record<string, any> = {
   fr: {
     title: 'Gestion des cookies',
     content: `Nous utilisons des cookies pour améliorer l'expérience utilisateur. Vous pouvez accepter ou refuser les cookies non essentiels. Les cookies essentiels sont nécessaires pour le fonctionnement du site.`
@@ -18,11 +19,14 @@ const texts: Record<string, any> = {
 export default function Cookies(){
   const [lang, setLang] = useState<string>('fr');
   useEffect(()=>{ setLang(localStorage.getItem('lang') || 'fr'); }, []);
-  const t = texts[lang] || texts.fr;
+  
+  const fallback = fallbackTexts[lang] || fallbackTexts.fr;
+  
   return (
-    <div className="container py-16 max-w-4xl">
-      <h1 className="text-3xl font-bold mb-6">{t.title}</h1>
-      <p className="text-muted-foreground whitespace-pre-line">{t.content}</p>
-    </div>
+    <DocumentPageViewer
+      slug="cookies"
+      fallbackTitle={fallback.title}
+      fallbackContent={fallback.content}
+    />
   );
 }

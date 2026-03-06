@@ -7,6 +7,7 @@ interface CVData {
   email: string;
   location: string;
   summary?: string;
+  profile_image_url?: string;
   experiences?: Array<{
     company: string;
     position: string;
@@ -36,9 +37,15 @@ export function CVTemplateOrangeDynamic({ data }: { data: CVData }) {
       <div className="w-1/3 bg-black text-white p-6 flex flex-col">
         {/* Profile Circle - positioned to overlap */}
         <div className="flex justify-center mb-8 -mt-20">
-          <div className="w-24 h-24 rounded-full bg-orange-500 flex items-center justify-center text-4xl font-bold border-4 border-white">
-            {data.full_name.charAt(0)}
-          </div>
+          {data.profile_image_url ? (
+            <div className="w-24 h-24 rounded-full overflow-hidden bg-orange-500 flex items-center justify-center border-4 border-white">
+              <img src={data.profile_image_url} alt="Profile" className="w-full h-full object-cover" />
+            </div>
+          ) : (
+            <div className="w-24 h-24 rounded-full bg-orange-500 flex items-center justify-center text-4xl font-bold border-4 border-white">
+              {data.full_name.charAt(0)}
+            </div>
+          )}
         </div>
 
         {/* Contact Section */}
@@ -71,7 +78,7 @@ export function CVTemplateOrangeDynamic({ data }: { data: CVData }) {
             <div className="space-y-2">
               {data.skills.map((skill, idx) => (
                 <div key={idx}>
-                  <p className="text-xs font-semibold mb-1">{skill}</p>
+                  <p className="text-xs font-semibold mb-1">{typeof skill === 'string' ? skill : skill.name}</p>
                   <div className="h-2 bg-gray-700 rounded-full overflow-hidden">
                     <div
                       className="h-full bg-orange-500"

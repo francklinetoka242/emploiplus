@@ -7,6 +7,7 @@ interface CVData {
   email: string;
   location: string;
   summary?: string;
+  profile_image_url?: string;
   experiences?: Array<{
     company: string;
     position: string;
@@ -31,9 +32,15 @@ export function CVTemplateExecutive({ data }: { data: CVData }) {
       <div className="flex h-32 bg-white border-b-4 border-gray-300">
         {/* Left - Photo */}
         <div className="w-1/4 flex items-center justify-center p-4">
-          <div className="w-20 h-20 rounded bg-gray-400 flex items-center justify-center text-3xl font-bold">
-            {data.full_name.charAt(0)}
-          </div>
+          {data.profile_image_url ? (
+            <div className="w-20 h-20 rounded overflow-hidden bg-gray-400 flex items-center justify-center">
+              <img src={data.profile_image_url} alt="Profile" className="w-full h-full object-cover" />
+            </div>
+          ) : (
+            <div className="w-20 h-20 rounded bg-gray-400 flex items-center justify-center text-3xl font-bold">
+              {data.full_name.charAt(0)}
+            </div>
+          )}
         </div>
 
         {/* Right - Name and Title */}
@@ -76,7 +83,7 @@ export function CVTemplateExecutive({ data }: { data: CVData }) {
               <ul className="space-y-1">
                 {data.skills.map((skill, idx) => (
                   <li key={idx} className="text-xs">
-                    • {skill}
+                    • {typeof skill === 'string' ? skill : skill.name}
                   </li>
                 ))}
               </ul>

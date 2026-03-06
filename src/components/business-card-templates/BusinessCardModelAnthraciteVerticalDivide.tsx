@@ -10,11 +10,11 @@ interface Props {
 export default function BusinessCardModelAnthraciteVerticalDivide({ data, isPreview = false }: Props) {
   const [isFlipped, setIsFlipped] = useState(false);
 
-  const candidateName = data?.candidateName || 'Jean Dupont';
+  const candidateName = data?.candidateName || 'Jean Marc';
   const position = data?.position || 'Product Designer';
-  const email = data?.email || 'jean@example.com';
-  const phone = data?.phone || '+33 6 12 34 56 78';
-  const location = data?.location || 'Paris, France';
+  const email = data?.email || 'jean.marc@example.com';
+  const phone = data?.phone || '+242 06 731 10 33';
+  const location = data?.location || 'Brazzaville, Congo';
 
   return (
     <div

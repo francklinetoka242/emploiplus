@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Diagnostic Upload CV</title>
+    <style>
+        body { font-family: monospace; margin: 20px; background: #f5f5f5; }
+        .container { max-width: 800px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; }
+        .section { margin-bottom: 20px; border: 1px solid #ddd; padding: 15px; }
+        .section h2 { margin-top: 0; }
+        input, button, textarea { width: 100%; padding: 10px; margin: 5px 0; box-sizing: border-box; }
+        button { background: #007bff; color: white; cursor: pointer; border: none; border-radius: 4px; }
+        button:hover { background: #0056b3; }
+        textarea { height: 200px; font-size: 12px; }
+        .success { background: #d4edda; color: #155724; padding: 10px; border-radius: 4px; }
+        .error { background: #f8d7da; color: #721c24; padding: 10px; border-radius: 4px; }
+        .info { background: #d1ecf1; color: #0c5460; padding: 10px; border-radius: 4px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Diagnostic Upload CV</h1>
+
+        <!-- Configuration Section -->
+        <div class="section">
+            <h2>1️⃣ Configuration URLs</h2>
+            <div id="config"></div>
+        </div>
+
+        <!-- File Selection -->
+        <div class="section">
+            <h2>2️⃣ Sélectionner fichier PDF</h2>
+            <input type="file" id="fileInput" accept=".pdf" />
+            <div id="fileInfo"></div>
+        </div>
+
+        <!-- Job Selection -->
+        <div class="section">
+            <h2>3️⃣ Sélectionner Offre d'Emploi</h2>
+            <select id="jobSelect">
+                <option value="">-- Charger les offres --</option>
+            </select>
+            <button onclick="loadJobs()">Charger les offres</button>
+            <div id="jobInfo"></div>
+        </div>
+
+        <!-- Test Methods -->
+        <div class="section">
+            <h2>4️⃣ Tester Upload</h2>
+            <button onclick="testDirect()">❌ Test DIRECT (sans proxy) → localhost:5000</button>
+            <button onclick="testViaProxy()">✅ Test VIA PROXY → localhost:5173 → localhost:5000</button>
+            <div id="testResult"></div>
+        </div>
+
+        <!-- Logs -->
+        <div class="section">
+            <h2>5️⃣ Logs Détaillés</h2>
+            <textarea id="logs" readonly></textarea>
+            <button onclick="clearLogs()">Effacer logs</button>
+        </div>
+    </div>
+
+    <script>
+        const logs = [];
+        const API_DIRECT = 'http://localhost:5000';
+        const API_PROXY = '/api';  // Via Vite proxy
+
+        function log(msg, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const logMsg = `[${timestamp}] ${msg}`;
+            logs.push(logMsg);
+            console.log(logMsg);
+            
+            const logsArea = document.getElementById('logs');
+            logsArea.value = logs.join('\n');
+            logsArea.scrollTop = logsArea.scrollHeight;
+        }
+
+        function clearLogs() {
+            logs.length = 0;
+            document.getElementById('logs').value = '';
+        }
+
+        // Display configuration
+        function displayConfig() {
+            const config = `
+<div class="info">
+  <strong>Frontend URL:</strong> ${window.location.href}<br>
+  <strong>API Direct:</strong> ${API_DIRECT}<br>
+  <strong>API Via Proxy:</strong> ${API_PROXY}<br>
+  <strong>Environment:</strong> ${window.location.hostname}:${window.location.port}
+</div>
+            `;
+            document.getElementById('config').innerHTML = config;
+            log('Configuration affichée');
+        }
+
+        // File selection
+        document.getElementById('fileInput').addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const info = `
+<div class="info">
+  <strong>Nom:</strong> ${file.name}<br>
+  <strong>Type:</strong> ${file.type}<br>
+  <strong>Taille:</strong> ${(file.size / 1024).toFixed(2)} KB<br>
+  <strong>Dernière modif:</strong> ${new Date(file.lastModified).toLocaleString()}
+</div>
+                `;
+                document.getElementById('fileInfo').innerHTML = info;
+                log(`Fichier sélectionné: ${file.name} (${file.size} bytes)`);
+            }
+        });
+
+        // Load jobs
+        async function loadJobs() {
+            log('Chargement des offres...');
+            try {
+                const response = await fetch(`${API_DIRECT}/api/jobs?limit=10`);
+                const data = await response.json();
+                
+                const select = document.getElementById('jobSelect');
+                select.innerHTML = '<option value="">-- Sélectionner une offre --</option>';
+                
+                data.data.forEach(job => {
+                    const option = document.createElement('option');
+                    option.value = job.id;
+                    option.textContent = `${job.id}. ${job.title} - ${job.company}`;
+                    select.appendChild(option);
+                });
+                
+                log(`✅ ${data.data.length} offres chargées`);
+                document.getElementById('jobInfo').innerHTML = `<div class="success">${data.data.length} offres disponibles</div>`;
+            } catch (error) {
+                log(`❌ Erreur chargement offres: ${error.message}`, 'error');
+                document.getElementById('jobInfo').innerHTML = `<div class="error">Erreur: ${error.message}</div>`;
+            }
+        }
+
+        // Test direct (curl equivalent)
+        async function testDirect() {
+            const file = document.getElementById('fileInput').files[0];
+            const jobId = document.getElementById('jobSelect').value;
+
+            if (!file || !jobId) {
+                log('❌ Sélectionne un fichier ET une offre', 'error');
+                return;
+            }
+
+            log('='.repeat(60));
+            log('TEST DIRECT (localhost:5000)');
+            log('='.repeat(60));
+            log(`Fichier: ${file.name}`);
+            log(`Job ID: ${jobId}`);
+            log(`URL: ${API_DIRECT}/api/ai/analyze-cv`);
+
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('jobId', jobId);
+
+            log('FormData créée avec:');
+            for (let [key, value] of formData.entries()) {
+                if (value instanceof File) {
+                    log(`  - ${key}: File(${value.name}, ${value.size} bytes, ${value.type})`);
+                } else {
+                    log(`  - ${key}: ${value}`);
+                }
+            }
+
+            try {
+                log('Envoi de la requête...');
+                const response = await fetch(`${API_DIRECT}/api/ai/analyze-cv`, {
+                    method: 'POST',
+                    body: formData,
+                });
+
+                log(`Status: ${response.status} ${response.statusText}`);
+                log(`Content-Type: ${response.headers.get('content-type')}`);
+
+                const text = await response.text();
+                log(`Response: ${text.substring(0, 200)}...`);
+
+                if (response.ok) {
+                    const data = JSON.parse(text);
+                    document.getElementById('testResult').innerHTML = `
+<div class="success">
+  <strong>✅ SUCCESS!</strong><br>
+  Score: ${data.data.score_matching}<br>
+  Voir la console pour les détails complets.
+</div>
+                    `;
+                    log('✅ Upload réussi via DIRECT');
+                } else {
+                    document.getElementById('testResult').innerHTML = `
+<div class="error">
+  <strong>❌ Erreur ${response.status}</strong><br>
+  ${text}
+</div>
+                    `;
+                    log(`❌ Erreur ${response.status}: ${text}`);
+                }
+            } catch (error) {
+                log(`❌ Exception: ${error.message}`, 'error');
+                document.getElementById('testResult').innerHTML = `<div class="error">Erreur: ${error.message}</div>`;
+            }
+        }
+
+        // Test via proxy
+        async function testViaProxy() {
+            const file = document.getElementById('fileInput').files[0];
+            const jobId = document.getElementById('jobSelect').value;
+
+            if (!file || !jobId) {
+                log('❌ Sélectionne un fichier ET une offre');
+                return;
+            }
+
+            log('='.repeat(60));
+            log('TEST VIA PROXY (localhost:5173)');
+            log('='.repeat(60));
+            log(`Fichier: ${file.name}`);
+            log(`Job ID: ${jobId}`);
+            log(`URL: ${API_PROXY}/ai/analyze-cv`);
+
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('jobId', jobId);
+
+            log('FormData créée avec:');
+            for (let [key, value] of formData.entries()) {
+                if (value instanceof File) {
+                    log(`  - ${key}: File(${value.name}, ${value.size} bytes, ${value.type})`);
+                } else {
+                    log(`  - ${key}: ${value}`);
+                }
+            }
+
+            try {
+                log('Envoi de la requête via proxy...');
+                const response = await fetch(`${API_PROXY}/ai/analyze-cv`, {
+                    method: 'POST',
+                    body: formData,
+                    // ⚠️ NE PAS définir Content-Type, le navigateur le fait automatiquement
+                });
+
+                log(`Status: ${response.status} ${response.statusText}`);
+                log(`Content-Type: ${response.headers.get('content-type')}`);
+
+                const text = await response.text();
+                log(`Response: ${text.substring(0, 200)}...`);
+
+                if (response.ok) {
+                    const data = JSON.parse(text);
+                    document.getElementById('testResult').innerHTML = `
+<div class="success">
+  <strong>✅ SUCCESS via PROXY!</strong><br>
+  Score: ${data.data.score_matching}<br>
+  C'est bon, le proxy fonctionne.
+</div>
+                    `;
+                    log('✅ Upload réussi VIA PROXY');
+                } else {
+                    document.getElementById('testResult').innerHTML = `
+<div class="error">
+  <strong>❌ Erreur ${response.status} via proxy</strong><br>
+  ${text}
+</div>
+                    `;
+                    log(`❌ Erreur ${response.status} via proxy: ${text}`);
+                }
+            } catch (error) {
+                log(`❌ Exception via proxy: ${error.message}`);
+                document.getElementById('testResult').innerHTML = `<div class="error">Erreur: ${error.message}</div>`;
+            }
+        }
+
+        // Init
+        window.addEventListener('load', () => {
+            log('Page chargée');
+            displayConfig();
+        });
+    </script>
+</body>
+</html>

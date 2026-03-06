@@ -166,6 +166,24 @@ async function getAdminById(adminId) {
   }
 }
 
+// update admin details
+async function updateAdmin(adminId, updates) {
+  try {
+    if (!adminId) {
+      throw new AppError('Admin ID is required', 400);
+    }
+    const admin = await AdminModel.getAdminById(adminId);
+    if (!admin) {
+      throw new AppError('Admin not found', 404);
+    }
+    const updated = await AdminModel.updateAdmin(adminId, updates);
+    return updated;
+  } catch (err) {
+    console.error('updateAdmin service error:', err);
+    throw err;
+  }
+}
+
 // update admin permissions
 async function updateAdminPermissions(adminId, permissions) {
   try {
@@ -194,5 +212,6 @@ export default {
   resendInvitation,
   getAdminStatistics,
   getAdminById,
+  updateAdmin,
   updateAdminPermissions,
 };

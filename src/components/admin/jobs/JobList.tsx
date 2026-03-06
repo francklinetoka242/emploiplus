@@ -17,10 +17,18 @@ interface Job extends JobData {
 
 interface JobListProps {
   jobs?: Job[];
+  /** list of selected job ids; when provided, checkboxes will show */
+  selectedIds?: string[];
+  /** callback invoked when a job checkbox is toggled */
+  onToggleSelect?: (id: string) => void;
 }
 
 export default function JobList({ jobs: initialJobs }: JobListProps) {
   const [jobs, setJobs] = useState<Job[]>(initialJobs || []);
+  // reflect external selection changes (parent controls selectedIds)
+  useEffect(() => {
+    if (initialJobs) setJobs(initialJobs);
+  }, [initialJobs]);
   const [editingJob, setEditingJob] = useState<Job | null>(null);
   const [showForm, setShowForm] = useState(false);
 
@@ -55,8 +63,31 @@ export default function JobList({ jobs: initialJobs }: JobListProps) {
     fetchJobs();
   };
 
+  const allSelected =
+    selectedIds && jobs.length > 0 && jobs.every((j) => selectedIds.includes(j.id));
+
   return (
     <div className="space-y-6">
+      {onToggleSelect && jobs.length > 0 && (
+        <div className="flex items-center">
+          <input
+            type="checkbox"
+            checked={allSelected}
+            onChange={() => {
+              // toggle all: select missing ones or clear
+              if (allSelected) {
+                jobs.forEach((j) => onToggleSelect(j.id));
+              } else {
+                jobs.forEach((j) => {
+                  if (!selectedIds?.includes(j.id)) onToggleSelect(j.id);
+                });
+              }
+            }}
+            className="h-4 w-4 text-primary border-gray-300 rounded"
+          />
+          <label className="ml-2 text-sm">Sélectionner tout</label>
+        </div>
+      )}
       {showForm || editingJob ? (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl p-8 max-w-4xl w-full max-h-screen overflow-y-auto">
@@ -77,6 +108,16 @@ export default function JobList({ jobs: initialJobs }: JobListProps) {
       ) : (
         jobs.map((job: Job) => (
           <Card key={job.id} className="p-8 hover:shadow-lg transition">
+            {onToggleSelect && (
+              <div className="absolute top-4 left-4">
+                <input
+                  type="checkbox"
+                  checked={selectedIds?.includes(job.id) || false}
+                  onChange={() => onToggleSelect(job.id)}
+                  className="h-4 w-4 text-primary border-gray-300 rounded"
+                />
+              </div>
+            )}
             <div className="flex justify-between items-start">
               <div>
                 <h3 className="text-2xl font-bold">{job.title}</h3>

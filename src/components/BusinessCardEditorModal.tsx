@@ -36,6 +36,7 @@ export interface BusinessCardData {
   location: string;
   website?: string;
   template: string;
+  category?: 'moderne' | 'classique';
   createdAt?: string;
 }
 
@@ -47,7 +48,7 @@ interface BusinessCardEditorModalProps {
   templateId: string;
 }
 
-const TEMPLATES = {
+const TEMPLATES_MODERNE = {
   'black-orange': {
     name: 'Black & Orange',
     component: BusinessCardModelBlackOrange,
@@ -154,6 +155,8 @@ const TEMPLATES = {
   },
 };
 
+const TEMPLATES_CLASSIQUE = {};
+
 const BusinessCardEditorModal: React.FC<BusinessCardEditorModalProps> = ({
   isOpen,
   onClose,
@@ -170,12 +173,16 @@ const BusinessCardEditorModal: React.FC<BusinessCardEditorModalProps> = ({
       location: '',
       website: '',
       template: templateId,
+      category: 'moderne',
     }
   );
+
+  const [category, setCategory] = useState<'moderne' | 'classique'>(initialData?.category || 'moderne');
 
   useEffect(() => {
     if (initialData) {
       setFormData(initialData);
+      setCategory(initialData.category || 'moderne');
     }
   }, [initialData]);
 
@@ -193,6 +200,7 @@ const BusinessCardEditorModal: React.FC<BusinessCardEditorModalProps> = ({
     }
     onSave({
       ...formData,
+      category,
       template: templateId,
     });
   };
@@ -219,7 +227,7 @@ const BusinessCardEditorModal: React.FC<BusinessCardEditorModalProps> = ({
 
   if (!isOpen) return null;
 
-  const TemplateComponent = TEMPLATES[templateId as keyof typeof TEMPLATES]?.component;
+  const TemplateComponent = TEMPLATES_MODERNE[templateId as keyof typeof TEMPLATES_MODERNE]?.component;
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
@@ -245,7 +253,7 @@ const BusinessCardEditorModal: React.FC<BusinessCardEditorModalProps> = ({
                 value={formData.candidateName}
                 onChange={e => handleChange('candidateName', e.target.value)}
                 className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="Jean Dupont"
+                placeholder="Jean Marc"
               />
             </div>
 
@@ -267,7 +275,7 @@ const BusinessCardEditorModal: React.FC<BusinessCardEditorModalProps> = ({
                 value={formData.email}
                 onChange={e => handleChange('email', e.target.value)}
                 className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="jean@example.com"
+                placeholder="jean.marc@example.com"
               />
             </div>
 
@@ -278,7 +286,7 @@ const BusinessCardEditorModal: React.FC<BusinessCardEditorModalProps> = ({
                 value={formData.phone}
                 onChange={e => handleChange('phone', e.target.value)}
                 className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="+33 6 12 34 56 78"
+                placeholder="+242 06 731 10 33"
               />
             </div>
 
@@ -289,7 +297,7 @@ const BusinessCardEditorModal: React.FC<BusinessCardEditorModalProps> = ({
                 value={formData.location}
                 onChange={e => handleChange('location', e.target.value)}
                 className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="Paris, France"
+                placeholder="Brazzaville, Congo"
               />
             </div>
 
@@ -302,6 +310,24 @@ const BusinessCardEditorModal: React.FC<BusinessCardEditorModalProps> = ({
                 className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 placeholder="www.example.com"
               />
+            </div>
+
+            <div>
+              <label className="block text-sm font-semibold mb-2">Catégorie CV</label>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setCategory('moderne')}
+                  className={`px-4 py-2 rounded-lg transition ${category === 'moderne' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-black'}`}
+                >
+                  CV Moderne
+                </button>
+                <button
+                  onClick={() => setCategory('classique')}
+                  className={`px-4 py-2 rounded-lg transition ${category === 'classique' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-black'}`}
+                >
+                  CV Classique
+                </button>
+              </div>
             </div>
 
             {/* Boutons d'action */}
@@ -332,7 +358,9 @@ const BusinessCardEditorModal: React.FC<BusinessCardEditorModalProps> = ({
           <div className="flex flex-col gap-4">
             <h3 className="text-lg font-semibold">Aperçu</h3>
             <div className="business-card-preview bg-gray-50 p-4 rounded-lg flex-1 overflow-y-auto">
-              {TemplateComponent ? (
+              {category === 'classique' ? (
+                <div className="text-center text-gray-500 py-8">Modèles CV Classique en développement</div>
+              ) : TemplateComponent ? (
                 <TemplateComponent data={formData} />
               ) : (
                 <div className="text-center text-gray-500 py-8">Modèle non disponible</div>

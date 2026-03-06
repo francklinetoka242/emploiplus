@@ -162,6 +162,7 @@ const App = () => {
             <Route path="/documents" element={<DocumentationPage />} />
             <Route path="/company/:id" element={<CompanyPage />} />
             <Route path="/recrutement/postuler/:id" element={<ApplyJob />} />
+            <Route path="/candidature-intelligente/:jobId" element={<CandidatureIntelligente />} />
             <Route path="/notifications" element={<Notifications />} />
             <Route path="/test-competence" element={<CompetenceTest />} />
             <Route path="/simulateur-entretien" element={<InterviewSimulator />} />

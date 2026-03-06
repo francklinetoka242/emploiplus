@@ -257,9 +257,21 @@ const Jobs = () => {
                             key={String(jobItem.id)}
                             job={jobItem}
                             isExpanded={true}
+                            onToggle={() => {}}
                             onApply={() => {
                               toast.info("Connectez-vous pour postuler");
                               navigate("/connexion");
+                            }}
+                            onSmartApply={() => {
+                              const dl = jobItem.deadline
+                                ? new Date(String(jobItem.deadline)).getTime()
+                                : null;
+                              const expired = dl ? dl < Date.now() : false;
+                              if (!expired) {
+                                navigate(`/candidature-intelligente/${String(jobItem.id)}`);
+                              } else {
+                                toast.error("Date limite dépassée");
+                              }
                             }}
                             isSaved={false}
                             onSave={() => toast.info("Connectez-vous pour sauvegarder")}
@@ -388,6 +400,17 @@ const Jobs = () => {
                               toast.error("Date limite dépassée");
                             }
                           }}
+                          onSmartApply={() => {
+                            const dl = jobItem.deadline
+                              ? new Date(String(jobItem.deadline)).getTime()
+                              : null;
+                            const expired = dl ? dl < Date.now() : false;
+                            if (!expired) {
+                              navigate(`/candidature-intelligente/${String(jobItem.id)}`);
+                            } else {
+                              toast.error("Date limite dépassée");
+                            }
+                          }}
                           isSaved={false}
                           onSave={() => toast.info("Sauvegardé")}
                         />
@@ -421,6 +444,17 @@ const Jobs = () => {
                             const expired = dl ? dl < Date.now() : false;
                             if (!expired) {
                               navigate(`/recrutement/postuler/${String(jobItem.id)}`);
+                            } else {
+                              toast.error("Date limite dépassée");
+                            }
+                          }}
+                          onSmartApply={() => {
+                            const dl = jobItem.deadline
+                              ? new Date(String(jobItem.deadline)).getTime()
+                              : null;
+                            const expired = dl ? dl < Date.now() : false;
+                            if (!expired) {
+                              navigate(`/candidature-intelligente/${String(jobItem.id)}`);
                             } else {
                               toast.error("Date limite dépassée");
                             }

@@ -14,8 +14,12 @@ export const CVTemplateNavyWhite: React.FC<CVTemplateNavyWhiteProps> = ({ data }
         {/* Profile Photo - Double Circle */}
         <div className="flex justify-center mb-8">
           <div className="w-40 h-40 rounded-full border-4 border-white flex items-center justify-center relative">
-            <div className="w-36 h-36 rounded-full border-4 border-white bg-gray-300 flex items-center justify-center text-5xl">
-              👤
+            <div className="w-36 h-36 rounded-full border-4 border-white bg-gray-300 flex items-center justify-center text-5xl overflow-hidden">
+              {data.profile_image_url ? (
+                <img src={data.profile_image_url} alt="Profile" className="w-full h-full object-cover" />
+              ) : (
+                "👤"
+              )}
             </div>
           </div>
         </div>
@@ -81,7 +85,7 @@ export const CVTemplateNavyWhite: React.FC<CVTemplateNavyWhiteProps> = ({ data }
             </h3>
             <div className="space-y-2 text-sm">
               {data.skills.map((skill, index) => (
-                <p key={index}>• {skill}</p>
+                <p key={index}>• {typeof skill === 'string' ? skill : skill.name}</p>
               ))}
             </div>
           </div>

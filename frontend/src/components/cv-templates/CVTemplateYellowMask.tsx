@@ -67,9 +67,13 @@ export const CVTemplateYellowMask: React.FC<CVTemplateYellowMaskProps> = ({ data
           <div className="h-32 bg-[#f1c40f] rounded-b-3xl"></div>
 
           {/* Photo with U-shape mask effect */}
-          <div className="absolute top-8 left-8 w-40 h-40">
-            <div className="w-40 h-40 rounded-full bg-gray-300 border-4 border-white shadow-lg flex items-center justify-center text-4xl">
-              👤
+          <div className="absolute top-8 left-8 w-40 h-40 overflow-hidden">
+            <div className="w-40 h-40 rounded-full bg-gray-300 border-4 border-white shadow-lg flex items-center justify-center text-4xl overflow-hidden">
+              {data.profile_image_url ? (
+                <img src={data.profile_image_url} alt="Profile" className="w-full h-full object-cover" />
+              ) : (
+                "👤"
+              )}
             </div>
           </div>
         </div>

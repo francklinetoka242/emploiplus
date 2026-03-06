@@ -14,10 +14,14 @@ export const CVTemplateOrangeCreative: React.FC<CVTemplateOrangeCreativeProps> =
         {/* Decorative shapes */}
         <div className="absolute top-0 right-0 w-32 h-32 bg-white opacity-10 rounded-full -mr-16 -mt-16"></div>
         
-        <div className="relative z-10 flex items-center justify-center">
+        <div className="relative z-10 flex items-center justify-center overflow-hidden">
           {/* Profile Photo */}
-          <div className="w-32 h-32 rounded-full border-8 border-[#1a1a1a] bg-gray-300 flex items-center justify-center text-5xl shadow-xl">
-            👤
+          <div className="w-32 h-32 rounded-full border-8 border-[#1a1a1a] bg-gray-300 flex items-center justify-center text-5xl shadow-xl overflow-hidden">
+            {data.profile_image_url ? (
+              <img src={data.profile_image_url} alt="Profile" className="w-full h-full object-cover" />
+            ) : (
+              "👤"
+            )}
           </div>
         </div>
       </div>
@@ -125,7 +129,7 @@ export const CVTemplateOrangeCreative: React.FC<CVTemplateOrangeCreativeProps> =
               <div className="space-y-3">
                 {data.skills.map((skill, index) => (
                   <div key={index}>
-                    <p className="text-xs font-semibold text-gray-200 mb-1">{skill}</p>
+                    <p className="text-xs font-semibold text-gray-200 mb-1">{typeof skill === 'string' ? skill : skill.name}</p>
                     <div className="w-full bg-gray-700 rounded-full h-2">
                       <div className="bg-[#f39c12] h-2 rounded-full" style={{ width: "70%" }}></div>
                     </div>

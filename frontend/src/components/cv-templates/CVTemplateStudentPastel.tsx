@@ -13,8 +13,12 @@ export const CVTemplateStudentPastel: React.FC<CVTemplateStudentPastelProps> = (
       <div className="bg-[#fce4ec] p-8">
         <div className="flex items-center gap-8">
           {/* Left Photo */}
-          <div className="w-32 h-32 bg-gray-300 rounded-2xl flex items-center justify-center text-4xl flex-shrink-0 shadow-md">
-            👤
+          <div className="w-32 h-32 bg-gray-300 rounded-2xl flex items-center justify-center text-4xl flex-shrink-0 shadow-md overflow-hidden">
+            {data.profile_image_url ? (
+              <img src={data.profile_image_url} alt="Profile" className="w-full h-full object-cover" />
+            ) : (
+              "👤"
+            )}
           </div>
 
           {/* Right Name */}
@@ -71,7 +75,7 @@ export const CVTemplateStudentPastel: React.FC<CVTemplateStudentPastelProps> = (
               </div>
               <div className="space-y-2 text-sm text-gray-700 pl-4">
                 {data.skills.map((skill, index) => (
-                  <p key={index} className="text-xs">• {skill}</p>
+                  <p key={index} className="text-xs">• {typeof skill === 'string' ? skill : skill.name}</p>
                 ))}
               </div>
             </div>

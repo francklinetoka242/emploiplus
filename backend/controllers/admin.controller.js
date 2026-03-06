@@ -2,6 +2,7 @@ import adminService from '../services/admin.service.js';
 import auditService from '../services/audit.service.js';
 import authService from '../services/auth.service.js';
 import AppError from '../utils/AppError.js';
+import pool from '../config/db.js';
 
 // GET /api/admin/management/admins
 async function listAdmins(req, res, next) {
@@ -133,7 +134,7 @@ async function updateAdmin(req, res, next) {
     if (password) {
       // hash password before saving
       const bcrypt = await import('bcryptjs');
-      updates.password = await bcrypt.hash(password, 10);
+      updates.password = await bcrypt.default.hash(password, 10);
     }
     const updated = await adminService.updateAdmin(adminId, updates);
     res.json({ success: true, admin: updated });
@@ -214,12 +215,28 @@ async function exportExcel(req, res, next) {
 // GET /api/admin/profile - Get current admin profile (me)
 async function getCurrentAdminProfile(req, res, next) {
   try {
-    const adminId = req.user.id;
-    const admin = await adminService.getAdminById(adminId);
-    if (!admin) {
-      return res.status(404).json({ success: false, message: 'Admin not found' });
+    if (!req.user) {
+      return res.status(401).json({ success: false, message: 'Authentication required' });
     }
-    res.json({ success: true, data: admin });
+    
+    const adminId = req.user.id || req.user.user_id;
+    
+    if (!adminId) {
+      console.error('No ID found in req.user:', req.user);
+      return res.status(401).json({ success: false, message: 'Invalid token - no user ID' });
+    }
+    
+    // Query admin profile
+    const result = await pool.query(
+      'SELECT id, email, first_name, last_name, phone, country, profile_photo, account_type, role, status, created_at FROM admins WHERE id = $1',
+      [adminId]
+    );
+    
+    if (result.rows.length === 0) {
+      return res.status(404).json({ success: false, message: 'Admin profile not found' });
+    }
+    
+    return res.json({ success: true, data: result.rows[0] });
   } catch (err) {
     next(err);
   }
@@ -240,7 +257,7 @@ async function updateCurrentAdminProfile(req, res, next) {
     
     if (password) {
       const bcrypt = await import('bcryptjs');
-      updates.password = await bcrypt.hash(password, 10);
+      updates.password = await bcrypt.default.hash(password, 10);
     }
     
     const updated = await adminService.updateAdmin(adminId, updates);
@@ -248,6 +265,52 @@ async function updateCurrentAdminProfile(req, res, next) {
       return res.status(404).json({ success: false, message: 'Admin not found' });
     }
     res.json({ success: true, data: updated });
+  } catch (err) {
+    next(err);
+  }
+}
+
+// POST /api/admins/profile/change-password - Change current admin password
+async function changeAdminPassword(req, res, next) {
+  try {
+    const adminId = req.user.id;
+    const { currentPassword, newPassword } = req.body;
+
+    if (!currentPassword || !newPassword) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Current password and new password are required' 
+      });
+    }
+
+    // Query directly to get password (not through service which might exclude it)
+    const query = `
+      SELECT id, password FROM admins WHERE id = $1
+    `;
+    const result = await pool.query(query, [adminId]);
+    const admin = result.rows[0];
+
+    if (!admin) {
+      return res.status(404).json({ success: false, message: 'Admin not found' });
+    }
+
+    // Verify current password
+    const bcrypt = await import('bcryptjs');
+    const isPasswordValid = await bcrypt.default.compare(currentPassword, admin.password);
+    if (!isPasswordValid) {
+      return res.status(401).json({ success: false, message: 'Current password is incorrect' });
+    }
+
+    // Hash new password
+    const hashedPassword = await bcrypt.default.hash(newPassword, 10);
+
+    // Update password
+    const updated = await adminService.updateAdmin(adminId, { password: hashedPassword });
+    if (!updated) {
+      return res.status(404).json({ success: false, message: 'Failed to update password' });
+    }
+
+    res.json({ success: true, message: 'Password changed successfully' });
   } catch (err) {
     next(err);
   }
@@ -270,5 +333,6 @@ export {
   exportPDF,
   exportExcel,
   getCurrentAdminProfile,
-  updateCurrentAdminProfile
+  updateCurrentAdminProfile,
+  changeAdminPassword
 };

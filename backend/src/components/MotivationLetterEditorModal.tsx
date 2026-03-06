@@ -176,7 +176,7 @@ export const MotivationLetterEditorModal: React.FC<MotivationLetterEditorModalPr
               <Input
                 value={formData.phone}
                 onChange={(e) => handleChange("phone", e.target.value)}
-                placeholder="+33 6 12 34 56 78"
+                placeholder="+242 06 731 10 33"
                 className="mt-1"
               />
             </div>

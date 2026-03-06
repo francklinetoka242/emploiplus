@@ -28,14 +28,14 @@ import { CVTemplateTurquoiseOrangeV2 } from "@/components/cv-templates/CVTemplat
 import { CVTemplateExecutiveCadre } from "@/components/cv-templates/CVTemplateExecutiveCadre";
 import { CVTemplateOrangeCreative } from "@/components/cv-templates/CVTemplateOrangeCreative";
 import { CVTemplateStudentPastel } from "@/components/cv-templates/CVTemplateStudentPastel";
-import { CVTemplateTimeline } from "@/components/cv-templates/CVTemplateTimeline";
-import { CVTemplateNavyModern } from "@/components/cv-templates/CVTemplateNavyModern";
+import { CVTemplateClassicMinimalist } from "@/components/cv-templates/CVTemplateClassicMinimalist";
 import { CVEditorModal, CVData } from "@/components/CVEditorModal";
 import { useCVStorage } from "@/hooks/useCVStorage";
 
 const CV_TEMPLATES = [
   {
     id: "francklyn",
+    category: "moderne",
     name: "Modèle 1 - Francklin Sylver",
     description:
       "Design professionnel deux colonnes avec barre latérale - Idéal pour mettre en valeur vos compétences et expériences",
@@ -62,6 +62,7 @@ const CV_TEMPLATES = [
   },
   {
     id: "geometric",
+    category: "moderne",
     name: "Modèle 3 - Géométrique",
     description:
       "Design moderne et géométrique avec couleurs jaune vif et gris - Parfait pour les candidats créatifs",
@@ -88,6 +89,7 @@ const CV_TEMPLATES = [
   },
   {
     id: "classicsober",
+    category: "moderne",
     name: "Modèle 5 - Classique Sobre",
     description:
       "Design professionnel et sobre avec contraste gris/blanc - Idéal pour une lecture rapide par les recruteurs",
@@ -114,6 +116,7 @@ const CV_TEMPLATES = [
   },
   {
     id: "modernribbon",
+    category: "moderne",
     name: "Modèle 7 - Ruban Moderne",
     description:
       "Design avec rubans et timeline moderne - Idéal pour un CV créatif et structuré",
@@ -360,6 +363,7 @@ const CV_TEMPLATES = [
   },
   {
     id: "navymodern",
+    category: "moderne",
     name: "Modèle 26 - Bleu Marine Moderne",
     description:
       "Design bicolore bleu marine - Photo circulaire qui chevauche le header",
@@ -370,26 +374,41 @@ const CV_TEMPLATES = [
       "Titres bleus avec lignes de soulignement fines",
     ],
     image: "🌀",
+  },
+  {
+    id: "classicminimalist",
+    category: "classique",
+    name: "Modèle Classique 1 - Minimaliste Moderne",
+    description:
+      "Design moderne et minimaliste avec photo circulaire et disposition en deux colonnes - Idéal pour un CV professionnel et épuré",
+    features: [
+      "Photo de profil circulaire à gauche",
+      "Barre de contact horizontale avec icônes",
+      "Disposition en deux colonnes équilibrées",
+      "Couleurs bleu pastel et touches turquoise",
+      "Police moderne sans-serif",
+    ],
+    image: "📄",
   },];
 
 // Données d'exemple pour le prévisualisation
 const SAMPLE_CV_DATA = {
-  full_name: "Jean Dupont",
+  full_name: "Jean Marc",
   job_title: "Développeur Full Stack Senior",
-  phone: "+33 6 12 34 56 78",
-  email: "jean.dupont@email.com",
-  location: "Paris, France",
+  phone: "+242 06 731 10 33",
+  email: "jeanmarc@example.com",
+  location: "Brazzaville, Congo",
   summary: "Développeur passionné avec 8 années d'expérience dans le développement web. Spécialisé en React, Node.js et architecture microservices. Aime les défis techniques et travailler en équipe.",
   experiences: [
     {
-      company: "TechCorp",
+      company: "TechCorp Congo",
       position: "Développeur Full Stack Senior",
       startDate: "2021",
       endDate: "Présent",
       description: "Leadership technique sur les projets web. Implémentation d'architectures scalables avec React et Node.js.",
     },
     {
-      company: "WebSolutions",
+      company: "WebSolutions Brazzaville",
       position: "Développeur Full Stack",
       startDate: "2018",
       endDate: "2021",
@@ -473,6 +492,8 @@ const getTemplateComponent = (templateId: string) => {
       return CVTemplateTimeline;
     case "navymodern":
       return CVTemplateNavyModern;
+    case "classicminimalist":
+      return CVTemplateClassicMinimalist;
     default:
       return CVTemplateFrancklyn;
   }
@@ -543,7 +564,15 @@ export default function CVTemplates() {
     toast.success("Préparation de l'export PDF...");
   };
 
-  const cvsByTemplate = CV_TEMPLATES.map((template) => ({
+  const moderneTemplates = CV_TEMPLATES.filter((t) => {
+    if (t.category) return t.category === 'moderne';
+    return true; // consider unspecified category as 'moderne' by default
+  }).map((template) => ({
+    ...template,
+    cvs: cvs.filter((cv) => cv.template === template.id),
+  }));
+
+  const classiqueTemplates = CV_TEMPLATES.filter((t) => t.category === 'classique').map((template) => ({
     ...template,
     cvs: cvs.filter((cv) => cv.template === template.id),
   }));
@@ -572,34 +601,30 @@ export default function CVTemplates() {
       )}
 
       {/* Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        {/* Templates Grid */}
-        <div className="grid grid-cols-1 gap-12">
-          {cvsByTemplate.map((templateGroup) => (
-            <div key={templateGroup.id}>
-              <div className="mb-8">
-                <h2 className="text-2xl font-bold text-gray-900 mb-2">
-                  {templateGroup.name}
-                </h2>
-                <p className="text-gray-600 mb-4">{templateGroup.description}</p>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-16">
+        {/* Force refresh marker */}
+        {/* Section CV Moderne */}
+        <div>
+          <div className="mb-8">
+            <h2 className="text-3xl font-bold text-gray-900 mb-2">CV Moderne</h2>
+            <p className="text-lg text-gray-600">Designs contemporains et innovants pour se démarquer</p>
+          </div>
 
-                {/* Template Preview Card */}
-                <Card className="hover:shadow-2xl transition overflow-hidden mb-6">
-                  <div className="grid grid-cols-2 gap-8 p-8">
-                    {/* Aperçu visuel du CV */}
-                    <div className="flex items-center justify-center bg-gray-100 rounded-lg p-4">
+          {/* Horizontal scroll container */}
+          <div className="overflow-x-auto pb-4">
+            <div className="flex gap-6 min-w-max">
+              {moderneTemplates.map((template) => (
+                <Card key={template.id} className="hover:shadow-2xl transition-all duration-300 overflow-hidden flex-shrink-0 w-96">
+                  <div className="p-6">
+                    {/* Template Preview */}
+                    <div className="flex items-center justify-center bg-gray-50 rounded-lg p-4 mb-4 h-64">
                       {(() => {
-                        const TemplateComponent = getTemplateComponent(
-                          templateGroup.id
-                        );
+                        const TemplateComponent = getTemplateComponent(template.id);
                         return (
-                          <div
-                            className="w-full max-w-xs"
-                            style={{ aspectRatio: "210/297" }}
-                          >
+                          <div className="w-full h-full flex items-center justify-center">
                             <div
-                              className="bg-white shadow-lg h-full overflow-hidden rounded border"
-                              style={{ scale: "0.8", transformOrigin: "top" }}
+                              className="bg-white shadow-lg w-full h-full overflow-hidden rounded border transform scale-75"
+                              style={{ aspectRatio: "210/297" }}
                             >
                               <TemplateComponent data={SAMPLE_CV_DATA} />
                             </div>
@@ -608,116 +633,143 @@ export default function CVTemplates() {
                       })()}
                     </div>
 
-                    {/* Informations du modèle */}
-                    <div className="flex flex-col justify-center">
-                      <h3 className="text-3xl font-bold text-gray-900 mb-2">
-                        {templateGroup.name}
-                      </h3>
-                      <p className="text-muted-foreground mb-6">
-                        {templateGroup.description}
-                      </p>
+                    {/* Template Info */}
+                    <div className="space-y-4">
+                      <div>
+                        <h3 className="text-xl font-bold text-gray-900 mb-1">
+                          {template.name}
+                        </h3>
+                        <p className="text-sm text-gray-600 line-clamp-2">
+                          {template.description}
+                        </p>
+                      </div>
 
-                      {/* Caractéristiques */}
-                      <div className="mb-8">
-                        <h4 className="font-semibold text-gray-900 mb-3">
+                      {/* Features */}
+                      <div>
+                        <h4 className="font-semibold text-gray-900 mb-2 text-sm">
                           Caractéristiques
                         </h4>
-                        <ul className="space-y-2">
-                          {templateGroup.features.map((feature, idx) => (
+                        <ul className="space-y-1">
+                          {template.features.slice(0, 3).map((feature, idx) => (
                             <li
                               key={idx}
-                              className="flex items-center gap-2 text-sm text-gray-700"
+                              className="flex items-center gap-2 text-xs text-gray-700"
                             >
-                              <span className="h-2 w-2 rounded-full bg-blue-600"></span>
-                              {feature}
+                              <span className="h-1.5 w-1.5 rounded-full bg-blue-600 flex-shrink-0"></span>
+                              <span className="line-clamp-1">{feature}</span>
                             </li>
                           ))}
+                          {template.features.length > 3 && (
+                            <li className="text-xs text-gray-500">
+                              +{template.features.length - 3} autres...
+                            </li>
+                          )}
                         </ul>
                       </div>
 
-                      {/* Boutons */}
+                      {/* Action Button */}
                       <Button
                         className="w-full bg-blue-600 hover:bg-blue-700"
-                        size="lg"
-                        onClick={() => handleNewCV(templateGroup.id)}
+                        size="sm"
+                        onClick={() => handleNewCV(template.id)}
                       >
                         <ArrowRight className="h-4 w-4 mr-2" />
-                        Créer un CV avec ce modèle
+                        Créer un CV
                       </Button>
                     </div>
                   </div>
                 </Card>
+              ))}
+            </div>
+          </div>
+        </div>
 
-                {/* CVs créés avec ce modèle */}
-                {templateGroup.cvs.length > 0 && (
-                  <div>
-                    <h3 className="text-lg font-bold text-gray-900 mb-4">
-                      Vos CVs avec ce modèle ({templateGroup.cvs.length})
-                    </h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                      {templateGroup.cvs.map((cv) => (
-                        <Card
-                          key={cv.id}
-                          className="p-4 hover:shadow-lg transition flex flex-col"
+        {/* Section CV Classique */}
+        <div>
+          <div className="mb-8">
+            <h2 className="text-3xl font-bold text-gray-900 mb-2">CV Classique</h2>
+            <p className="text-lg text-gray-600">Designs traditionnels et professionnels pour tous secteurs</p>
+          </div>
+
+          {/* Horizontal scroll container */}
+          {classiqueTemplates.length === 0 ? (
+            <div className="text-center text-gray-600 py-12 bg-gray-50 rounded-lg">
+              <p className="text-lg">Modèles classiques en développement...</p>
+              <p className="text-sm mt-2">Bientôt disponibles !</p>
+            </div>
+          ) : (
+            <div className="overflow-x-auto pb-4">
+              <div className="flex gap-6 min-w-max">
+                {classiqueTemplates.map((template) => (
+                  <Card key={template.id} className="hover:shadow-2xl transition-all duration-300 overflow-hidden flex-shrink-0 w-96">
+                    <div className="p-6">
+                      {/* Template Preview */}
+                      <div className="flex items-center justify-center bg-gray-50 rounded-lg p-4 mb-4 h-64">
+                        {(() => {
+                          const TemplateComponent = getTemplateComponent(template.id);
+                          return (
+                            <div className="w-full h-full flex items-center justify-center">
+                              <div
+                                className="bg-white shadow-lg w-full h-full overflow-hidden rounded border transform scale-75"
+                                style={{ aspectRatio: "210/297" }}
+                              >
+                                <TemplateComponent data={SAMPLE_CV_DATA} />
+                              </div>
+                            </div>
+                          );
+                        })()}
+                      </div>
+
+                      {/* Template Info */}
+                      <div className="space-y-4">
+                        <div>
+                          <h3 className="text-xl font-bold text-gray-900 mb-1">
+                            {template.name}
+                          </h3>
+                          <p className="text-sm text-gray-600 line-clamp-2">
+                            {template.description}
+                          </p>
+                        </div>
+
+                        {/* Features */}
+                        <div>
+                          <h4 className="font-semibold text-gray-900 mb-2 text-sm">
+                            Caractéristiques
+                          </h4>
+                          <ul className="space-y-1">
+                            {template.features.slice(0, 3).map((feature, idx) => (
+                              <li
+                                key={idx}
+                                className="flex items-center gap-2 text-xs text-gray-700"
+                              >
+                                <span className="h-1.5 w-1.5 rounded-full bg-blue-600 flex-shrink-0"></span>
+                                <span className="line-clamp-1">{feature}</span>
+                              </li>
+                            ))}
+                            {template.features.length > 3 && (
+                              <li className="text-xs text-gray-500">
+                                +{template.features.length - 3} autres...
+                              </li>
+                            )}
+                          </ul>
+                        </div>
+
+                        {/* Action Button */}
+                        <Button
+                          className="w-full bg-blue-600 hover:bg-blue-700"
+                          size="sm"
+                          onClick={() => handleNewCV(template.id)}
                         >
-                          <div className="mb-4 flex-1">
-                            <h4 className="text-lg font-bold text-gray-900 mb-1">
-                              {cv.full_name}
-                            </h4>
-                            <p className="text-sm text-gray-600 mb-2">
-                              {cv.job_title}
-                            </p>
-                            <p className="text-xs text-gray-500">
-                              Créé le:{" "}
-                              {new Date(cv.createdAt).toLocaleDateString("fr-FR")}
-                            </p>
-                          </div>
-
-                          <div className="flex gap-2 pt-4 border-t">
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              className="flex-1 gap-2"
-                              onClick={() => setPreviewCVId(cv.id)}
-                            >
-                              <Eye className="w-4 h-4" />
-                              Voir
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              className="flex-1 gap-2"
-                              onClick={() => handleEditCV(cv)}
-                            >
-                              <Edit className="w-4 h-4" />
-                              Éditer
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              className="flex-1 gap-2"
-                              onClick={() => handleExportPDF(cv)}
-                            >
-                              <Download className="w-4 h-4" />
-                              PDF
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              className="text-red-600 hover:bg-red-50"
-                              onClick={() => handleDeleteCV(cv.id)}
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </Button>
-                          </div>
-                        </Card>
-                      ))}
+                          <ArrowRight className="h-4 w-4 mr-2" />
+                          Créer un CV
+                        </Button>
+                      </div>
                     </div>
-                  </div>
-                )}
+                  </Card>
+                ))}
               </div>
             </div>
-          ))}
+          )}
         </div>
       </div>
 

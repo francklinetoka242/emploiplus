@@ -100,7 +100,7 @@ const MENU_ITEMS = [
   {
     label: "Paramètres",
     icon: Settings,
-    path: "/admin/profile",
+    path: "/admin/parametres",
     badge: null,
   },
   {

@@ -38,14 +38,10 @@ function buildFilterClause(filters, params, present = new Set()) {
 async function getAllAdmins(filters = {}, limit = 20, offset = 0) {
   try {
     const params = [];
-    // detect available columns
-    const sample = await pool.query('SELECT * FROM admins LIMIT 0');
-    const present = new Set((sample.fields || []).map(f => f.name));
-    const wanted = ['id','first_name','last_name','email','role','role_level','status','created_at','updated_at','token_expires_at','phone','country','profile_photo','account_type'];
-    const selectCols = wanted.filter(c => present.has(c));
-    const selectClause = selectCols.length ? selectCols.join(', ') : '*';
+    // Use base fields that always exist
+    const selectClause = 'id, first_name, last_name, email, role, status, created_at';
 
-    const filterClause = buildFilterClause(filters, params, present);
+    const filterClause = buildFilterClause(filters, params, new Set(['status', 'role_level', 'search', 'admin_id', 'admin_level', 'date_from', 'date_to']));
     const query = `
       SELECT ${selectClause}
       FROM admins
@@ -65,13 +61,33 @@ async function getAllAdmins(filters = {}, limit = 20, offset = 0) {
 // get single admin
 async function getAdminById(adminId) {
   try {
+    // Start with basic fields that always exist
+    const baseFields = ['id', 'first_name', 'last_name', 'email', 'role', 'status', 'created_at'];
+    
+    // Optionally add fields if they exist
+    const optionalFields = ['role_level', 'updated_at', 'token_expires_at', 'phone', 'country', 'profile_photo', 'account_type'];
+    
+    // Try to get all fields but fall back to base fields if error
     const query = `
       SELECT id, first_name, last_name, email, role, role_level, status, created_at, updated_at, token_expires_at, phone, country, profile_photo, account_type
       FROM admins
       WHERE id = $1
     `;
-    const result = await pool.query(query, [adminId]);
-    return result.rows[0] || null;
+    
+    try {
+      const result = await pool.query(query, [adminId]);
+      return result.rows[0] || null;
+    } catch (fieldError) {
+      // If query fails, try with just base fields
+      console.log('Retrying with base fields only');
+      const fallbackQuery = `
+        SELECT ${baseFields.join(', ')}
+        FROM admins
+        WHERE id = $1
+      `;
+      const fallbackResult = await pool.query(fallbackQuery, [adminId]);
+      return fallbackResult.rows[0] || null;
+    }
   } catch (err) {
     console.error('getAdminById query error:', err);
     throw err;
@@ -87,7 +103,8 @@ async function updateAdmin(adminId, updates) {
 
     const setClause = fields.map((f, i) => `${f} = $${i + 1}`).join(', ');
     const query = `
-      UPDATE admins SET ${setClause}, updated_at = NOW() WHERE id = $${fields.length + 1} RETURNING *
+      UPDATE admins SET ${setClause}, updated_at = NOW() WHERE id = $${fields.length + 1} 
+      RETURNING id, first_name, last_name, email, role, status, created_at, updated_at
     `;
     values.push(adminId);
     const result = await pool.query(query, values);

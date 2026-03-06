@@ -7,6 +7,7 @@ interface CVData {
   email: string;
   location: string;
   summary?: string;
+  profile_image_url?: string;
   experiences?: Array<{
     company: string;
     position: string;
@@ -34,9 +35,15 @@ export function CVTemplateModernRibbon({ data }: { data: CVData }) {
       <div className="w-1/3 bg-gray-900 text-white p-6 flex flex-col overflow-y-auto">
         {/* Profile Photo */}
         <div className="flex justify-center mb-6">
-          <div className="w-20 h-20 rounded-full bg-orange-500 flex items-center justify-center text-3xl font-bold border-4 border-orange-400">
-            {data.full_name.charAt(0)}
-          </div>
+          {data.profile_image_url ? (
+            <div className="w-20 h-20 rounded-full overflow-hidden bg-orange-500 flex items-center justify-center border-4 border-orange-400">
+              <img src={data.profile_image_url} alt="Profile" className="w-full h-full object-cover" />
+            </div>
+          ) : (
+            <div className="w-20 h-20 rounded-full bg-orange-500 flex items-center justify-center text-3xl font-bold border-4 border-orange-400">
+              {data.full_name.charAt(0)}
+            </div>
+          )}
         </div>
 
         {/* Name */}
@@ -111,7 +118,7 @@ export function CVTemplateModernRibbon({ data }: { data: CVData }) {
                       />
                     </svg>
                     <p className="text-xs font-bold mt-2 text-center">
-                      {skill.slice(0, 10)}
+                      {typeof skill === 'string' ? skill.slice(0, 10) : skill.name.slice(0, 10)}
                     </p>
                   </div>
                 );

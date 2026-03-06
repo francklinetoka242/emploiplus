@@ -8,6 +8,7 @@ import { Plus, BookOpen, AlertCircle } from "lucide-react";
 import ConfirmButton from '@/components/ConfirmButton';
 import { toast } from "sonner";
 import { api } from '@/lib/api';
+import { useQueryClient } from '@tanstack/react-query';
 
 interface Formation {
   id: string;
@@ -22,13 +23,19 @@ interface Formation {
   created_at: string;
 }
 
-export default function FormationList() {
+interface FormationListProps {
+  formations?: Formation[];
+}
+
+export default function FormationList({ formations: initialFormations }: FormationListProps) {
   const navigate = useNavigate();
-  const [formations, setFormations] = useState<Formation[]>([]);
+  const [formations, setFormations] = useState<Formation[]>(initialFormations || []);
   const [editing, setEditing] = useState<Formation | null>(null);
   const [showForm, setShowForm] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  const queryClient = useQueryClient();
 
   const fetchFormations = async () => {
     try {
@@ -75,13 +82,25 @@ export default function FormationList() {
     }
   };
 
-  useEffect(() => { fetchFormations(); }, [navigate]);
+  useEffect(() => {
+    if (initialFormations) {
+      setFormations(initialFormations);
+      setIsLoading(false);
+      setError(null);
+    } else {
+      fetchFormations();
+    }
+  }, [navigate, initialFormations]);
 
   const togglePublish = async (id: string, published: boolean) => {
     try {
       await api.publishFormation(id, !published);
       toast.success(published ? "Formation dépubliée" : "Formation publiée");
-      fetchFormations();
+      if (initialFormations) {
+        queryClient.invalidateQueries(["admin-formations"]);
+      } else {
+        fetchFormations();
+      }
     } catch (err) {
       console.error('Publish formation error:', err);
       toast.error('Échec de la mise à jour du statut');
@@ -92,7 +111,11 @@ export default function FormationList() {
     try {
       await api.deleteFormation(id);
       toast.success("Formation supprimée");
-      fetchFormations();
+      if (initialFormations) {
+        queryClient.invalidateQueries(["admin-formations"]);
+      } else {
+        fetchFormations();
+      }
     } catch (err) {
       console.error('Delete formation error:', err);
       toast.error('Échec de la suppression');

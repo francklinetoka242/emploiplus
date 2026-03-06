@@ -42,6 +42,7 @@ import CompanyPage from "./pages/Company";
 import CandidateDetailPage from "./pages/CandidateProfile";
 import SpontaneousApplication from "./pages/SpontaneousApplication";
 import ApplyJob from "./pages/ApplyJob";
+import CandidatureIntelligente from "./pages/CandidatureIntelligente";
 import InterviewSimulator from "./pages/InterviewSimulator";
 import Newsfeed from "./pages/Newsfeed";
 import MyPublications from "./pages/MyPublications";
@@ -116,6 +117,8 @@ import CataloguesServicesPage from "./pages/admin/catalogues-services/page";
 import VerifyRequestsPage from "./pages/admin/verify-requests/page";
 import Contact from "./pages/Contact";
 import AdminNotificationsPage from "./pages/admin/notifications/page";
+import AdminParametresPage from "./pages/admin/parametres/page";
+import DocumentationsPage from "./pages/admin/documentations/page";
 import { AdminExport } from "./pages/admin/AdminExport";
 import AdminProfilePage from "./pages/admin/profile/page";
 import { Messages } from "./pages/Messages";
@@ -170,6 +173,7 @@ const App = () => {
             <Route path="/documents" element={<DocumentationPage />} />
             <Route path="/company/:id" element={<CompanyPage />} />
             <Route path="/recrutement/postuler/:id" element={<ApplyJob />} />
+            <Route path="/candidature-intelligente/:jobId" element={<CandidatureIntelligente />} />
             <Route path="/notifications" element={<Notifications />} />
             <Route path="/test-competence" element={<CompetenceTest />} />
             <Route path="/simulateur-entretien" element={<InterviewSimulator />} />
@@ -307,10 +311,24 @@ const App = () => {
               </ProtectedRoute>
             } />
             
+            {/* Documentations (Politiques & Documents légaux) — super_admin uniquement */}
+            <Route path="documentations" element={
+              <ProtectedRoute requiredRoles={["super_admin"]}>
+                <DocumentationsPage />
+              </ProtectedRoute>
+            } />
+            
             {/* Notifications — tous authentifiés */}
             <Route path="notifications" element={
               <ProtectedRoute>
                 <AdminNotificationsPage />
+              </ProtectedRoute>
+            } />
+            
+            {/* Paramètres — tous authentifiés */}
+            <Route path="parametres" element={
+              <ProtectedRoute>
+                <AdminParametresPage />
               </ProtectedRoute>
             } />
             

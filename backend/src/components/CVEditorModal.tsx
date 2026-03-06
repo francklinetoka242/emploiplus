@@ -356,7 +356,7 @@ export function CVEditorModal({
                   onChange={(e) =>
                     handleBasicInfoChange("full_name", e.target.value)
                   }
-                  placeholder="Jean Dupont"
+                  placeholder="Jean Marc"
                 />
               </div>
 
@@ -380,7 +380,7 @@ export function CVEditorModal({
                       handleBasicInfoChange("email", e.target.value)
                     }
                     type="email"
-                    placeholder="jean@example.com"
+                    placeholder="jeanmarc@example.com"
                   />
                 </div>
                 <div>
@@ -390,7 +390,7 @@ export function CVEditorModal({
                     onChange={(e) =>
                       handleBasicInfoChange("phone", e.target.value)
                     }
-                    placeholder="+33 6 12 34 56 78"
+                    placeholder="+242 06 731 10 33"
                   />
                 </div>
               </div>
@@ -402,7 +402,7 @@ export function CVEditorModal({
                   onChange={(e) =>
                     handleBasicInfoChange("location", e.target.value)
                   }
-                  placeholder="Paris, France"
+                  placeholder="Brazzaville, Congo"
                 />
               </div>
 

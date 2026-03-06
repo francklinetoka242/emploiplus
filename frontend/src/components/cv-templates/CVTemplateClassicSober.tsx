@@ -7,6 +7,7 @@ interface CVData {
   email: string;
   location: string;
   summary?: string;
+  profile_image_url?: string;
   experiences?: Array<{
     company: string;
     position: string;
@@ -65,7 +66,7 @@ export function CVTemplateClassicSober({ data }: { data: CVData }) {
               <h3 className="font-bold text-sm mb-2 uppercase">Compétences</h3>
               <ul className="space-y-1">
                 {data.skills.map((skill, idx) => (
-                  <li key={idx} className="text-xs">{skill}</li>
+                  <li key={idx} className="text-xs">{typeof skill === 'string' ? skill : skill.name}</li>
                 ))}
               </ul>
             </div>

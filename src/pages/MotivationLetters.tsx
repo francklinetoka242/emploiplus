@@ -108,14 +108,14 @@ const getTemplateComponent = (templateId: string) => {
 // Sample data for template preview
 const SAMPLE_LETTER: MotivationLetterData = {
   id: "sample",
-  candidateName: "Jean Dupont",
+  candidateName: "Jean Marc",
   candidatePosition: "Développeur React Senior",
   email: "jean.dupont@email.com",
-  phone: "+33 6 12 34 56 78",
-  location: "Paris, France",
+  phone: "+242 06 731 10 33",
+  location: "Brazzaville, Congo",
   recipientName: "Marie Martin",
   recipientCompany: "TechCorp",
-  recipientAddress: "123 Rue de la République, 75000 Paris",
+  recipientAddress: "123 Rue de la République, 75000 Brazzaville",
   subject: "Candidature Développeur React Senior",
   greeting: "Madame, Monsieur,",
   body: "Je vous écris pour vous soumettre ma candidature pour le poste de Développeur React Senior au sein de votre entreprise TechCorp.\n\nAvec plus de 8 années d'expérience en développement web, je suis convaincu que mon expertise technique et ma passion pour l'innovation pourront contribuer au succès de votre équipe.",

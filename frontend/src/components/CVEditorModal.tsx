@@ -4,9 +4,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card } from "@/components/ui/card";
-import { X, Plus, Trash2, Download, Eye } from "lucide-react";
+import { X, Plus, Trash2, Download, Eye, Edit2 } from "lucide-react";
 import { toast } from "sonner";
 import html2pdf from "html2pdf.js";
+import { ImageEditor } from "@/components/ImageEditor";
 import { CVTemplateFrancklyn } from "./cv-templates/CVTemplateFrancklyn";
 import { CVTemplateMinimalist } from "./cv-templates/CVTemplateMinimalist";
 import { CVTemplateGeometric } from "./cv-templates/CVTemplateGeometric";
@@ -33,6 +34,9 @@ import { CVTemplateOrangeCreative } from "./cv-templates/CVTemplateOrangeCreativ
 import { CVTemplateStudentPastel } from "./cv-templates/CVTemplateStudentPastel";
 import { CVTemplateTimeline } from "./cv-templates/CVTemplateTimeline";
 import { CVTemplateNavyModern } from "./cv-templates/CVTemplateNavyModern";
+import { CVTemplateOliviaWilson } from "./cv-templates/CVTemplateOliviaWilson";
+import { CVTemplateExecutiveEditorial } from "./cv-templates/CVTemplateExecutiveEditorial";
+import { CVTemplateResumeGrid } from "./cv-templates/CVTemplateResumeGrid";
 
 export interface CVData {
   id: string;
@@ -62,6 +66,7 @@ export interface CVData {
   qualities: string[];
   template: string;
   createdAt: string;
+  profile_image_url?: string;
 }
 
 interface CVEditorModalProps {
@@ -126,6 +131,12 @@ const getTemplateComponent = (templateId: string) => {
       return CVTemplateTimeline;
     case "navymodern":
       return CVTemplateNavyModern;
+    case "oliviawilson":
+      return CVTemplateOliviaWilson;
+    case "executiveeditorial":
+      return CVTemplateExecutiveEditorial;
+    case "resumegrid":
+      return CVTemplateResumeGrid;
     default:
       return CVTemplateFrancklyn;
   }
@@ -156,10 +167,12 @@ export function CVEditorModal({
       qualities: [],
       template: templateId,
       createdAt: new Date().toISOString(),
+      profile_image_url: "",
     }
   );
 
   const [showPreview, setShowPreview] = useState(false);
+  const [showImageEditor, setShowImageEditor] = useState(false);
   const cvPreviewRef = useRef<HTMLDivElement>(null);
 
   const handleBasicInfoChange = (field: keyof CVData, value: any) => {
@@ -167,6 +180,44 @@ export function CVEditorModal({
       ...prev,
       [field]: value,
     }));
+  };
+
+  const handleProfileImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Vérifier la taille du fichier (max 2MB)
+    if (file.size > 2 * 1024 * 1024) {
+      toast.error("L'image doit faire moins de 2MB");
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const imageUrl = event.target?.result as string;
+      setFormData((prev) => ({
+        ...prev,
+        profile_image_url: imageUrl,
+      }));
+      toast.success("Image téléchargée avec succès");
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const removeProfileImage = () => {
+    setFormData((prev) => ({
+      ...prev,
+      profile_image_url: "",
+    }));
+  };
+
+  const handleImageEditorUpdate = (editedImageUrl: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      profile_image_url: editedImageUrl,
+    }));
+    setShowImageEditor(false);
+    toast.success("Photo mise à jour avec succès");
   };
 
   const addExperience = () => {
@@ -390,7 +441,7 @@ export function CVEditorModal({
                     onChange={(e) =>
                       handleBasicInfoChange("phone", e.target.value)
                     }
-                    placeholder="+33 6 12 34 56 78"
+                    placeholder="+242 06 731 10 33"
                   />
                 </div>
               </div>
@@ -402,7 +453,7 @@ export function CVEditorModal({
                   onChange={(e) =>
                     handleBasicInfoChange("location", e.target.value)
                   }
-                  placeholder="Paris, France"
+                  placeholder="Brazzaville, Congo"
                 />
               </div>
 
@@ -416,6 +467,44 @@ export function CVEditorModal({
                   placeholder="Décrivez-vous en quelques lignes..."
                   rows={4}
                 />
+              </div>
+
+              <div>
+                <Label>Photo de Profil</Label>
+                <div className="space-y-3">
+                  {formData.profile_image_url && (
+                    <div className="relative">
+                      <img
+                        src={formData.profile_image_url}
+                        alt="Preview"
+                        className="w-full h-40 object-cover rounded-lg border border-gray-300"
+                      />
+                      <div className="absolute top-2 right-2 flex gap-2">
+                        <button
+                          onClick={() => setShowImageEditor(true)}
+                          className="p-1 bg-blue-500 hover:bg-blue-600 text-white rounded-full"
+                          title="Éditer la photo"
+                        >
+                          <Edit2 className="w-4 h-4" />
+                        </button>
+                        <button
+                          onClick={removeProfileImage}
+                          className="p-1 bg-red-500 hover:bg-red-600 text-white rounded-full"
+                          title="Supprimer la photo"
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleProfileImageChange}
+                    className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                  />
+                  <p className="text-xs text-gray-500">JPG, PNG ou GIF. Max 2MB</p>
+                </div>
               </div>
             </div>
 
@@ -699,6 +788,16 @@ export function CVEditorModal({
           </Button>
         </div>
       </div>
+
+      {/* Image Editor Modal */}
+      {showImageEditor && formData.profile_image_url && (
+        <ImageEditor
+          imageUrl={formData.profile_image_url}
+          onImageUpdate={handleImageEditorUpdate}
+          onClose={() => setShowImageEditor(false)}
+          shape="circle"
+        />
+      )}
     </div>
   );
 }

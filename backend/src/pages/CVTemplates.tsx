@@ -374,11 +374,11 @@ const CV_TEMPLATES = [
 
 // Données d'exemple pour le prévisualisation
 const SAMPLE_CV_DATA = {
-  full_name: "Jean Dupont",
+  full_name: "Jean Marc",
   job_title: "Développeur Full Stack Senior",
-  phone: "+33 6 12 34 56 78",
+  phone: "+242 06 731 10 33",
   email: "jean.dupont@email.com",
-  location: "Paris, France",
+  location: "Brazzaville, Congo",
   summary: "Développeur passionné avec 8 années d'expérience dans le développement web. Spécialisé en React, Node.js et architecture microservices. Aime les défis techniques et travailler en équipe.",
   experiences: [
     {

@@ -14,7 +14,9 @@ export type MenuItemId =
   | 'login-history'
   | 'faq'
   | 'documentation'
-  | 'system-health';
+  | 'documentations'
+  | 'system-health'
+  | 'settings';
 
 export interface MenuItem {
   id: MenuItemId;
@@ -96,10 +98,24 @@ export const ADMIN_MENU_ITEMS: MenuItem[] = [
     description: 'Documentation du système'
   },
   {
+    id: 'documentations',
+    label: 'Documentations',
+    icon: 'Shield',
+    path: '/admin/documentations',
+    description: 'Politiques et documents légaux'
+  },
+  {
     id: 'system-health',
     label: 'Santé du Système',
     icon: 'Activity',
     path: '/admin/system-health',
     description: 'État de la santé du système'
+  },
+  {
+    id: 'settings',
+    label: 'Paramètres',
+    icon: 'Settings',
+    path: '/admin/parametres',
+    description: 'Configuration générale du système'
   }
 ];

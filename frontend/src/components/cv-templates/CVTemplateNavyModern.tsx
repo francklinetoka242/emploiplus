@@ -14,9 +14,13 @@ export const CVTemplateNavyModern: React.FC<CVTemplateNavyModernProps> = ({ data
         <div className="p-8">
           <div className="flex items-center gap-8">
             {/* Circular Photo overlapping */}
-            <div className="relative">
-              <div className="w-40 h-40 rounded-full border-4 border-white bg-gray-300 flex items-center justify-center text-5xl shadow-xl">
-                👤
+            <div className="relative overflow-hidden">
+              <div className="w-40 h-40 rounded-full border-4 border-white bg-gray-300 flex items-center justify-center text-5xl shadow-xl overflow-hidden">
+                {data.profile_image_url ? (
+                  <img src={data.profile_image_url} alt="Profile" className="w-full h-full object-cover" />
+                ) : (
+                  "👤"
+                )}
               </div>
               <div className="absolute -bottom-6 -right-6 w-16 h-16 bg-white opacity-10 rounded-full"></div>
             </div>

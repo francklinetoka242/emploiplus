@@ -12,9 +12,13 @@ export const CVTemplateExecutiveCadre: React.FC<CVTemplateExecutiveCadreProps> =
       {/* Header with Photo and Name Block */}
       <div className="flex bg-white border-b-2 border-gray-200">
         {/* Left Photo */}
-        <div className="w-2/5 p-8 flex items-center justify-center">
-          <div className="w-40 h-40 bg-gray-400 rounded-sm flex items-center justify-center text-5xl shadow-lg">
-            👤
+        <div className="w-2/5 p-8 flex items-center justify-center overflow-hidden">
+          <div className="w-40 h-40 bg-gray-400 rounded-sm flex items-center justify-center text-5xl shadow-lg overflow-hidden">
+            {data.profile_image_url ? (
+              <img src={data.profile_image_url} alt="Profile" className="w-full h-full object-cover" />
+            ) : (
+              "👤"
+            )}
           </div>
         </div>
 
@@ -61,7 +65,7 @@ export const CVTemplateExecutiveCadre: React.FC<CVTemplateExecutiveCadreProps> =
               </h3>
               <div className="space-y-2 text-sm">
                 {data.skills.map((skill, index) => (
-                  <p key={index}>• {skill}</p>
+                  <p key={index}>• {typeof skill === 'string' ? skill : skill.name}</p>
                 ))}
               </div>
             </div>

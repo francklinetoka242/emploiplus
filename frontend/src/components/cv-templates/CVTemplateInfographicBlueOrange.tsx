@@ -21,9 +21,13 @@ export const CVTemplateInfographicBlueOrange: React.FC<CVTemplateInfographicBlue
           </svg>
           
           {/* Profile Photo */}
-          <div className="relative z-10 flex justify-center pt-8">
-            <div className="w-32 h-32 rounded-full bg-gray-400 flex items-center justify-center text-4xl border-4 border-[#101820] shadow-xl">
-              👤
+          <div className="relative z-10 flex justify-center pt-8 overflow-hidden">
+            <div className="w-32 h-32 rounded-full bg-gray-400 flex items-center justify-center text-4xl border-4 border-[#101820] shadow-xl overflow-hidden">
+              {data.profile_image_url ? (
+                <img src={data.profile_image_url} alt="Profile" className="w-full h-full object-cover" />
+              ) : (
+                "👤"
+              )}
             </div>
           </div>
         </div>

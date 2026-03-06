@@ -7,6 +7,7 @@ interface CVData {
   email: string;
   location: string;
   summary?: string;
+  profile_image_url?: string;
   experiences?: Array<{
     company: string;
     position: string;
@@ -185,7 +186,7 @@ export function CVTemplateInfographic({ data }: { data: CVData }) {
                         {percentage}%
                       </div>
                     </div>
-                    <p className="text-xs font-semibold text-center">{skill}</p>
+                    <p className="text-xs font-semibold text-center">{typeof skill === 'string' ? skill : skill.name}</p>
                   </div>
                 );
               })}

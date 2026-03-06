@@ -7,6 +7,7 @@ interface CVData {
   email: string;
   location: string;
   summary?: string;
+  profile_image_url?: string;
   experiences?: Array<{
     company: string;
     position: string;
@@ -34,9 +35,15 @@ export function CVTemplateGeometric({ data }: { data: CVData }) {
       <div className="h-32 bg-gray-800 relative overflow-hidden">
         <div className="absolute inset-0 flex items-center justify-end pr-8">
           <div className="w-32 h-32 bg-yellow-400 rounded-full flex items-center justify-center -mr-16 -mt-16">
-            <div className="w-24 h-24 rounded-full bg-gray-300 flex items-center justify-center text-2xl font-bold">
-              {data.full_name.charAt(0)}
-            </div>
+            {data.profile_image_url ? (
+              <div className="w-24 h-24 rounded-full overflow-hidden bg-gray-300 flex items-center justify-center">
+                <img src={data.profile_image_url} alt="Profile" className="w-full h-full object-cover" />
+              </div>
+            ) : (
+              <div className="w-24 h-24 rounded-full bg-gray-300 flex items-center justify-center text-2xl font-bold">
+                {data.full_name.charAt(0)}
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -101,7 +108,7 @@ export function CVTemplateGeometric({ data }: { data: CVData }) {
                 {data.skills.map((skill, idx) => (
                   <div key={idx}>
                     <div className="flex justify-between items-center mb-1">
-                      <p className="text-xs font-semibold text-gray-900">{skill}</p>
+                      <p className="text-xs font-semibold text-gray-900">{typeof skill === 'string' ? skill : skill.name}</p>
                     </div>
                     <div className="h-1.5 bg-gray-200 rounded-full overflow-hidden">
                       <div

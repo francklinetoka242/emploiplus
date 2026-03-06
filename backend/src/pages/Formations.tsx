@@ -157,7 +157,11 @@ export default function Formations() {
     queryFn: async () => {
       const response = await fetch("/api/jobs?limit=5");
       if (!response.ok) throw new Error("Failed to fetch jobs");
-      return response.json();
+      const data = await response.json();
+      if (Array.isArray(data)) return data;
+      if (data?.data && Array.isArray(data.data)) return data.data;
+      if (data?.data?.data && Array.isArray(data.data.data)) return data.data.data;
+      return [];
     },
     staleTime: 1000 * 60 * 5,
   });
@@ -267,6 +271,21 @@ export default function Formations() {
                     ) : null}
                   </div>
                 </div>
+
+                {/* JOB OFFERS SECTION */}
+                {jobs && jobs.length > 0 && (
+                  <div className="mt-12">
+                    <h2 className="text-2xl font-bold mb-4">Offres d'emploi</h2>
+                    <div className="space-y-4">
+                      {jobs.map((job: any) => (
+                        <JobListItem key={job.id} job={job} />
+                      ))}
+                    </div>
+                    <Button asChild variant="link" className="mt-4">
+                      <Link to="/jobs">Voir toutes les offres</Link>
+                    </Button>
+                  </div>
+                )}
               </>
             ) : (
               <div className="text-center py-24">

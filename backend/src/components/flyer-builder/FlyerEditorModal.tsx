@@ -149,7 +149,7 @@ export function FlyerEditorModal({
                   value={formData.phone}
                   onChange={(e) => handleChange('phone', e.target.value)}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-                  placeholder="+33 6 12 34 56 78"
+                  placeholder="+242 06 731 10 33"
                 />
               </div>
 
@@ -162,7 +162,7 @@ export function FlyerEditorModal({
                   value={formData.address}
                   onChange={(e) => handleChange('address', e.target.value)}
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-                  placeholder="123 Rue de la Paix, 75000 Paris"
+                  placeholder="123 Rue de la Paix, 75000 Brazzaville"
                 />
               </div>
 

@@ -26,7 +26,11 @@ export const CVTemplateRibbonLayers: React.FC<CVTemplateRibbonLayersProps> = ({ 
             
             {/* Photo */}
             <div className="relative z-10 w-40 h-40 rounded-t-3xl bg-gray-400 flex items-center justify-center text-5xl overflow-hidden">
-              👤
+              {data.profile_image_url ? (
+                <img src={data.profile_image_url} alt="Profile" className="w-full h-full object-cover" />
+              ) : (
+                "👤"
+              )}
             </div>
           </div>
         </div>

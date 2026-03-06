@@ -7,6 +7,7 @@ interface CVData {
   email: string;
   location: string;
   summary?: string;
+  profile_image_url?: string;
   experiences?: Array<{
     company: string;
     position: string;
@@ -30,9 +31,15 @@ export function CVTemplatePastelJunior({ data }: { data: CVData }) {
       {/* Header - Pastel Pink */}
       <div className="h-24 bg-pink-100 flex items-center justify-between px-6">
         <div className="flex items-center gap-4">
-          <div className="w-16 h-16 rounded-lg bg-pink-300 flex items-center justify-center text-2xl font-bold text-white">
-            {data.full_name.charAt(0)}
-          </div>
+          {data.profile_image_url ? (
+            <div className="w-16 h-16 rounded-lg overflow-hidden bg-pink-300 flex items-center justify-center">
+              <img src={data.profile_image_url} alt="Profile" className="w-full h-full object-cover" />
+            </div>
+          ) : (
+            <div className="w-16 h-16 rounded-lg bg-pink-300 flex items-center justify-center text-2xl font-bold text-white">
+              {data.full_name.charAt(0)}
+            </div>
+          )}
           <div>
             <h1 className="text-2xl font-bold text-gray-900 text-center">
               {data.full_name}

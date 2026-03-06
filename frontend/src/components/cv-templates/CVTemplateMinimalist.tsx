@@ -7,6 +7,7 @@ interface CVData {
   email: string;
   location: string;
   summary?: string;
+  profile_image_url?: string;
   experiences?: Array<{
     company: string;
     position: string;
@@ -42,9 +43,15 @@ export function CVTemplateMinimalist({ data }: { data: CVData }) {
       <div className="w-1/3 bg-gray-900 text-white p-6 flex flex-col">
         {/* Profile Photo */}
         <div className="mb-8 flex justify-center">
-          <div className="w-24 h-24 rounded-full bg-gray-700 flex items-center justify-center text-3xl font-bold border-4 border-white">
-            {data.full_name.charAt(0)}
-          </div>
+          {data.profile_image_url ? (
+            <div className="w-24 h-24 rounded-full border-4 border-white overflow-hidden bg-gray-700 flex items-center justify-center">
+              <img src={data.profile_image_url} alt="Profile" className="w-full h-full object-cover" />
+            </div>
+          ) : (
+            <div className="w-24 h-24 rounded-full bg-gray-700 flex items-center justify-center text-3xl font-bold border-4 border-white">
+              {data.full_name.charAt(0)}
+            </div>
+          )}
         </div>
 
         {/* Contact Section */}
@@ -152,7 +159,7 @@ export function CVTemplateMinimalist({ data }: { data: CVData }) {
                   key={idx}
                   className="text-xs bg-gray-100 text-gray-900 px-3 py-1 rounded"
                 >
-                  {skill}
+                  {typeof skill === 'string' ? skill : skill.name}
                 </span>
               ))}
             </div>

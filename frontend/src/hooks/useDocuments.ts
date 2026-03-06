@@ -14,9 +14,10 @@ import { toast } from '@/components/ui/use-toast';
 export interface Document {
   id: number;
   slug: string;
-  title: string;
+  name: string;
   content: string;
   type: 'privacy' | 'terms' | 'cookies' | 'other';
+  is_published: boolean;
   created_by: number | null;
   updated_by: number | null;
   created_at: string;
@@ -25,13 +26,14 @@ export interface Document {
 
 export interface CreateDocumentInput {
   slug: string;
-  title: string;
+  name: string;
   content: string;
   type: 'privacy' | 'terms' | 'cookies' | 'other';
 }
 
 export interface UpdateDocumentInput {
-  title?: string;
+  slug?: string;
+  name?: string;
   content?: string;
   type?: 'privacy' | 'terms' | 'cookies' | 'other';
 }
@@ -58,7 +60,7 @@ export function useDocuments(filters?: { type?: string }) {
     queryFn: async () => {
       const params = new URLSearchParams();
       if (filters?.type) params.append('type', filters.type);
-      const response = await apiFetch(`/api/admin/documents?${params}`, {}, { admin: true });
+      const response = await apiFetch(`/api/admin/documentations?${params}`, {}, { admin: true });
       return (response as any)?.data || [];
     },
     staleTime: 10 * 60 * 1000, // 10 minutes
@@ -73,7 +75,7 @@ export function useDocument(idOrSlug: string | number) {
   return useQuery<Document>({
     queryKey: ['document', idOrSlug],
     queryFn: async () => {
-      const response = await apiFetch(`/api/admin/documents/${idOrSlug}`, {}, { admin: true });
+      const response = await apiFetch(`/api/admin/documentations/${idOrSlug}`, {}, { admin: true });
       return (response as any)?.data || ({} as Document);
     },
     staleTime: 10 * 60 * 1000,
@@ -91,7 +93,7 @@ export function useCreateDocument() {
   return useMutation({
     mutationFn: async (data: CreateDocumentInput) => {
       const response = await apiFetch(
-        '/api/admin/documents',
+        '/api/admin/documentations',
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -127,7 +129,7 @@ export function useUpdateDocument(id: number) {
   return useMutation({
     mutationFn: async (data: UpdateDocumentInput) => {
       const response = await apiFetch(
-        `/api/admin/documents/${id}`,
+        `/api/admin/documentations/${id}`,
         {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
@@ -164,7 +166,7 @@ export function useDeleteDocument() {
   return useMutation({
     mutationFn: async (id: number) => {
       const response = await apiFetch(
-        `/api/admin/documents/${id}`,
+        `/api/admin/documentations/${id}`,
         { method: 'DELETE' },
         { admin: true }
       );
@@ -194,7 +196,7 @@ export function useDocumentStatistics() {
   return useQuery<DocumentStats>({
     queryKey: ['documents', 'stats'],
     queryFn: async () => {
-      const response = await apiFetch(`/api/admin/documents/stats`, {}, { admin: true });
+      const response = await apiFetch(`/api/admin/documentations/stats`, {}, { admin: true });
       return (response as any)?.data || {};
     },
     staleTime: 5 * 60 * 1000, // 5 minutes

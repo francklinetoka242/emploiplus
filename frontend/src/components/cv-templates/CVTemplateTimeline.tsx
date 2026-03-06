@@ -12,9 +12,13 @@ export const CVTemplateTimeline: React.FC<CVTemplateTimelineProps> = ({ data }) 
       {/* Left Sidebar - Pearl Gray */}
       <div className="w-1/3 bg-[#dcdde1] p-8 overflow-auto">
         {/* Profile Photo */}
-        <div className="flex justify-center mb-8">
-          <div className="w-36 h-36 rounded-full border-4 border-[#2f3640] bg-gray-300 flex items-center justify-center text-4xl shadow-lg">
-            👤
+        <div className="flex justify-center mb-8 overflow-hidden">
+          <div className="w-36 h-36 rounded-full border-4 border-[#2f3640] bg-gray-300 flex items-center justify-center text-4xl shadow-lg overflow-hidden">
+            {data.profile_image_url ? (
+              <img src={data.profile_image_url} alt="Profile" className="w-full h-full object-cover" />
+            ) : (
+              "👤"
+            )}
           </div>
         </div>
 
@@ -85,7 +89,7 @@ export const CVTemplateTimeline: React.FC<CVTemplateTimelineProps> = ({ data }) 
             <h3 className="text-sm font-bold text-[#2f3640] mb-4 uppercase">Compétences</h3>
             <div className="space-y-2 text-xs text-[#2f3640]">
               {data.skills.map((skill, index) => (
-                <p key={index}>• {skill}</p>
+                <p key={index}>• {typeof skill === 'string' ? skill : skill.name}</p>
               ))}
             </div>
           </div>

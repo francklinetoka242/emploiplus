@@ -7,6 +7,7 @@ interface CVData {
   email: string;
   location: string;
   summary?: string;
+  profile_image_url?: string;
   experiences?: Array<{
     company: string;
     position: string;
@@ -30,8 +31,12 @@ export function CVTemplateNavyBlue({ data }: { data: CVData }) {
       {/* Navy Blue Header */}
       <div className="bg-blue-900 text-white p-6 flex items-end justify-between relative h-28">
         {/* Profile Circle - overlapping */}
-        <div className="absolute -bottom-8 left-6 w-24 h-24 rounded-full bg-gray-300 flex items-center justify-center text-3xl font-bold border-4 border-white">
-          {data.full_name.charAt(0)}
+        <div className="absolute -bottom-8 left-6 w-24 h-24 rounded-full bg-gray-300 flex items-center justify-center text-3xl font-bold border-4 border-white overflow-hidden">
+          {data.profile_image_url ? (
+            <img src={data.profile_image_url} alt="Profile" className="w-full h-full object-cover" />
+          ) : (
+            data.full_name.charAt(0)
+          )}
         </div>
 
         {/* Name and Title */}
@@ -98,7 +103,7 @@ export function CVTemplateNavyBlue({ data }: { data: CVData }) {
                     key={idx}
                     className="bg-blue-900 text-white text-xs px-2 py-1 rounded"
                   >
-                    {skill}
+                    {typeof skill === 'string' ? skill : skill.name}
                   </span>
                 ))}
               </div>

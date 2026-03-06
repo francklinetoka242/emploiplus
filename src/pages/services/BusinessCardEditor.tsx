@@ -152,11 +152,11 @@ export default function BusinessCardEditor() {
               >
                 <div className="p-4 bg-gray-50 border-b h-64 flex items-center justify-center">
                   <template.component data={{
-                    candidateName: 'Jean Dupont',
+                    candidateName: 'Jean Marc',
                     position: 'Développeur',
                     email: 'jean.dupont@example.com',
-                    phone: '+33 6 12 34 56 78',
-                    location: 'Paris',
+                    phone: '+242 06 731 10 33',
+                    location: 'Brazzaville, Congo',
                     template: template.id,
                   }} />
                 </div>

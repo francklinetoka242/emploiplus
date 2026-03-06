@@ -51,7 +51,10 @@ window.fetch = async (input: RequestInfo, init?: RequestInit) => {
     // ignore localStorage errors
   }
 
-  if (newInit.body && !headers['Content-Type']) {
+  // ✅ IMPORTANT: Ne pas ajouter Content-Type si body est FormData
+  // Le navigateur doit le défini lui-même avec le boundary correct
+  const isFormData = newInit.body instanceof FormData;
+  if (newInit.body && !headers['Content-Type'] && !isFormData) {
     headers['Content-Type'] = 'application/json';
   }
 

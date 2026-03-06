@@ -1,18 +1,59 @@
 // src/pages/admin/formations/page.tsx
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 
 import { Button } from "@/components/ui/button";
 
-import { Plus } from "lucide-react";
-
+import { Plus, Search } from "lucide-react";
 import FormationList from "@/components/admin/formations/FormationList";
-
 import FormationForm from "@/components/admin/formations/FormationForm";
+import { useQuery } from "@tanstack/react-query";
+import { api } from "@/lib/api";
 
 export default function FormationsPage() {
 
   const [showCreateForm, setShowCreateForm] = useState(false);
+  const [searchText, setSearchText] = useState("");
+  const [filterCategory, setFilterCategory] = useState("");
+  const [filterLevel, setFilterLevel] = useState("");
+  const [publishedOnly, setPublishedOnly] = useState(false);
+
+  const { data } = useQuery({
+    queryKey: ["admin-formations"],
+    queryFn: async () => {
+      const res = await api.getFormations({ published: "all" });
+      if (Array.isArray(res)) return res;
+      if (res?.data && Array.isArray(res.data)) return res.data;
+      return [];
+    },
+  });
+
+  // API may return { data: [...] } or raw array
+  const formations = Array.isArray(data) ? data : data?.data || [];
+
+  const filteredFormations = useMemo(() => {
+    let result = formations;
+    if (searchText) {
+      const s = searchText.toLowerCase();
+      result = result.filter((f: any) =>
+        f.title?.toLowerCase().includes(s) || f.description?.toLowerCase().includes(s)
+      );
+    }
+    if (filterCategory) {
+      result = result.filter((f: any) =>
+        f.category?.toLowerCase().includes(filterCategory.toLowerCase())
+      );
+    }
+    if (filterLevel) {
+      result = result.filter((f: any) =>
+        f.level?.toLowerCase().includes(filterLevel.toLowerCase())
+      );
+    }
+    if (publishedOnly) {
+      result = result.filter((f: any) => f.published);
+    }
+    return result;
+  }, [formations, searchText, filterCategory, filterLevel, publishedOnly]);
 
   return (
 
@@ -38,6 +79,72 @@ export default function FormationsPage() {
 
       </div>
 
+      {/* Filtres */}
+      <div className="bg-white rounded-2xl shadow-lg p-6 mb-8 border">
+        <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+          <Search className="w-5 h-5" />
+          Filtres
+        </h3>
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          {/* Search input */}
+          <div>
+            <label className="block text-sm font-medium mb-2">Rechercher</label>
+            <input
+              type="text"
+              placeholder="Titre ou description..."
+              value={searchText}
+              onChange={(e) => setSearchText(e.target.value)}
+              className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+            />
+          </div>
+
+          {/* Category filter */}
+          <div>
+            <label className="block text-sm font-medium mb-2">Catégorie</label>
+            <input
+              type="text"
+              placeholder="Catégorie..."
+              value={filterCategory}
+              onChange={(e) => setFilterCategory(e.target.value)}
+              className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+            />
+          </div>
+
+          {/* Level filter */}
+          <div>
+            <label className="block text-sm font-medium mb-2">Niveau</label>
+            <input
+              type="text"
+              placeholder="Débutant, Intermédiaire..."
+              value={filterLevel}
+              onChange={(e) => setFilterLevel(e.target.value)}
+              className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+            />
+          </div>
+
+          {/* Published only checkbox */}
+          <div className="flex items-center space-x-2">
+            <input
+              type="checkbox"
+              id="filter-published"
+              checked={publishedOnly}
+              onChange={(e) => setPublishedOnly(e.target.checked)}
+              className="h-4 w-4 text-primary border-gray-300 rounded"
+            />
+            <label htmlFor="filter-published" className="text-sm font-medium">
+              Publiées seulement
+            </label>
+          </div>
+
+          {/* Results count */}
+          <div className="flex items-end">
+            <p className="text-sm font-medium text-muted-foreground">
+              {filteredFormations.length} formation{filteredFormations.length !== 1 ? "s" : ""} trouvée{filteredFormations.length !== 1 ? "s" : ""}
+            </p>
+          </div>
+        </div>
+      </div>
+
       {showCreateForm && (
 
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
@@ -54,7 +161,20 @@ export default function FormationsPage() {
 
       
 
-      <FormationList />
+      <FormationList 
+        formations={filteredFormations.map((f: any) => ({
+          id: String(f.id),
+          title: f.title || "",
+          description: f.description || "",
+          category: f.category || "",
+          level: f.level || "",
+          duration: f.duration || "",
+          price: f.price !== undefined ? String(f.price) : "",
+          published: f.published ?? false,
+          created_at: f.created_at || new Date().toISOString(),
+          image_url: f.image_url,
+        }))}
+      />
 
     </div>
 

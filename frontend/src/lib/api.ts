@@ -95,7 +95,7 @@ const apiReal = {
   // admin versions simply reuse the same endpoints but include the admin token
   // and are kept as separate helpers for clarity in the UI code.
   getAdminJobs: async () => {
-    const url = buildApiUrl(`/jobs`);
+    const url = buildApiUrl(`/admin/jobs`);
     const res = await fetch(url, { headers: authHeaders(undefined, 'adminToken') });
     const json = await res.json();
     // server typically returns { data: [...] }
@@ -136,7 +136,7 @@ const apiReal = {
 
   // Backwards-compatible alias used by admin UI (was calling `api.deleteAdminJob`)
   deleteAdminJob: async (jobId: string) => {
-    const res = await fetch(buildApiUrl(`/jobs/${jobId}`), {
+    const res = await fetch(buildApiUrl(`/admin/jobs/${jobId}`), {
       method: 'DELETE',
       headers: authHeaders(undefined, 'adminToken'),
     });
@@ -144,9 +144,9 @@ const apiReal = {
   },
 
   publishJob: async (jobId: string, published: boolean) => {
-    const res = await fetch(buildApiUrl(`/jobs/${jobId}`), {
+    const res = await fetch(buildApiUrl(`/admin/jobs/${jobId}/publish`), {
       method: 'PATCH',
-      headers: authHeaders('application/json'),
+      headers: authHeaders('application/json', 'adminToken'),
       body: JSON.stringify({ published, published_at: published ? new Date().toISOString() : null }),
     });
     return res.json();

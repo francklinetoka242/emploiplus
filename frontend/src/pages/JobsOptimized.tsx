@@ -176,6 +176,17 @@ const JobsOptimized = () => {
                           toast.error("Date limite dépassée ou candidature non disponible");
                         }
                       }}
+                      onSmartApply={() => {
+                        const dl = jobItem.deadline
+                          ? new Date(String(jobItem.deadline)).getTime()
+                          : null;
+                        const expired = dl ? dl < Date.now() : false;
+                        if (!expired) {
+                          navigate(`/candidature-intelligente/${String(jobItem.id)}`);
+                        } else {
+                          toast.error("Date limite dépassée");
+                        }
+                      }}
                       isSaved={false}
                       onSave={() => toast.info("Sauvegardé")}
                     />
@@ -216,6 +227,17 @@ const JobsOptimized = () => {
                           navigate(`/recrutement/postuler/${String(jobItem.id)}`);
                         } else {
                           toast.error("Date limite dépassée ou candidature non disponible");
+                        }
+                      }}
+                      onSmartApply={() => {
+                        const dl = jobItem.deadline
+                          ? new Date(String(jobItem.deadline)).getTime()
+                          : null;
+                        const expired = dl ? dl < Date.now() : false;
+                        if (!expired) {
+                          navigate(`/candidature-intelligente/${String(jobItem.id)}`);
+                        } else {
+                          toast.error("Date limite dépassée");
                         }
                       }}
                       isSaved={false}

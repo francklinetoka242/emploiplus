@@ -20,10 +20,17 @@ interface Formation {
   created_at: string;
 }
 
-export default function FormationList() {
-  const [formations, setFormations] = useState<Formation[]>([]);
+interface FormationListProps {
+  /** optional externally provided list (e.g. filtered from parent) */
+  formations?: Formation[];
+}
+
+export default function FormationList({ formations: initialFormations }: FormationListProps) {
+  const [formations, setFormations] = useState<Formation[]>(initialFormations || []);
   const [editing, setEditing] = useState<Formation | null>(null);
   const [showForm, setShowForm] = useState(false);
+
+  const queryClient = useQueryClient();
 
   const fetchFormations = async () => {
     const res = await fetch("/api/formations");
@@ -31,7 +38,13 @@ export default function FormationList() {
     setFormations(data);
   };
 
-  useEffect(() => { fetchFormations(); }, []);
+  useEffect(() => {
+    if (initialFormations) {
+      setFormations(initialFormations);
+    } else {
+      fetchFormations();
+    }
+  }, [initialFormations]);
 
   const togglePublish = async (id: string, published: boolean) => {
     await fetch(`/api/formations/${id}/publish`, {
@@ -40,13 +53,22 @@ export default function FormationList() {
       body: JSON.stringify({ published: !published }),
     });
     toast.success(published ? "Formation dépubliée" : "Formation publiée");
-    fetchFormations();
+    if (initialFormations) {
+      // if parent supplied list, invalidate so it refetches
+      queryClient.invalidateQueries(["admin-formations"]);
+    } else {
+      fetchFormations();
+    }
   };
 
   const deleteFormation = async (id: string) => {
     await fetch(`/api/formations/${id}`, { method: "DELETE" });
     toast.success("Formation supprimée");
-    fetchFormations();
+    if (initialFormations) {
+      queryClient.invalidateQueries(["admin-formations"]);
+    } else {
+      fetchFormations();
+    }
   };
 
   return (

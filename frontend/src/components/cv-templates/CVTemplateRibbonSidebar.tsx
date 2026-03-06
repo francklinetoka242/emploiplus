@@ -7,6 +7,7 @@ interface CVData {
   email: string;
   location: string;
   summary?: string;
+  profile_image_url?: string;
   experiences?: Array<{
     company: string;
     position: string;
@@ -30,8 +31,12 @@ export function CVTemplateRibbonSidebar({ data }: { data: CVData }) {
       {/* Left Sidebar - Gray Medium */}
       <div className="w-35% bg-gray-500 text-white p-4 flex flex-col items-center overflow-y-auto">
         {/* Profile Photo */}
-        <div className="w-20 h-20 rounded-lg bg-gray-400 flex items-center justify-center text-3xl font-bold mb-8">
-          {data.full_name.charAt(0)}
+        <div className="w-20 h-20 rounded-lg bg-gray-400 flex items-center justify-center text-3xl font-bold mb-8 overflow-hidden">
+          {data.profile_image_url ? (
+            <img src={data.profile_image_url} alt="Profile" className="w-full h-full object-cover" />
+          ) : (
+            data.full_name.charAt(0)
+          )}
         </div>
 
         {/* Section: About Me */}
@@ -54,7 +59,7 @@ export function CVTemplateRibbonSidebar({ data }: { data: CVData }) {
             </div>
             <ul className="text-xs text-white mt-3 space-y-1">
               {data.skills.map((skill, idx) => (
-                <li key={idx}>• {skill}</li>
+                <li key={idx}>• {typeof skill === 'string' ? skill : skill.name}</li>
               ))}
             </ul>
           </div>

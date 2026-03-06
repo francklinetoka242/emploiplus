@@ -274,7 +274,7 @@ const BusinessCardEditorModal: React.FC<BusinessCardEditorModalProps> = ({
                 value={formData.phone}
                 onChange={e => handleChange('phone', e.target.value)}
                 className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="+33 6 12 34 56 78"
+                placeholder="+242 06 731 10 33"
               />
             </div>
 
@@ -285,7 +285,7 @@ const BusinessCardEditorModal: React.FC<BusinessCardEditorModalProps> = ({
                 value={formData.location}
                 onChange={e => handleChange('location', e.target.value)}
                 className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="Paris, France"
+                placeholder="Brazzaville, Congo"
               />
             </div>
 

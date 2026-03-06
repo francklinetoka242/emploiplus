@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
+import { DocumentPageViewer } from '@/components/DocumentPageViewer';
 
-const texts: Record<string, any> = {
+const fallbackTexts: Record<string, any> = {
   fr: {
     title: 'Politique de confidentialité',
     content: `Chez Emploi+, nous respectons votre vie privée. Nous collectons uniquement les données nécessaires pour fournir nos services : nom, email, CVs et documents que vous choisissez de sauvegarder. Nous ne vendons pas vos données. Les fichiers générés sont stockés sur notre serveur et accessibles via votre compte.`
@@ -18,11 +19,14 @@ const texts: Record<string, any> = {
 export default function Privacy(){
   const [lang, setLang] = useState<string>('fr');
   useEffect(()=>{ setLang(localStorage.getItem('lang') || 'fr'); }, []);
-  const t = texts[lang] || texts.fr;
+  
+  const fallback = fallbackTexts[lang] || fallbackTexts.fr;
+  
   return (
-    <div className="container py-16 max-w-4xl">
-      <h1 className="text-3xl font-bold mb-6">{t.title}</h1>
-      <p className="text-muted-foreground whitespace-pre-line">{t.content}</p>
-    </div>
+    <DocumentPageViewer
+      slug="privacy"
+      fallbackTitle={fallback.title}
+      fallbackContent={fallback.content}
+    />
   );
 }
