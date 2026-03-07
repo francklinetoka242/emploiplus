@@ -5,6 +5,10 @@
 .env.production
 .env.development
 
+
+#**/uploads/
+**/uploads/
+
 # Logs
 logs
 *.log

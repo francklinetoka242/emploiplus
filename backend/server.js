@@ -205,8 +205,12 @@ app.use('/api/admin/audit-logs', requireAdmin, requireRoles('super_admin'), audi
 app.use('/api/documentations', documentationRoutes);
 app.use('/api/admin/documentations', requireAdmin, requireRoles('super_admin','admin'), documentationRoutes);
 
-// servir les fichiers uploadés en statique (pour que le client puisse accéder à `/uploads/...`)
-app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
+// servir uniquement les fichiers publics des uploads en statique
+// cela évite l'accès direct aux dossiers privées (gérés via route sécurisée)
+app.use(
+  '/uploads',
+  express.static(path.join(__dirname, '../uploads/public'))
+);
 
 // ===== SERVIR LA FRONTEND (SPA) =====
 

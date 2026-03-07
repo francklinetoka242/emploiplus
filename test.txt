@@ -21,5 +21,9 @@ git clone https://github.com/francklinetoka/emploiplus.git .
 # Sinon, récupère juste les changements
 git pull origin main
 
+cd ~/public_html/frontend
+npm install
+npm run build
+
 # Installe et relance
 cd backend && npm install && pm2 restart all
