@@ -56,8 +56,21 @@ async function updateJob(req, res) {
     res.json({ data: updated });
   } catch (err) {
     console.error('updateJob error', err);
-    const status = err.status || (/required|must/i.test(err.message) ? 400 : 500);
-    res.status(status).json({ message: err.message || 'Internal server error' });
+    
+    // Detect PostgreSQL foreign key constraint violations
+    let status = 500;
+    let message = err.message || 'Internal server error';
+    
+    if (err.message && err.message.includes('fk_jobs_company_id')) {
+      status = 400;
+      message = 'The specified company_id does not exist';
+    } else if (err.status) {
+      status = err.status;
+    } else if (/required|must|invalid|not found|does not exist|does not reference/i.test(err.message)) {
+      status = 400;
+    }
+    
+    res.status(status).json({ message });
   }
 }
 
