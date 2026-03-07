@@ -155,7 +155,7 @@ export const BottomNavigationBar: React.FC<BottomNavigationBarProps> = ({
   return (
     <>
       {/* Navigation Bar - Mobile Only */}
-      <nav className={`fixed bottom-0 left-0 right-0 z-[100] md:hidden transition-transform duration-300 ${
+      <nav className={`fixed bottom-0 left-0 right-0 z-[100] md:hidden pb-[env(safe-area-inset-bottom)] transition-transform duration-300 ${
         isVisible ? "translate-y-0" : "translate-y-full"
       }`}>
         {/* Glassmorphism Background */}

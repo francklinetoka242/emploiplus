@@ -11,7 +11,7 @@ export const HeaderMobileGuest: React.FC = () => {
   const [menuOpen, setMenuOpen] = useState(false);
 
   return (
-    <header className="sticky top-0 z-40 bg-white border-b border-gray-200">
+    <header className="sticky top-0 z-40 bg-white border-b border-gray-200 pt-[env(safe-area-inset-top)]">
       <div className="px-4 py-3 flex items-center justify-between">
         {/* Logo - Same as PC version */}
         <Link to="/" className="flex items-center">

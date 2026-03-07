@@ -31,7 +31,7 @@ export const BottomNavigationGuest: React.FC = () => {
   };
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-[100] bg-white/80 backdrop-blur-lg border-t border-gray-100 px-2 py-3">
+    <nav className="fixed bottom-0 left-0 right-0 z-[100] pb-[env(safe-area-inset-bottom)] bg-white/80 backdrop-blur-lg border-t border-gray-100 px-2 py-3">
       <div className="flex items-center justify-around max-w-full">
         {navigationItems.map((item) => {
           const Icon = item.icon;

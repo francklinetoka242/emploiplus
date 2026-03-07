@@ -14,17 +14,12 @@ La recommandation : Ajoute un petit bouton "M'envoyer cette offre par Email/Wh
 
 
 
-- Le "Magic Link" de Suivi
-Comme le visiteur n'a pas de tableau de bord pour voir l'état de sa candidature, il risque de se sentir dans le noir après avoir cliqué sur "Envoyer".
+cd ~/public_html
+# Si le dossier est vide, clone d'abord
+git clone https://github.com/francklinetoka/emploiplus.git .
 
-La solution : Une fois la candidature envoyée, affiche un message : "Candidature envoyée
+# Sinon, récupère juste les changements
+git pull origin main
 
-- La Sauvegarde Temporaire (Local Persistence)
-Si un visiteur commence à remplir sa candidature, part créer son CV, et que son navigateur se rafraîchit par erreur ou qu'il perd sa connexion (fréquent en mobilité), il perd tout.
-
-La recommandation : Sauvegarde le contenu du champ "Message d'accompagnement" dans le localStorage en temps réel. S'il revient sur la page, il retrouve son texte.
-
-- Validation Visuelle Immédiate
-Les visiteurs font souvent des erreurs sur les types de fichiers.
-
-La recommandation : Ajoute une vérification instantanée. S'il tente d'uploader un fichier .png à la place d'un .pdf, affiche une petite alerte subtile avant même qu'il ne clique sur envoyer.
+# Installe et relance
+cd backend && npm install && pm2 restart all
