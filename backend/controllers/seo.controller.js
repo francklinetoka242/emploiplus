@@ -62,6 +62,14 @@ export async function getSitemapInfo(req, res) {
       exists: true,
       ...info
     });
+  } catch (err) {
+    console.error('[ADMIN] Erreur lors de la récupération des infos du sitemap:', err);
+    res.status(500).json({
+      success: false,
+      message: 'Erreur lors de la récupération des infos du sitemap',
+      error: err.message
+    });
+  }
 }
 
 /**
