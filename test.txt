@@ -28,7 +28,9 @@ npm run build
 # Installe et relance
 cd backend && npm install && pm2 restart all
 
+#deplacer le dist à la racine
 
+cp -r ~/public_html/frontend/dist/* ~/public_html/
 
 
 Mettre à jour le SiteMAp : 

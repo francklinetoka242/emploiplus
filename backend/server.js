@@ -87,7 +87,11 @@ app.use((req, res, next) => {
 app.use(helmet());
 
 // cross-origin : configurer la politique CORS
-const cors = require('cors');
+// sécurité : utiliser helmet pour définir divers en-têtes HTTP
+app.use(helmet());
+
+// cross-origin : configurer la politique CORS
+// ✅ ON SUPPRIME LA LIGNE 'const cors = require...' car l'import est déjà fait en haut du fichier
 
 const corsOptions = {
   // On récupère l'URL du .env, sinon on met celle du site par défaut
