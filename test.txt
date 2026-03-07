@@ -64,3 +64,42 @@ cd ../backend
 git pull origin main
 npm install
 pm2 restart backend-prod
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# 1. Mise à jour globale
+cd ~/public_html
+git pull origin main
+
+# 2. REBUILD FRONTEND (avec correction du binaire)
+cd frontend
+npm install --include=dev  # S'assure que Vite est bien installé
+./node_modules/.bin/vite build  # Force l'utilisation du binaire local
+
+# 3. DÉPLOIEMENT (La "Vitrine")
+# On ne copie que SI le build a réussi
+if [ -d "dist" ]; then
+    cp -r dist/* ~/public_html/
+    echo "✅ Frontend déployé à la racine."
+else
+    echo "❌ Erreur : Le dossier dist n'a pas été généré !"
+fi
+
+# 4. BACKEND
+cd ../backend
+git pull origin main
+npm install
+pm2 restart backend-prod --update-env

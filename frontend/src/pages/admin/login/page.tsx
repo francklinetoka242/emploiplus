@@ -22,7 +22,7 @@ export default function AdminLoginPage() {
     console.log('🔐 Tentative de connexion admin...');
 
     try {
-      const res = await fetch(buildApiUrl("/api/auth/admin/login"), {
+      const res = await fetch(buildApiUrl("/admin/login"), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include', // Important pour CORS et les cookies
