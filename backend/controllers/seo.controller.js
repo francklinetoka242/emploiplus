@@ -133,4 +133,4 @@ export async function refreshSitemapWithToken(req, res) {
       message: 'Erreur serveur lors du refresh du sitemap',
       error: err.message
     });
-  }
+  }}
