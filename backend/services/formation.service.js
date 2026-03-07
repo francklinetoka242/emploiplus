@@ -24,11 +24,16 @@ function validateFormationData(data, isUpdate = false) {
 // retrieve all formations with pagination and optional published filter
 async function getFormations(query = {}) {
   try {
-    const limit = parseInt(query.limit) || 20;
+    let limit = parseInt(query.limit) || 20;
     const offset = parseInt(query.offset) || 0;
 
-    if (limit < 1 || limit > 100) {
-      throw new Error('Limit must be between 1 and 100');
+    // Clamp limit to prevent database overload (same behavior as job.service.js)
+    if (limit < 1) {
+      throw new Error('Limit must be at least 1');
+    }
+    if (limit > 100) {
+      // Instead of throwing, clamp to 100 (matches job.service.js behavior)
+      limit = 100;
     }
     if (offset < 0) {
       throw new Error('Offset must be non-negative');

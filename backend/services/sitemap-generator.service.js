@@ -11,6 +11,45 @@ const __dirname = path.dirname(__filename);
 const SITEMAP_PATH = path.join(__dirname, '../public/sitemap.xml');
 
 /**
+ * Helper: Récupère ALL items en paginating (max 100 par page)
+ * @param {Function} serviceMethod - Méthode du service (jobService.getJobs ou formationService.getFormations)
+ * @param {Object} baseQuery - Query de base (ex: { published: true })
+ * @returns {Promise<Array>} Liste complète de tous les items
+ */
+async function getAllItemsWithPagination(serviceMethod, baseQuery = {}) {
+  const allItems = [];
+  const pageSize = 100;  // Max par page
+  let offset = 0;
+  let hasMore = true;
+
+  while (hasMore) {
+    try {
+      const query = { ...baseQuery, limit: pageSize, offset };
+      const result = await serviceMethod(query);
+      
+      const items = Array.isArray(result) ? result : (result.data || []);
+      
+      if (items.length === 0) {
+        hasMore = false;
+      } else {
+        allItems.push(...items);
+        offset += pageSize;
+        
+        // Si moins d'items que pageSize, on a atteint la fin
+        if (items.length < pageSize) {
+          hasMore = false;
+        }
+      }
+    } catch (err) {
+      console.warn(`[SITEMAP] Erreur lors de la récupération (offset ${offset}):`, err.message);
+      hasMore = false;
+    }
+  }
+
+  return allItems;
+}
+
+/**
  * Génère le fichier sitemap.xml à partir de la base de données
  * et l'écrit physiquement dans public/sitemap.xml
  * 
@@ -21,13 +60,17 @@ export async function generateAndWriteSitemap(baseUrl) {
   try {
     console.log(`[SITEMAP] Démarrage génération pour ${baseUrl}`);
 
-    // Récupérer toutes les offres d'emploi publiées
-    const jobsResult = await jobService.getJobs({ published: true, limit: 10000, offset: 0 });
-    const jobs = jobsResult.data || jobsResult;
+    // Récupérer TOUTES les offres d'emploi publiées (avec pagination)
+    const jobs = await getAllItemsWithPagination(
+      jobService.getJobs.bind(jobService),
+      { published: true }
+    );
     
-    // Récupérer toutes les formations publiées
-    const formationsResult = await formationService.getFormations({ published: true, limit: 10000, offset: 0 });
-    const formations = Array.isArray(formationsResult) ? formationsResult : (formationsResult.data || []);
+    // Récupérer TOUTES les formations publiées (avec pagination)
+    const formations = await getAllItemsWithPagination(
+      formationService.getFormations.bind(formationService),
+      { published: true }
+    );
 
     console.log(`[SITEMAP] ${jobs.length} jobs trouvées, ${formations.length} formations trouvées`);
 
