@@ -48,7 +48,7 @@ export default function ServiceForm({ categories, onSuccess }: ServiceFormProps)
         display_order: formData.display_order || 0,
       });
 
-      if (res?.id || res?.success) {
+      if (res?.data?.id || res?.success) {
         toast.success('✅ Service créé');
         setFormData({
           title: '',
@@ -123,7 +123,7 @@ export default function ServiceForm({ categories, onSuccess }: ServiceFormProps)
             name="price"
             value={formData.price}
             onChange={handleChange}
-            placeholder="Ex: 50 €"
+            placeholder="Ex: 50 000 FCFA"
             className="w-full px-3 py-2 border border-slate-300 rounded bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
             disabled={loading}
           />

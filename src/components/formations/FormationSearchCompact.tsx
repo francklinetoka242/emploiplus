@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo, Dispatch, SetStateAction } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/lib/api";
-import { Search, ChevronDown, ChevronUp, X } from "lucide-react";
+import { Search, Clock, SortAsc, Tag } from "lucide-react";
 
 interface Formation {
   id: number;
@@ -13,11 +13,11 @@ interface Formation {
   created_at: string;
 }
 
+// only the filters we actually display now (search + category + sort)
 type Filters = {
   search: string;
   category: string;
-  level: string;
-  priceRange: string;
+  sort?: "recent" | "az" | "price";
 };
 
 interface FormationSearchCompactProps {
@@ -27,12 +27,10 @@ interface FormationSearchCompactProps {
 export default function FormationSearchCompact({ onFilterChange }: FormationSearchCompactProps) {
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("");
-  const [level, setLevel] = useState("");
-  const [priceRange, setPriceRange] = useState("");
-  const [isExpanded, setIsExpanded] = useState(false);
+  const [sort, setSort] = useState<"recent" | "az" | "price" | undefined>(undefined);
 
   // Show search bar by default (independent of formation loading)
-  const isVisible = true;
+  const isVisible = true; // always shown sticky
 
   const { data: formationsResponse = { formations: [], total: 0 } } = useQuery({
     queryKey: ["formations"],
@@ -44,7 +42,7 @@ export default function FormationSearchCompact({ onFilterChange }: FormationSear
     ? formationsResponse
     : (formationsResponse?.formations || []);
 
-  // Extract filter options
+  // Extract filter options for categories only (we dropped level/price selects)
   const categories = useMemo(() => {
     const cats = new Set(
       (formations || [])
@@ -54,47 +52,36 @@ export default function FormationSearchCompact({ onFilterChange }: FormationSear
     return Array.from(cats).sort() as string[];
   }, [formations]);
 
-  const levels = useMemo(() => {
-    const lvls = new Set(
-      (formations || [])
-        .map((f: Formation) => f.level)
-        .filter(Boolean)
-    );
-    return Array.from(lvls).sort() as string[];
-  }, [formations]);
-
-  const priceRanges = ["Gratuit", "0-100", "100-500", "500+"];
-
-  // Notify parent of filter changes
+  // Notify parent of filter changes with debounce on search
   useEffect(() => {
-    const newFilters: Filters = {
-      search,
-      category,
-      level,
-      priceRange,
-    };
-    onFilterChange?.(newFilters);
-  }, [search, category, level, priceRange, onFilterChange]);
+    const handler = setTimeout(() => {
+      const newFilters: Filters = {
+        search,
+        category,
+        sort,
+      };
+      onFilterChange?.(newFilters);
+    }, 300);
+    return () => clearTimeout(handler);
+  }, [search, category, sort, onFilterChange]);
 
   const clearFilters = () => {
     setSearch("");
     setCategory("");
-    setLevel("");
-    setPriceRange("");
-    setIsExpanded(false);
+    setSort(undefined);
   };
 
-  const hasActiveFilters = search || category || level || priceRange;
+  const hasActiveFilters = search || category || sort;
 
   return (
     <div
-      className={`sticky top-0 z-40 bg-white border-b border-gray-200 transition-transform duration-300 ${
+      className={`sticky top-0 z-40 bg-white shadow-lg border-b border-gray-200 transition-transform duration-300 ${
         isVisible ? "translate-y-0" : "-translate-y-full"
       } md:relative md:translate-y-0`}
     >
       <div className="px-4 py-3">
         {/* Main Search Bar */}
-        <div className="flex gap-2 items-end">
+        <div className="flex flex-col md:flex-row md:items-end gap-2">
           <div className="flex-1 relative">
             <label className="block text-xs font-semibold text-gray-700 mb-1">
               Rechercher
@@ -111,90 +98,64 @@ export default function FormationSearchCompact({ onFilterChange }: FormationSear
             </div>
           </div>
 
-          {/* Toggle Filters Button */}
-          <button
-            onClick={() => setIsExpanded(!isExpanded)}
-            className="h-10 px-3 flex items-center justify-center rounded-lg border border-gray-300 hover:bg-gray-50 transition-colors"
-            title={isExpanded ? "Masquer les filtres" : "Afficher les filtres"}
-          >
-            {isExpanded ? (
-              <ChevronUp className="h-4 w-4" />
-            ) : (
-              <ChevronDown className="h-4 w-4" />
-            )}
-          </button>
+          {/* pill-based sort filters */}
+          <div className="flex flex-wrap gap-2">
+            <span
+              className={`cursor-pointer flex items-center gap-1 px-3 py-1 rounded-full text-sm transition-colors ${
+                sort === "recent" ? "bg-primary text-white" : "bg-gray-100 text-gray-700"
+              }`}
+              onClick={() => setSort(sort === "recent" ? undefined : "recent")}
+            >
+              <Clock className="w-4 h-4" />
+              Récents
+            </span>
+            <span
+              className={`cursor-pointer flex items-center gap-1 px-3 py-1 rounded-full text-sm transition-colors ${
+                sort === "az" ? "bg-primary text-white" : "bg-gray-100 text-gray-700"
+              }`}
+              onClick={() => setSort(sort === "az" ? undefined : "az")}
+            >
+              <SortAsc className="w-4 h-4" />
+              A‑Z
+            </span>
+            <span
+              className={`cursor-pointer flex items-center gap-1 px-3 py-1 rounded-full text-sm transition-colors ${
+                sort === "price" ? "bg-primary text-white" : "bg-gray-100 text-gray-700"
+              }`}
+              onClick={() => setSort(sort === "price" ? undefined : "price")}
+            >
+              <Tag className="w-4 h-4" />
+              Prix
+            </span>
+          </div>
         </div>
 
-        {/* Expanded Filters */}
-        {isExpanded && (
-          <div className="mt-3 pt-3 border-t border-gray-200 grid grid-cols-2 gap-3 sm:grid-cols-3">
-            {/* Category Filter */}
-            <div>
-              <label className="block text-xs font-semibold text-gray-700 mb-1">
-                Catégorie
-              </label>
-              <select
-                value={category}
-                onChange={(e) => setCategory(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-sm"
+        {/* Categories row */}
+        {categories.length > 0 && (
+          <div className="mt-3 flex flex-wrap gap-2">
+            {categories.map((cat) => (
+              <span
+                key={cat}
+                className={`cursor-pointer px-3 py-1 rounded-full text-sm transition-colors ${
+                  category === cat ? "bg-primary text-white" : "bg-gray-100 text-gray-700"
+                }`}
+                onClick={() => setCategory(category === cat ? "" : cat)}
               >
-                <option value="">Tous</option>
-                {categories.map((cat) => (
-                  <option key={cat} value={cat}>
-                    {cat}
-                  </option>
-                ))}
-              </select>
-            </div>
+                {cat}
+              </span>
+            ))}
+          </div>
+        )}
 
-            {/* Level Filter */}
-            <div>
-              <label className="block text-xs font-semibold text-gray-700 mb-1">
-                Niveau
-              </label>
-              <select
-                value={level}
-                onChange={(e) => setLevel(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-sm"
-              >
-                <option value="">Tous</option>
-                {levels.map((lvl) => (
-                  <option key={lvl} value={lvl}>
-                    {lvl}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            {/* Price Filter */}
-            <div>
-              <label className="block text-xs font-semibold text-gray-700 mb-1">
-                Prix
-              </label>
-              <select
-                value={priceRange}
-                onChange={(e) => setPriceRange(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-sm"
-              >
-                <option value="">Tous</option>
-                {priceRanges.map((range) => (
-                  <option key={range} value={range}>
-                    {range}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            {/* Clear Filters Button */}
-            {hasActiveFilters && (
-              <button
-                onClick={clearFilters}
-                className="col-span-2 sm:col-span-1 h-10 px-3 flex items-center justify-center gap-1 rounded-lg border border-gray-300 hover:bg-red-50 hover:border-red-300 text-sm font-medium text-gray-700 hover:text-red-600 transition-colors"
-              >
-                <X className="h-4 w-4" />
-                Réinitialiser
-              </button>
-            )}
+        {/* clear button */}
+        {hasActiveFilters && (
+          <div className="mt-2">
+            <button
+              onClick={clearFilters}
+              className="text-xs text-red-600 hover:underline"
+            >
+              Effacer les filtres
+            </button>
           </div>
         )}
       </div>

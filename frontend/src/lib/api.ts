@@ -33,6 +33,7 @@ export interface JobData {
   requirements?: string;
   image_url?: string;
   application_url?: string;
+  application_email?: string;
   application_via_emploi?: boolean;
   deadline?: string;
   deadline_date?: string;

@@ -131,7 +131,7 @@ export default function DigitalServices() {
                             </p>
                             {service.price && (
                               <p className="text-sm font-semibold text-slate-900 mb-1">
-                                {service.price} USD
+                                {service.price} FCFA
                               </p>
                             )}
                             {service.duration && (

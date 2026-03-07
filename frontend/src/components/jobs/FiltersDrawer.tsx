@@ -124,7 +124,7 @@ export function FiltersDrawer({ isOpen, onClose, onApply, type = 'jobs' }: Filte
               {/* Salary */}
               <div>
                 <label className="block text-sm font-medium mb-2 text-gray-700">
-                  Salaire min (USD)
+                  Salaire min (FCFA)
                 </label>
                 <Input
                   type="number"

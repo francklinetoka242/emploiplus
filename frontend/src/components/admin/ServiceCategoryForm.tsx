@@ -30,7 +30,7 @@ export default function ServiceCategoryForm({ onSuccess }: ServiceCategoryFormPr
       setLoading(true);
       const res = await api.createServiceCategory(formData);
       
-      if (res?.id || res?.success) {
+      if (res?.data?.id || res?.success) {
         toast.success('✅ Catégorie créée');
         setFormData({ title: '', description: '', icon: '' });
         onSuccess?.();

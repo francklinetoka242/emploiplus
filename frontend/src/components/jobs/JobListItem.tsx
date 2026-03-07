@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { MapPin, Briefcase, Calendar, ChevronDown, ChevronUp, Clock, Share2, Copy, ExternalLink, Sparkles } from "lucide-react";
+import { MapPin, Briefcase, Calendar, ChevronDown, ChevronUp, Clock, Share2, Copy, ExternalLink, Sparkles, Mail } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { MatchScoreBadge } from "./MatchScoreBadge";
 import { toast } from "sonner";
@@ -272,6 +272,13 @@ export function JobListItem({
           {job.salary && (
             <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-amber-50 border border-amber-200 rounded-full text-amber-800 font-medium">
               💰 {String(job.salary)}
+            </span>
+          )}
+          {/* show application email if provided, otherwise show company email */}
+          {(job.application_email || job.company_email) && (
+            <span className="inline-flex items-center gap-1 px-3 py-1 bg-gray-100 rounded-full text-gray-700 text-sm">
+              <Mail className="w-4 h-4" />
+              {String(job.application_email || job.company_email)}
             </span>
           )}
         </div>

@@ -113,6 +113,11 @@ export default function JobList({ jobs: initialJobs }: JobListProps) {
                   <span>{job.type}</span>
                   {job.sector && <span className="px-3 py-1 rounded-full bg-primary/10 text-primary">{job.sector}</span>}
                   <span>{job.salary || "Salaire non communiqué"}</span>
+                  {job.application_email && (
+                    <span className="px-3 py-1 rounded-full bg-gray-100 text-gray-700">
+                      {job.application_email}
+                    </span>
+                  )}
                 </div>
                 
                 {/* Deadline date display */}

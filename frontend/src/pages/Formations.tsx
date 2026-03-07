@@ -4,17 +4,15 @@ import { useNavigate, Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "@/lib/api";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { useAuth } from "@/hooks/useAuth";
 import { FormationListItem } from "@/components/formations/FormationListItem";
-import FormationSearchPro from "@/components/formations/FormationSearchPro";
+import FormationSearchCompact from "@/components/formations/FormationSearchCompact";
 import { ProfileSidebar } from "@/components/layout/ProfileSidebar";
 import { PWALayout } from '@/components/layout/PWALayout';
 import { toast } from "sonner";
-import { Clock, Users, DollarSign, BookOpen, Calendar, AlertCircle, CheckCircle, Briefcase, User, TrendingUp } from "lucide-react";
+import { BookOpen, AlertCircle } from "lucide-react";
 
 interface Formation {
   id: number;
@@ -49,18 +47,18 @@ export default function Formations() {
   const [allFormations, setAllFormations] = useState<Formation[]>([]);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
-  const [isLoadingMore, setIsLoadingMore] = useState(false);
-  const [expandedFormationId, setExpandedFormationId] = useState<number | null>(null);
+  const [isLoadingMore, setIsLoadingMore] = useState(false); // used for manual load more button
+  // expansion state no longer needed
   const loaderRef = useRef<HTMLDivElement>(null);
   const [mobileView, setMobileView] = useState<"left" | "center" | "right">("center");
-  const [filters, setFilters] = useState({
+  const [filters, setFilters] = useState<{
+    search: string;
+    category: string;
+    sort?: "recent" | "az" | "price";
+  }>({
     search: "",
     category: "",
-    level: "",
-    priceRange: "",
-    provider: "",
-    country: "",
-    recent: true,
+    sort: "recent", // default to recent
   });
 
   useEffect(() => {
@@ -70,27 +68,8 @@ export default function Formations() {
     }
   }, []);
 
-  // Reset pagination when filters change but don't clear on default state
+  // Reset pagination when filters change
   useEffect(() => {
-    // Do not reset if user types a short search (<3 chars)
-    if (filters.search && filters.search.length > 0 && filters.search.length < 3) return;
-
-    const defaultFilters = {
-      search: "",
-      category: "",
-      level: "",
-      priceRange: "",
-      provider: "",
-      country: "",
-      recent: true,
-    };
-    const isDefault = Object.keys(defaultFilters).every(
-      (k) => (filters as any)[k] === (defaultFilters as any)[k]
-    );
-    if (isDefault) {
-      return;
-    }
-
     setAllFormations([]);
     setPage(1);
     setHasMore(true);
@@ -101,35 +80,44 @@ export default function Formations() {
     queryKey: ["formations", page, filters],
     queryFn: async () => {
       const response = await api.getFormations({
-        q: filters.search || '',
-        provider: filters.provider || '',
-        country: filters.country || '',
-        category: filters.category || '',
-        level: filters.level || '',
         limit: 10,
         offset: (page - 1) * 10,
-        sortBy: 'created_at',
-        sortOrder: filters.recent ? 'DESC' : 'ASC',
+        search: filters.search || undefined,
+        category: filters.category || undefined,
+        sort: filters.sort || undefined,
+        published: true, // only show published formations
       });
-      // Handle both array and object responses
-      const unwrap = (r: any) => Array.isArray(r) ? r : (r?.data?.data ?? r?.data ?? r?.formations ?? r);
-      const data = unwrap(response) || [];
-      const total = response?.total ?? response?.pagination?.total ?? data.length;
-      return { formations: data, total };
+      // API returns { data: [formations] }
+      const formations = response?.data || [];
+      return { formations, total: formations.length };
     },
-    // Block search requests when search is present but <3 chars
-    enabled: !(filters.search && filters.search.length > 0 && filters.search.length < 3),
+    enabled: true,
     staleTime: 1000 * 60 * 5,
-    gcTime: 1000 * 60 * 10, // Keep cached data for 10 minutes
   });
 
   // Update allFormations when new data arrives
   useEffect(() => {
     if (isLoading) return;
 
-    const newFormations = Array.isArray(formationsData?.formations)
+    let newFormations = Array.isArray(formationsData?.formations)
       ? formationsData.formations
       : [];
+
+    // simple client sort
+    if (filters.sort) {
+      newFormations = [...newFormations].sort((a, b) => {
+        switch (filters.sort) {
+          case "az":
+            return String(a.title || "").localeCompare(String(b.title || ""));
+          case "price":
+            return (Number(a.price) || 0) - (Number(b.price) || 0);
+          case "recent":
+            return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+          default:
+            return 0;
+        }
+      });
+    }
 
     if (page === 1) {
       setAllFormations(newFormations);
@@ -137,16 +125,11 @@ export default function Formations() {
       setAllFormations((prev) => [...prev, ...newFormations]);
     }
 
-    // Check if there are more formations to load
     setHasMore(newFormations.length >= 10);
     setIsLoadingMore(false);
-  }, [formationsData, isLoading, page]);
+  }, [formationsData, isLoading, page, filters.sort]);
 
-  // Ensure initial formations are loaded on mount (show all by default)
-  useEffect(() => {
-    // Only trigger the query once on mount to show initial data
-    // The queryFn from useQuery will handle subsequent loads with filters
-  }, []);
+  // Initial load is handled by the useQuery above
 
   // Infinite scroll handler
   const loadMore = useCallback(() => {
@@ -213,17 +196,11 @@ export default function Formations() {
     return (
       <div className="min-h-screen bg-gray-50">
         <div className="container py-12 px-4">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-            <div className="lg:col-span-3">
-              <Skeleton className="h-96 rounded-lg" />
-            </div>
-            <div className="lg:col-span-6">
-              <div className="space-y-4">
-                {[1, 2, 3, 4, 5].map((i) => (
-                  <Skeleton key={i} className="h-24 rounded-lg" />
-                ))}
-              </div>
-            </div>
+          {/* simple grid skeleton instead of sidebar-heavy layout */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {[1, 2, 3, 4, 5, 6].map((i) => (
+              <Skeleton key={i} className="h-40 rounded-lg" />
+            ))}
           </div>
         </div>
       </div>
@@ -236,9 +213,9 @@ export default function Formations() {
     <div className="min-h-screen bg-gray-50 pb-24 md:pb-0">
 
       <div className="container mx-auto px-4 py-6 pb-24 md:pb-0">
-        {/* New pro search bar for formations */}
+        {/* Search bar */}
         <div className="mb-6">
-          <FormationSearchPro onFilterChange={setFilters} />
+          <FormationSearchCompact onFilterChange={setFilters} />
         </div>
         {/* Main Content with Sidebar */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
@@ -252,39 +229,32 @@ export default function Formations() {
           {/* Center Content - Formations */}
           <div className={`${user ? "lg:col-span-6" : "lg:col-span-9"} lg:block`}>
             {allFormations.length > 0 ? (
-              <>
-                <div className="space-y-4">
+              <> 
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                   {allFormations.map((formation) => (
                     <FormationListItem
                       key={formation.id}
                       formation={formation}
-                      isExpanded={expandedFormationId === formation.id}
-                      onToggle={() =>
-                        setExpandedFormationId(
-                          expandedFormationId === formation.id ? null : formation.id
-                        )
-                      }
                       onEnroll={() => handleEnrollClick(formation)}
                       isEnrolled={enrolledFormations.includes(formation.id)}
                     />
                   ))}
+                </div>
 
-                  {/* Infinite scroll loader */}
-                  <div ref={loaderRef} className="py-8 text-center">
-                    {hasMore ? (
-                      <>
-                        <Skeleton className="h-20 rounded-lg" />
-                        <p className="text-sm text-gray-500 mt-4">Chargement des formations...</p>
-                        <div className="mt-4">
-                          <Button onClick={loadMore} disabled={!hasMore || isLoading || isLoadingMore}>
-                            {isLoadingMore ? 'Chargement...' : 'Charger plus'}
-                          </Button>
-                        </div>
-                      </>
-                    ) : allFormations.length > 0 ? (
-                      <p className="text-gray-500 py-8">Fin de la liste</p>
-                    ) : null}
-                  </div>
+                {/* Infinite scroll loader */}
+                <div ref={loaderRef} className="col-span-full py-8 text-center">
+                  {hasMore ? (
+                    <>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {[1, 2, 3].map((i) => (
+                          <Skeleton key={i} className="h-40 rounded-lg" />
+                        ))}
+                      </div>
+                      <p className="text-sm text-gray-500 mt-4">Chargement des formations...</p>
+                    </>
+                  ) : allFormations.length > 0 ? (
+                    <p className="text-gray-500 py-8">Fin de la liste</p>
+                  ) : null}
                 </div>
               </>
             ) : (

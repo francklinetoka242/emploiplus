@@ -48,12 +48,28 @@ async function getFormations(query = {}) {
     }
 
     // Gather additional filters
+    let sortBy = query.sortBy || 'created_at';
+    let sortOrder = query.sortOrder || 'DESC';
+
+    if (query.sort) {
+      if (query.sort === 'recent') {
+        sortBy = 'created_at';
+        sortOrder = 'DESC';
+      } else if (query.sort === 'az') {
+        sortBy = 'title';
+        sortOrder = 'ASC';
+      } else if (query.sort === 'price') {
+        sortBy = 'price';
+        sortOrder = 'ASC';
+      }
+    }
+
     const filters = {
       search: query.q || query.search || '',
       category: query.category || '',
       level: query.level || '',
-      sortBy: query.sortBy || 'created_at',
-      sortOrder: query.sortOrder || 'DESC',
+      sortBy,
+      sortOrder,
     };
 
     const formations = await FormationModel.getAllFormations(limit, offset, publishedFilter, filters);

@@ -94,8 +94,10 @@ export default function ApplyJob() {
         const b = await res.json().catch(() => ({}));
         throw new Error(b?.message || 'Offre introuvable');
       }
-      const j = await res.json();
-      setJob(j || null);
+      const payload = await res.json();
+      // API returns { data: job } in many endpoints
+      const jobData = payload?.data || payload;
+      setJob(jobData || null);
     } catch (e) {
       console.error(e);
       toast.error('Impossible de charger l\'offre');

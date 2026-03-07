@@ -179,8 +179,53 @@ async function loginUser(email, password) {
   }
 }
 
+// ---------------------------------------------------------------------------
+// SESSION VERIFICATION
+// ---------------------------------------------------------------------------
+// Verify that an admin's session is still valid after a page refresh
+// - Takes the admin ID from the JWT token
+// - Fetches fresh data from the database
+// - Returns updated admin data with current permissions
+async function verifyAdminSession(adminId) {
+  if (!adminId) {
+    throw new AppError('Admin ID is required', 400);
+  }
+
+  try {
+    const { rows: adminRows } = await pool.query(
+      `SELECT id, email, first_name, last_name, role, is_active 
+       FROM admins 
+       WHERE id = $1`,
+      [adminId]
+    );
+
+    const admin = adminRows[0];
+    if (!admin) {
+      throw new AppError('Admin not found', 404);
+    }
+
+    if (!admin.is_active) {
+      throw new AppError('Admin account is inactive', 403);
+    }
+
+    // Return admin data (without password)
+    return {
+      id: admin.id,
+      email: admin.email,
+      first_name: admin.first_name,
+      last_name: admin.last_name,
+      role: admin.role,
+      is_active: admin.is_active
+    };
+  } catch (error) {
+    if (error instanceof AppError) throw error;
+    throw new AppError('Error verifying session: ' + error.message, 500);
+  }
+}
+
 export default {
   registerAdmin,
-  loginAdmin,    // Admin login: /api/auth/login
-  loginUser,     // User login: /api/auth/user/login
+  loginAdmin,       // Admin login: /api/auth/login
+  loginUser,        // User login: /api/auth/user/login
+  verifyAdminSession // Session verification: /api/auth/verify
 };

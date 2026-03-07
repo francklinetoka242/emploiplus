@@ -4,38 +4,35 @@ import jobService from '../services/job.service.js';
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
-// Initialize the model - try different models in order
+// Initialize the model - use ONLY gemini-1.5-flash
 let model;
 let useMock = false; // when true, bypass real API and use generated mock data
-const AVAILABLE_MODELS = ['gemini-1.0-pro', 'gemini-pro', 'gemini-1.5-flash'];
+const PREFERRED_MODEL = 'gemini-1.5-flash';
 
 async function initializeModel() {
-  console.log('[AI] Clé API présente:', !!process.env.GEMINI_API_KEY);
+  console.log('[AI] API Key present:', !!process.env.GEMINI_API_KEY);
+  console.log(`[AI] Attempting to initialize ${PREFERRED_MODEL}...`);
 
-  for (const modelName of AVAILABLE_MODELS) {
+  try {
+    // Try to get model instance
     try {
-      console.log(`[AI] Trying model: ${modelName}`);
-      // protecting the getGenerativeModel call itself
-      try {
-        model = genAI.getGenerativeModel({ model: modelName });
-      } catch (getErr) {
-        console.log(`[AI] ⚠️  Failed to get model instance ${modelName}:`, getErr.message);
-        continue; // try next model
-      }
-
-      // Quick test to verify model availability
-      const testResult = await model.generateContent('test');
-      console.log(`[AI] ✅ Model ${modelName} initialized successfully`);
-      return;
-    } catch (err) {
-      console.log(`[AI] ⚠️  Model ${modelName} not available: ${err.message?.substring(0, 100)}`);
+      model = genAI.getGenerativeModel({ model: PREFERRED_MODEL });
+    } catch (getErr) {
+      console.log(`[AI] Failed to get model instance ${PREFERRED_MODEL}:`, getErr.message);
+      throw getErr;
     }
+
+    // Quick test to verify model availability
+    const testResult = await model.generateContent('test');
+    console.log(`[AI] Model ${PREFERRED_MODEL} initialized successfully`);
+    return;
+  } catch (err) {
+    // If gemini-1.5-flash fails, immediately switch to MOCK mode without retrying
+    console.log(`[AI] Model ${PREFERRED_MODEL} not available: ${err.message?.substring(0, 100)}`);
+    console.log(`[AI] Falling back to MOCK analysis mode immediately`);
+    useMock = true;
+    model = null;
   }
-  
-  // If we reach here, no model worked
-  console.log(`[AI] ⚠️  No models available, will use MOCK analysis instead`);
-  useMock = true;
-  model = null;
 }
 
 // Initialize on import and guard against unhandled rejection

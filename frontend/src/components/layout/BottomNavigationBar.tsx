@@ -155,15 +155,15 @@ export const BottomNavigationBar: React.FC<BottomNavigationBarProps> = ({
   return (
     <>
       {/* Navigation Bar - Mobile Only */}
-      <nav className={`fixed bottom-0 left-0 right-0 z-50 md:hidden transition-transform duration-300 ${
+      <nav className={`fixed bottom-0 left-0 right-0 z-[100] md:hidden transition-transform duration-300 ${
         isVisible ? "translate-y-0" : "translate-y-full"
       }`}>
         {/* Glassmorphism Background */}
         <div
-          className="absolute inset-0 bg-white/80 backdrop-blur-xl border-t border-white/30"
+          className="absolute inset-0 bg-white/80 backdrop-blur-lg border-t border-gray-100"
           style={{
-            backdropFilter: "blur(20px)",
-            WebkitBackdropFilter: "blur(20px)",
+            backdropFilter: "blur(12px)",
+            WebkitBackdropFilter: "blur(12px)",
           }}
         />
 

@@ -66,8 +66,27 @@ async function loginUser(req, res, next) {
     }
   }
 
+// Controller for session verification
+// Verifies that an admin's session is still valid after a page refresh
+// Takes admin ID from the JWT token in the request
+// Returns updated admin data from the database
+async function verifySession(req, res, next) {
+  try {
+    // req.user should be set by the requireAdmin middleware
+    if (!req.user || !req.user.id) {
+      return res.status(401).json({ success: false, message: 'Unauthorized: invalid token' });
+    }
+
+    const admin = await authService.verifyAdminSession(req.user.id);
+    return res.status(200).json({ success: true, data: { admin } });
+  } catch (error) {
+    next(error);
+  }
+}
+
 export {
     register,
     loginAdmin,
-    loginUser
+    loginUser,
+    verifySession
 };

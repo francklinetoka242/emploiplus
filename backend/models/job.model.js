@@ -3,21 +3,31 @@ import pool from '../config/db.js';
 // retrieve all jobs with company information via JOIN
 // include all relevant columns (published status, sector, deadlines...) so
 // the admin interface can display and filter them.
-async function getAllJobs(limit = 20, offset = 0) {
+async function getAllJobs(limit = null, offset = 0) {
   try {
-    const query = `
+    let query = `
       SELECT 
         j.id, j.title, j.description, j.location, j.salary, j.job_type,
         j.sector, j.type, j.published, j.published_at, j.deadline_date,
         j.experience_level, j.is_closed, j.company_id, j.requirements,
-        c.name AS company, c.logo,
+        j.benefits, j.skills, j.contact_email, j.application_instructions,
+        j.contract_type, j.application_email,
+        c.name AS company, c.logo, c.website, c.email AS company_email,
         j.created_at, j.updated_at
       FROM jobs j
       LEFT JOIN companies c ON j.company_id = c.id
       ORDER BY j.created_at DESC
-      LIMIT $1 OFFSET $2
     `;
-    const result = await pool.query(query, [limit, offset]);
+    const params = [];
+    if (limit !== null) {
+      query += ` LIMIT $1`;
+      params.push(limit);
+      if (offset > 0) {
+        query += ` OFFSET $2`;
+        params.push(offset);
+      }
+    }
+    const result = await pool.query(query, params);
     return result.rows;
   } catch (err) {
     console.error('getAllJobs query error:', err);
@@ -33,7 +43,9 @@ async function getJobById(jobId) {
         j.id, j.title, j.description, j.location, j.salary, j.job_type,
         j.sector, j.type, j.published, j.published_at, j.deadline_date,
         j.experience_level, j.is_closed, j.company_id, j.requirements,
-        c.name AS company, c.logo, c.website,
+        j.benefits, j.skills, j.contact_email, j.application_instructions,
+        j.contract_type, j.application_email,
+        c.name AS company, c.logo, c.website, c.email AS company_email,
         j.created_at, j.updated_at
       FROM jobs j
       LEFT JOIN companies c ON j.company_id = c.id

@@ -405,7 +405,7 @@ export default function CataloguesServicesPage() {
                             {(service.price || service.duration) && (
                               <div className="flex gap-4 text-sm mt-2">
                                 {service.price && (
-                                  <span className="font-semibold text-slate-900">{service.price} USD</span>
+                                  <span className="font-semibold text-slate-900">{service.price} FCFA</span>
                                 )}
                                 {service.duration && (
                                   <span className="text-slate-600">{service.duration}</span>

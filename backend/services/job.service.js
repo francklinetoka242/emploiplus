@@ -1,5 +1,6 @@
 import JobModel from '../models/job.model.js';
 import CompanyModel from '../models/company.model.js';
+import pool from '../config/db.js';
 
 // validate job payload data
 function validateJobData(data, isUpdate = false) {
@@ -93,7 +94,7 @@ async function getJobs(query = {}) {
 
     // Fetch ALL jobs first (unfiltered, no limit/offset) to apply filters correctly
     // This ensures pagination info is accurate AFTER filtering
-    let jobs = await JobModel.getAllJobs(1000, 0); // Fetch up to 1000 jobs, unfiltered
+    let jobs = await JobModel.getAllJobs(); // Fetch all jobs, unfiltered
 
     // filter by publication status if requested (default for public routes)
     if (query.published !== undefined) {
@@ -248,8 +249,8 @@ async function createJob(jobData) {
 
     // companyId will be used in payload.  We support either a numeric ID or a
     // name string.  When an ID is provided we make sure the referenced
-    // company actually exists; if not we throw a user-friendly error rather
-    // than letting Postgres give us a foreign-key violation later.
+    // company actually exists in the users table; if not we throw a user-friendly 
+    // error rather than letting Postgres give us a foreign-key violation later.
     let companyId = null;
 
     if (jobData.company_id !== undefined && jobData.company_id !== null && jobData.company_id !== '') {
@@ -260,32 +261,42 @@ async function createJob(jobData) {
         error.status = 400;
         throw error;
       }
-      const existingComp = await CompanyModel.getCompanyById(companyId);
-      if (!existingComp) {
-        const error = new Error('company_id does not reference an existing company');
+      
+      // Verify that company_id exists in users table (companies are users with type='company')
+      const { rows: userRows } = await pool.query(
+        'SELECT id FROM users WHERE id = $1',
+        [companyId]
+      );
+      
+      if (userRows.length === 0) {
+        const error = new Error('company_id does not reference an existing company user');
         error.status = 400;
         throw error;
       }
     }
 
-    // if no numeric id but a name was provided, look it up / create it
+    // if no numeric id but a name was provided, just keep the company name as-is
+    // The company table is separate from the users table
+    // Only company_id (pointing to users table) needs validation
+    // If user provides both, use company_id; otherwise just the company name text is fine
     if ((companyId === null || companyId === undefined) && jobData.company) {
+      // Keep the company name in the payload; it will be stored as the text field
+      // No need to create a user - just use the text name
       const name = String(jobData.company).trim();
-      const existing = await CompanyModel.getCompanyByName(name);
-      if (existing) {
-        companyId = existing.id;
-      } else {
-        const created = await CompanyModel.createCompany(name, null, null, null, null);
-        companyId = created.id;
-      }
+      // We're not doing auto-creation of users anymore
+      // Just let the text field be populated
     }
 
-    // prepare payload for model; drop the `company` field because the jobs
-    // table doesn't actually have a column with that name.
+    // prepare payload for model
+    // Keep the company field (text name) - it's needed by the jobs table
+    // Only use company_id if explicitly provided and valid
     const payload = { ...jobData };
-    delete payload.company;
+    
     if (companyId !== null) {
       payload.company_id = companyId;
+    } else {
+      // Don't set company_id if none was validated/provided
+      delete payload.company_id;
     }
 
     if (payload.published && !payload.published_at) {

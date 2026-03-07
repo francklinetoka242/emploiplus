@@ -1,36 +1,45 @@
-name: Deploy to VPS
+name: Deploy Emploi+ to VPS
 
 on:
   push:
     branches:
-      - main
+      - main  # Le déploiement se lance quand tu push sur la branche main
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-
-      - name: Executing remote ssh commands
-        uses: appleboy/ssh-action@master
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USER }}
-          # 💡 Utilisez la clé privée au lieu du mot de passe
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          port: ${{ secrets.SSH_PORT }} # Assurez-vous que ce secret existe
+          port: ${{ secrets.SSH_PORT }}
+          # password: ${{ secrets.SSH_PASSWORD }} # Utilise ceci si la clé SSH échoue
           script: |
-            # 💡 Vérifiez bien ce chemin !
-            cd /var/www/emploi-connect 
+            cd ~/public_html
+            
+            # 1. Mise à jour du code
             git pull origin main
             
-            # Mise à jour du Backend
-            cd backend
-            npm install
-            pm2 restart all || pm2 start server.js --name "backend"
+            # 2. Installation Backend
+            if [ -d "backend" ]; then
+              cd backend
+              npm install --production
+              cd ..
+            fi
             
-            # Mise à jour du Frontend (Build)
-            cd ../frontend
-            npm install
-            npm run build
+            # 3. Installation et Build Frontend
+            if [ -d "frontend" ]; then
+              cd frontend
+              npm install
+              npm run build
+              cd ..
+            fi
+            
+            # 4. Redémarrage du serveur (PM2)
+            # On essaie de restart, sinon on start le serveur
+            pm2 restart all || pm2 start backend/server.js --name "emploiplus-api"
+            
+            echo "✅ Félicitations ! Emploi+ est à jour sur ton VPS."

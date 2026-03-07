@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useSearchParams, useNavigate } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -64,10 +65,15 @@ const DEMO_TEMPLATES = [
 ];
 
 export default function CVGenerator() {
+  const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
   const [cvs, setCVs] = useState<CVData[]>([]);
   const [isLoggedIn] = useState(!!localStorage.getItem("token"));
   const [selectedCV, setSelectedCV] = useState<CVData | null>(null);
   const [showPreview, setShowPreview] = useState(false);
+
+  // Check for redirect parameter
+  const redirectUrl = searchParams.get('redirect');
 
   useEffect(() => {
     // Charger les CVs depuis localStorage
@@ -247,8 +253,27 @@ export default function CVGenerator() {
       const data = await res.json();
       if (!res.ok) throw new Error(data?.message || "Erreur serveur");
       toast.success("CV enregistré dans votre compte");
+
+      // Store created CV in localStorage for redirect back to application
+      const createdDoc = {
+        id: data.id,
+        title: selectedCV.fullName || `CV - ${new Date().toLocaleDateString()}`,
+        storage_url,
+        doc_type: 'cv',
+        created_at: new Date().toISOString()
+      };
+      localStorage.setItem('cv_created', JSON.stringify(createdDoc));
+
       // notify other parts of the app (Settings) to refresh documents
       window.dispatchEvent(new Event('user-documents-updated'));
+
+      // Redirect back if redirect URL is provided
+      if (redirectUrl) {
+        toast.success("CV créé ! Retour à la candidature...");
+        setTimeout(() => {
+          navigate(redirectUrl);
+        }, 1500);
+      }
     } catch (err) {
       console.error(err);
       const message = typeof err === "object" && err !== null && "message" in err

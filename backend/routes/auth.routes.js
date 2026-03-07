@@ -1,7 +1,8 @@
 
 import express from 'express';
 const router = express.Router();
-import { register, loginAdmin, loginUser } from '../controllers/auth.controller.js';
+import { register, loginAdmin, loginUser, verifySession } from '../controllers/auth.controller.js';
+import { requireAdmin } from '../middleware/auth.middleware.js';
 
 // ---------------------------------------------------------------------------
 // ADMIN AUTHENTICATION ROUTES
@@ -21,6 +22,12 @@ router.post('/admin/register', register);
 // Body: { email, password }
 // Returns: { token, user: { id, email, role, firstName, lastName }, userType: 'admin' }
 router.post('/login', loginAdmin);
+
+// GET /api/auth/verify
+// Verify that an admin's session is still valid after a page refresh
+// Requires admin authentication (Bearer token in Authorization header)
+// Returns: { success: true, data: { admin } } with updated admin data from database
+router.get('/verify', requireAdmin, verifySession);
 
 // ---------------------------------------------------------------------------
 // USER (CANDIDATE/COMPANY) AUTHENTICATION ROUTES

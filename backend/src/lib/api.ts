@@ -6,6 +6,7 @@ export interface JobData {
   sector: string;
   description: string;
   salary: string;
+  application_email?: string;
 }
 
 export interface FormationData {

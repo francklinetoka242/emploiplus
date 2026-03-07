@@ -126,7 +126,7 @@ const NEW_FORMATION = {
   level: 'Avancé',
   duration_hours: 60,
   price: 200,
-  currency: 'USD',
+  currency: 'FCFA',
   description: 'Maîtrisez le web design moderne',
   thumbnail: 'https://images.unsplash.com/photo-...',
   instructor: 'Design Expert',

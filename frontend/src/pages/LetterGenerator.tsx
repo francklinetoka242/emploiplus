@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useSearchParams, useNavigate } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -35,10 +35,14 @@ const DEMO_TEMPLATES = [
 
 export default function LetterGenerator() {
   const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
   const [letters, setLetters] = useState<LetterData[]>([]);
   const [isLoggedIn] = useState(!!localStorage.getItem("token"));
   const [selectedLetter, setSelectedLetter] = useState<LetterData | null>(null);
   const [showPreview, setShowPreview] = useState(false);
+
+  // Check for redirect parameter
+  const redirectUrl = searchParams.get('redirect');
 
   useEffect(() => {
     const saved = localStorage.getItem("userLetters");
@@ -213,7 +217,26 @@ export default function LetterGenerator() {
       const data = await res.json();
       if (!res.ok) throw new Error(data?.message || "Erreur serveur");
       toast.success("Lettre enregistrée dans votre compte");
+
+      // Store created letter in localStorage for redirect back to application
+      const createdDoc = {
+        id: data.id,
+        title: selectedLetter.companyName || `Lettre - ${new Date().toLocaleDateString()}`,
+        storage_url,
+        doc_type: 'letter',
+        created_at: new Date().toISOString()
+      };
+      localStorage.setItem('letter_created', JSON.stringify(createdDoc));
+
       window.dispatchEvent(new Event('user-documents-updated'));
+
+      // Redirect back if redirect URL is provided
+      if (redirectUrl) {
+        toast.success("Lettre créée ! Retour à la candidature...");
+        setTimeout(() => {
+          navigate(redirectUrl);
+        }, 1500);
+      }
     } catch (err) {
       console.error(err);
       const message = typeof err === "object" && err !== null && "message" in err

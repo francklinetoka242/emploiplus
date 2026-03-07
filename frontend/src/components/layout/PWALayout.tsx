@@ -51,7 +51,7 @@ export const PWALayout: React.FC<PWALayoutProps> = ({
       )}
 
       {/* Main Content - Optimized for mobile app experience */}
-      <main className={`${!hideNavigation ? 'pb-20 md:pb-0' : 'pb-0'}`}>
+      <main className={`${!hideNavigation ? 'pb-[calc(6rem+env(safe-area-inset-bottom))] md:pb-0' : 'pb-0'}`}>
         {children}
       </main>
 

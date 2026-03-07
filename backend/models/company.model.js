@@ -4,7 +4,7 @@ import pool from '../config/db.js';
 async function getAllCompanies(limit = 20, offset = 0) {
   try {
     const query = `
-      SELECT id, name, description, logo, website, location, created_at, updated_at
+      SELECT id, name, description, logo, website, location, email, created_at, updated_at
       FROM companies
       ORDER BY created_at DESC
       LIMIT $1 OFFSET $2
@@ -21,7 +21,7 @@ async function getAllCompanies(limit = 20, offset = 0) {
 async function getCompanyById(companyId) {
   try {
     const query = `
-      SELECT id, name, description, logo, website, location, created_at, updated_at
+      SELECT id, name, description, logo, website, location, email, created_at, updated_at
       FROM companies
       WHERE id = $1
     `;
@@ -37,7 +37,7 @@ async function getCompanyById(companyId) {
 async function getCompanyByName(name) {
   try {
     const query = `
-      SELECT id, name, description, logo, website, location, created_at, updated_at
+      SELECT id, name, description, logo, website, location, email, created_at, updated_at
       FROM companies
       WHERE name = $1
     `;
@@ -50,14 +50,14 @@ async function getCompanyByName(name) {
 }
 
 // create a new company
-async function createCompany(name, description, logo, website, location) {
+async function createCompany(name, description, logo, website, location, email = null) {
   try {
     const query = `
-      INSERT INTO companies (name, description, logo, website, location, created_at, updated_at)
-      VALUES ($1, $2, $3, $4, $5, NOW(), NOW())
-      RETURNING id, name, description, logo, website, location, created_at, updated_at
+      INSERT INTO companies (name, description, logo, website, location, email, created_at, updated_at)
+      VALUES ($1, $2, $3, $4, $5, $6, NOW(), NOW())
+      RETURNING id, name, description, logo, website, location, email, created_at, updated_at
     `;
-    const result = await pool.query(query, [name, description, logo, website, location]);
+    const result = await pool.query(query, [name, description, logo, website, location, email]);
     return result.rows[0];
   } catch (err) {
     console.error('createCompany query error:', err);
@@ -85,7 +85,7 @@ async function updateCompany(companyId, updates) {
       UPDATE companies
       SET ${setClause}
       WHERE id = $${fields.length + 1}
-      RETURNING id, name, description, logo, website, location, created_at, updated_at
+      RETURNING id, name, description, logo, website, location, email, created_at, updated_at
     `;
     
     const result = await pool.query(query, values);
