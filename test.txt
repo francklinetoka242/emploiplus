@@ -44,24 +44,23 @@ _____
 
 
 
+# sur ta machine locale
+git add .
+git commit -m "release: mon nouveau build"
+git push origin main
 
+# sur le VPS
+cd ~/public_html
+git pull origin main
 
-cd /home/emploiplus-group.com/public_html/backend
+# rebuild front
+cd frontend
+npm ci
+npm run build
+cp -r dist/* ~/public_html/
 
-# Corriger la table publications
-psql postgresql://emploiplus_user:vcybk24235GDWe@127.0.0.1:5432/emploi_plus_db_cg << 'EOF'
-CREATE TABLE IF NOT EXISTS publications (
-  id SERIAL PRIMARY KEY,
-  title VARCHAR(255) NOT NULL,
-  content TEXT NOT NULL,
-  author_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
-  image_url TEXT,
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT now(),
-  updated_at TIMESTAMP WITH TIME ZONE DEFAULT now()
-);
-CREATE INDEX IF NOT EXISTS idx_publications_author_id ON publications(author_id);
-CREATE INDEX IF NOT EXISTS idx_publications_created_at ON publications(created_at);
-EOF
-
-# Redémarrer
+# mettre à jour / redémarrer backend si nécessaire
+cd ../backend
+git pull origin main
+npm install
 pm2 restart backend-prod
