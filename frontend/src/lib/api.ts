@@ -71,7 +71,7 @@ const apiReal = {
   // AUTH / ADMIN (identique à l'ancien front-back)
   // ------------------------------------------------------------------------
   loginAdmin: async (email: string, password: string) => {
-    const res = await fetch(buildApiUrl('/admin/login'), {
+    const res = await fetch(buildApiUrl('/auth/admin/login'), {
       method: 'POST',
       headers: authHeaders('application/json', 'adminToken'),
       body: JSON.stringify({ email, password }),

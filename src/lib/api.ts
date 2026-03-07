@@ -36,7 +36,7 @@ export const api = {
 
   loginAdmin: (email: string, password: string) =>
 
-    fetch(`${API_URL}/admin/login`, {
+    fetch(`${API_URL}/auth/admin/login`, {
 
       method: "POST",
 
