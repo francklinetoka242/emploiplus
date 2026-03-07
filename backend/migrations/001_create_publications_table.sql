@@ -7,7 +7,13 @@ CREATE TABLE IF NOT EXISTS publications (
 );
 
 -- add missing columns if they do not already exist
-ALTER TABLE publications ADD COLUMN IF NOT EXISTS title VARCHAR(255) NOT NULL;
+-- title is added nullable first so that existing rows don't violate constraint
+ALTER TABLE publications ADD COLUMN IF NOT EXISTS title VARCHAR(255);
+-- fill null titles with default placeholder (could be overwritten later)
+UPDATE publications SET title = 'Untitled' WHERE title IS NULL;
+-- now enforce NOT NULL constraint
+ALTER TABLE publications ALTER COLUMN title SET NOT NULL;
+
 ALTER TABLE publications ADD COLUMN IF NOT EXISTS content TEXT NOT NULL;
 ALTER TABLE publications ADD COLUMN IF NOT EXISTS author_id INTEGER REFERENCES users(id) ON DELETE CASCADE;
 ALTER TABLE publications ADD COLUMN IF NOT EXISTS image_url TEXT;
