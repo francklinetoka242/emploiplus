@@ -40,3 +40,28 @@ https://emploiplus-group.com/api/admin/sitemap-refresh?token=
 
 
 _____
+
+
+
+
+
+
+cd /home/emploiplus-group.com/public_html/backend
+
+# Corriger la table publications
+psql postgresql://emploiplus_user:vcybk24235GDWe@127.0.0.1:5432/emploi_plus_db_cg << 'EOF'
+CREATE TABLE IF NOT EXISTS publications (
+  id SERIAL PRIMARY KEY,
+  title VARCHAR(255) NOT NULL,
+  content TEXT NOT NULL,
+  author_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+  image_url TEXT,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT now(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS idx_publications_author_id ON publications(author_id);
+CREATE INDEX IF NOT EXISTS idx_publications_created_at ON publications(created_at);
+EOF
+
+# Redémarrer
+pm2 restart backend-prod
