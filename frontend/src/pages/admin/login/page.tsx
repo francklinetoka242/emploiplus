@@ -22,10 +22,9 @@ export default function AdminLoginPage() {
     console.log('🔐 Tentative de connexion admin...');
 
     try {
-      // Utiliser l'endpoint isolé /api/auth/login
-      const res = await fetch(buildApiUrl('/api/auth/login'), {
+      const res = await fetch(buildApiUrl("/api/auth/admin/login"), {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+        headers: { 'Content-Type': 'application/json' },
         credentials: 'include', // Important pour CORS et les cookies
         body: JSON.stringify({ email, password }),
       });
