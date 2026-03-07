@@ -36,3 +36,7 @@ cp -r ~/public_html/frontend/dist/* ~/public_html/
 Mettre à jour le SiteMAp : 
 
 https://emploiplus-group.com/api/admin/sitemap-refresh?token= 
+
+
+
+_____
