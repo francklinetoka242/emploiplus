@@ -22,6 +22,10 @@ router.post('/admin/register', register);
 // Body: { email, password }
 // Returns: { token, user: { id, email, role, firstName, lastName }, userType: 'admin' }
 router.post('/login', loginAdmin);
+// Compatibility alias: some frontends still call /api/auth/admin/login
+router.post('/admin/login', loginAdmin);
+// Compatibility alias used by some frontends (including current admin pages)
+router.post('/admin/login', loginAdmin); // older UIs may call this path
 
 // GET /api/auth/verify
 // Verify that an admin's session is still valid after a page refresh
