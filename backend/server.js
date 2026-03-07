@@ -84,12 +84,16 @@ app.use((req, res, next) => {
 app.use(helmet());
 
 // cross-origin : configurer la politique CORS
+const cors = require('cors');
+
 const corsOptions = {
-  origin: process.env.CORS_ORIGIN || '*',
+  // On récupère l'URL du .env, sinon on met celle du site par défaut
+  origin: process.env.CORS_ORIGIN || 'https://emploiplus-group.com',
   credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  allowedHeaders: ['Content-Type', 'Authorization']
 };
+
 app.use(cors(corsOptions));
 
 // ===== ROUTES UTILISANT MULTER (AVANT les parsers body globaux) =====
