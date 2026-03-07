@@ -1,4 +1,4 @@
-cat > /home/emploiplus-group.com/public_html/backend/server.js << 'EOF'
+
 // Charger les variables d'environnement depuis le fichier .env
 import dotenv from 'dotenv';
 dotenv.config();
@@ -306,4 +306,3 @@ async function startServer() {
 
 // start the server
 startServer();
-EOF
