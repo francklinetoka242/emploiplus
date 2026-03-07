@@ -1,38 +1,40 @@
 import express from 'express';
 const router = express.Router();
 import multer from 'multer';
-import path from 'path';
-import { UPLOAD_CONFIG, getDestinationPath } from '../config/upload.config.js';
 const upload = multer({ dest: 'tmp/' });
 import { requireUser } from '../middleware/auth.middleware.js';
 import { uploadCandidateDocAndSave } from '../controllers/upload.controller.js';
 
 // POST /api/uploads/candidate - accept a single file under field 'file'
 // requires user token (candidate/company)
-router.post('/candidate', requireUser, upload.single('file'), uploadCandidateDocAndSave);
+// choose storage destination based on docKey provided in body
+import { createMulterForType } from '../config/upload.config.js';
+// reuse the mapping defined in upload.service (or repeat minimal mapping here)
+const DOC_TYPE_MAP = {
+  cv: 'CV',
+  lm: 'RESUME',
+  diplome: 'DIPLOMA',
+  certificat_travail: 'DIPLOMA',
+  cni: 'IDENTITY',
+  passeport: 'IDENTITY',
+  carte_residence: 'IDENTITY',
+  nui: 'IDENTITY',
+  recepisse_acpe: 'IDENTITY'
+};
+
+function multerByDocKey(req, res, next) {
+  const key = req.body.docKey;
+  const type = DOC_TYPE_MAP[key] || 'CV';
+  const uploader = createMulterForType(type);
+  uploader.single('file')(req, res, next);
+}
+
+router.post('/candidate', requireUser, multerByDocKey, uploadCandidateDocAndSave);
 
 // GET /api/uploads/secure/:type/:filename
 // protected route for serving private files (CV, identity, etc.)
-router.get('/secure/:type/:filename', requireUser, (req, res) => {
-  const { type, filename } = req.params;
-  const typeKey = type.toUpperCase();
-  const config = UPLOAD_CONFIG.TYPES[typeKey];
-  if (!config) {
-    return res.status(404).json({ message: 'Type de fichier inconnu' });
-  }
-  if (config.public) {
-    return res.status(400).json({ message: 'Ce fichier est accessible publiquement' });
-  }
+import { serveSecureFile } from '../controllers/upload.controller.js';
+router.get('/secure/:type/:filename', requireUser, serveSecureFile);
 
-  const filePath = path.join(__dirname, '../../', getDestinationPath(typeKey), filename);
-
-  // TODO: apply ownership/authorization checks based on req.user
-  res.sendFile(filePath, err => {
-    if (err) {
-      console.error('Erreur en envoyant fichier sécurisé', err);
-      return res.status(err.code === 'ENOENT' ? 404 : 500).end();
-    }
-  });
-});
 
 export default router;

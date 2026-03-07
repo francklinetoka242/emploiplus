@@ -2,6 +2,8 @@
  * Configuration centralisée pour la gestion des uploads
  * Définit les règles de validation, sécurité et stockage par type de fichier
  */
+import multer from 'multer';
+import path from 'path';
 
 export const UPLOAD_CONFIG = {
   // Répertoire racine des uploads (peut être un lien symbolique vers un dossier externe)
@@ -13,7 +15,7 @@ export const UPLOAD_CONFIG = {
     AVATAR: {
       dir: 'avatars',
       public: true,
-      maxSize: 5 * 1024 * 1024, // 5MB
+      maxSize: 1.5 * 1024 * 1024, // 1.5MB for avatar images
       allowedTypes: ['image/jpeg', 'image/png', 'image/webp'],
       allowedExtensions: ['.jpg', '.jpeg', '.png', '.webp'],
       naming: 'user_{userId}_avatar_{timestamp}',
@@ -24,7 +26,7 @@ export const UPLOAD_CONFIG = {
     CV: {
       dir: 'cv',
       public: false,
-      maxSize: 10 * 1024 * 1024, // 10MB
+      maxSize: 2 * 1024 * 1024, // 2MB maximum for CV documents
       allowedTypes: ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'],
       allowedExtensions: ['.pdf', '.doc', '.docx'],
       naming: 'candidate_{userId}_cv_{timestamp}',
@@ -35,7 +37,7 @@ export const UPLOAD_CONFIG = {
     RESUME: {
       dir: 'resumes',
       public: false,
-      maxSize: 10 * 1024 * 1024, // 10MB
+      maxSize: 2 * 1024 * 1024, // 2MB for cover letters
       allowedTypes: ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'],
       allowedExtensions: ['.pdf', '.doc', '.docx'],
       naming: 'candidate_{userId}_lm_{timestamp}',
@@ -46,7 +48,7 @@ export const UPLOAD_CONFIG = {
     DIPLOMA: {
       dir: 'diplomas',
       public: false,
-      maxSize: 10 * 1024 * 1024, // 10MB
+      maxSize: 2 * 1024 * 1024, // 2MB for diplomas/certificates
       allowedTypes: ['application/pdf', 'image/jpeg', 'image/png'],
       allowedExtensions: ['.pdf', '.jpg', '.jpeg', '.png'],
       naming: 'candidate_{userId}_{docType}_{timestamp}',
@@ -57,7 +59,7 @@ export const UPLOAD_CONFIG = {
     IDENTITY: {
       dir: 'identity',
       public: false,
-      maxSize: 5 * 1024 * 1024, // 5MB
+      maxSize: 2 * 1024 * 1024, // 2MB for identity documents
       allowedTypes: ['application/pdf', 'image/jpeg', 'image/png'],
       allowedExtensions: ['.pdf', '.jpg', '.jpeg', '.png'],
       naming: 'candidate_{userId}_{docType}_{timestamp}',
@@ -68,7 +70,7 @@ export const UPLOAD_CONFIG = {
     COMPANY_DOC: {
       dir: 'company-docs',
       public: false,
-      maxSize: 10 * 1024 * 1024, // 10MB
+      maxSize: 2 * 1024 * 1024, // 2MB for company documents
       allowedTypes: ['application/pdf', 'image/jpeg', 'image/png'],
       allowedExtensions: ['.pdf', '.jpg', '.jpeg', '.png'],
       naming: 'company_{userId}_{docType}_{timestamp}',
@@ -79,7 +81,7 @@ export const UPLOAD_CONFIG = {
     JOB_IMAGE: {
       dir: 'job-images',
       public: true,
-      maxSize: 5 * 1024 * 1024, // 5MB
+      maxSize: 1.5 * 1024 * 1024, // 1.5MB for job-related images
       allowedTypes: ['image/jpeg', 'image/png', 'image/webp'],
       allowedExtensions: ['.jpg', '.jpeg', '.png', '.webp'],
       naming: 'job_{jobId}_image_{timestamp}',
@@ -90,7 +92,7 @@ export const UPLOAD_CONFIG = {
     PORTFOLIO_IMAGE: {
       dir: 'portfolios',
       public: true,
-      maxSize: 5 * 1024 * 1024, // 5MB
+      maxSize: 1.5 * 1024 * 1024, // 1.5MB for portfolio images
       allowedTypes: ['image/jpeg', 'image/png', 'image/webp'],
       allowedExtensions: ['.jpg', '.jpeg', '.png', '.webp'],
       naming: 'portfolio_{portfolioId}_image_{timestamp}',
@@ -101,7 +103,7 @@ export const UPLOAD_CONFIG = {
     NOTIFICATION_IMAGE: {
       dir: 'notifications',
       public: true,
-      maxSize: 5 * 1024 * 1024, // 5MB
+      maxSize: 1.5 * 1024 * 1024, // 1.5MB for notification images
       allowedTypes: ['image/jpeg', 'image/png', 'image/webp'],
       allowedExtensions: ['.jpg', '.jpeg', '.png', '.webp'],
       naming: 'notification_{notificationId}_image_{timestamp}',
@@ -112,7 +114,7 @@ export const UPLOAD_CONFIG = {
     TRAINING_IMAGE: {
       dir: 'formations',
       public: true,
-      maxSize: 5 * 1024 * 1024,
+      maxSize: 1.5 * 1024 * 1024, // 1.5MB for training images
       allowedTypes: ['image/jpeg', 'image/png', 'image/webp'],
       allowedExtensions: ['.jpg', '.jpeg', '.png', '.webp'],
       naming: 'training_{trainingId}_image_{timestamp}',
@@ -219,6 +221,29 @@ export function getDestinationPath(type) {
   if (!config) throw new Error(`Type de fichier inconnu: ${type}`);
   const section = config.public ? 'public' : 'private';
   return `${UPLOAD_CONFIG.ROOT_DIR}/${section}/${config.dir}`;
+}
+
+// Helper to create a multer instance tailored for a given type
+export function createMulterForType(type) {
+  const config = UPLOAD_CONFIG.TYPES[type];
+  if (!config) throw new Error(`Type de fichier inconnu: ${type}`);
+
+  // set dynamic destination and limit
+  const storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+      cb(null, getDestinationPath(type));
+    },
+    filename: (req, file, cb) => {
+      const ext = path.extname(file.originalname);
+      const filename = generateFilename(type, { timestamp: Date.now(), userId: req.user?.id || 'anon' }, ext);
+      cb(null, filename);
+    }
+  });
+
+  return multer({
+    storage,
+    limits: { fileSize: config.maxSize }
+  });
 }
 
 /**

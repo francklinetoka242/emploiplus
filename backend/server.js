@@ -56,6 +56,9 @@ import auditLogRoutes from './routes/audit-log.routes.js';
 import documentationRoutes from './routes/documentation.routes.js';
 import aiRoutes from './routes/ai.routes.js';
 import jobApplicationRoutes from './routes/job-application.routes.js';
+import seoRoutes from './routes/seo.routes.js';
+import sitemapGenerator from './services/sitemap-generator.service.js';
+import sitemapCron from './services/sitemap-cron.service.js';
 import { requireAdmin, requireRoles, requireSuperAdmin } from './middleware/auth.middleware.js';
 import { exportStats as adminExportStats } from './controllers/admin.controller.js';
 import { getHealth, getHealthDB, getHealthAPI, getHealthSystem } from './controllers/dashboard.controller.js';
@@ -195,6 +198,21 @@ app.get('/api/dashboard/stats', requireAdmin, adminExportStats);
 app.use('/api/site-notifications', siteNotificationsRoutes);
 app.use('/api/admin/site-notifications', requireAdmin, requireRoles('super_admin'), siteNotificationsRoutes);
 
+// SEO sitemap management (admin only)
+app.use('/api/admin/seo', requireAdmin, requireRoles('super_admin'), seoRoutes);
+
+// Serve static sitemap from public/sitemap.xml
+app.get('/sitemap.xml', (req, res) => {
+  const sitemapPath = path.join(__dirname, 'public/sitemap.xml');
+  res.set('Content-Type', 'application/xml');
+  res.sendFile(sitemapPath, (err) => {
+    if (err) {
+      console.error('Erreur lors de la lecture du sitemap:', err.message);
+      res.status(404).send('Sitemap not found');
+    }
+  });
+});
+
 // login history
 app.use('/api/admin/login-history', requireAdmin, requireRoles('super_admin'), loginHistoryRoutes);
 
@@ -252,9 +270,29 @@ async function startServer() {
     connection.release(); // release connection back to pool
 
     // commencer à écouter les requêtes entrantes
-    app.listen(PORT, () => {
+    app.listen(PORT, async () => {
       console.log(`✓ Server listening on port ${PORT}`);
       console.log(`✓ API available at http://localhost:${PORT}/api`);
+
+      // ===== INITIALISATION DU SITEMAP =====
+      try {
+        const baseUrl = process.env.BASE_URL || 'https://emploiplus-group.com';
+
+        // Générer le sitemap initial au démarrage
+        console.log('\n[STARTUP] Génération initiale du sitemap...');
+        const initialResult = await sitemapGenerator.generateAndWriteSitemap(baseUrl);
+        if (initialResult.success) {
+          console.log(`[STARTUP] ✓ Sitemap initial généré (${initialResult.urlCount} URLs)`);
+        } else {
+          console.log(`[STARTUP] ⚠ Erreur lors de la génération initiale: ${initialResult.message}`);
+        }
+
+        // Initialiser le cron job pour la génération automatique
+        sitemapCron.initSitemapCron(baseUrl);
+        console.log('[STARTUP] ✓ Cron job de sitemap activé (03:00 chaque jour)\n');
+      } catch (err) {
+        console.error('[STARTUP] ✗ Erreur lors de l\'initialisation du sitemap:', err.message);
+      }
     });
   } catch (err) {
     // si la connexion à la base échoue, enregistrer l'erreur et quitter

@@ -1,14 +1,11 @@
-User-agent: Googlebot
-Allow: /
-
-User-agent: Bingbot
-Allow: /
-
-User-agent: Twitterbot
-Allow: /
-
-User-agent: facebookexternalhit
-Allow: /
-
 User-agent: *
 Allow: /
+# Interdire l'indexation des fichiers privés
+Disallow: /uploads/private/
+Disallow: /backend/
+Disallow: /admin/
+
+# Autoriser spécifiquement les contenus publics
+Allow: /uploads/public/
+
+Sitemap: https://emploiplus-group.com/sitemap.xml

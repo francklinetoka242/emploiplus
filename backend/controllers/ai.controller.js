@@ -1,3 +1,4 @@
+import fs from 'fs';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { PDFParse } from 'pdf-parse';
 import jobService from '../services/job.service.js';
@@ -340,6 +341,15 @@ Réponds UNIQUEMENT en JSON. Rien avant, rien après.`;
 
     console.log('[AI] ✅ Response built successfully');
     console.log('[AI] ===== EXTRACTION COMPLETED =====');
+
+    // ===== NETTOYAGE DU FICHIER TEMP D'UPLOAD =====
+    // si multer a écrit un fichier sur le disque, le supprimer immédiatement
+    if (req.file && req.file.path) {
+      fs.unlink(req.file.path, err => {
+        if (err) console.warn('[AI] unable to delete temp file', err.message);
+        else console.log('[AI] temp upload file removed');
+      });
+    }
 
     // ===== NETTOYAGE DU FLUX =====
     // Ne rien faire avec req après cette ligne - le stream est terminé

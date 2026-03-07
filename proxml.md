@@ -1,3 +1,8 @@
+# Exemples de structure de `sitemap.xml`
+
+Le document ci-dessous montre une organisation idéale pour refléter les catégories et priorités que nous avons identifiées. Les sections `<!-- ... -->` sont des commentaires explicatifs, à conserver ou supprimer selon vos besoins.
+
+```xml
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 
@@ -86,3 +91,4 @@
   </url>
 
 </urlset>
+```

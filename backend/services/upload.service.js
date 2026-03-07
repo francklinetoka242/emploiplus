@@ -9,6 +9,7 @@ import {
   isPublicType,
   UPLOAD_CONFIG
 } from '../config/upload.config.js';
+import sharp from 'sharp';
 
 // ESM does not provide __dirname; derive it from import.meta.url
 const __filename = fileURLToPath(import.meta.url);
@@ -56,7 +57,7 @@ async function uploadCandidateDocAndSave(file, docKey, userId, dbColumn) {
     const config = UPLOAD_CONFIG.TYPES[type];
 
     // build filename and destination using helpers
-    const filename = generateFilename(type, { userId, docType: docKey }, ext);
+    let filename = generateFilename(type, { userId, docType: docKey }, ext);
     const destDir = path.join(__dirname, '../../', getDestinationPath(type));
 
     // ensure directory exists
@@ -73,6 +74,26 @@ async function uploadCandidateDocAndSave(file, docKey, userId, dbColumn) {
       await fs.promises.rename(file.path, destPath);
     } else {
       throw new Error('File object must contain `buffer` or `path`');
+    }
+
+    // if the file is an image and not too large, compress/resize to save space
+    const isImage = config.allowedTypes.some(t => t.startsWith('image/'));
+    if (isImage) {
+      try {
+        const optimizedPath = destPath.replace(path.extname(destPath), '.webp');
+        await sharp(destPath)
+          .resize(400, 400, { fit: 'inside', withoutEnlargement: true })
+          .toFormat('webp', { quality: 80 })
+          .toFile(optimizedPath);
+        // remove original if different
+        if (optimizedPath !== destPath) {
+          await fs.promises.unlink(destPath);
+          filename = path.basename(optimizedPath);
+          // update urlPath construction below
+        }
+      } catch (imgErr) {
+        console.warn('Image optimization failed', imgErr.message);
+      }
     }
 
     // Construct a URL/path to store in DB
