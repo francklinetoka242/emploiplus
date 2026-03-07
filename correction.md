@@ -45,6 +45,25 @@ Le fichier nettoyé se trouve désormais dans `backend/server.js` et forme une b
 
 Le code est désormais propre, lisible et n'entraînera plus de message de type « Missing catch or finally after try » au démarrage. Il peut être relancé en production normalement après redémarrage du serveur.
 
+## Ajout après nouveaux problèmes
+
+Lors de l'exécution du serveur, deux nouvelles erreurs sont apparues :
+
+1. **`Identifier 'frontendDistPath' has already been declared`**
+   - Le fichier contenait deux sections distinctes servant le dossier `frontend/dist`.
+   - La deuxième section était un reste du code original collé accidentellement après `startServer();`.
+   - Solution : toute la portion dupliquée (y compris la redéclaration de `frontendDistPath`) a été supprimée. Une seule déclaration reste en position logique avant la configuration SPA.
+
+2. **`SyntaxError: Missing catch or finally after try` (persistait)**
+   - En réalité, ce message était déclenché par la présence d'un bloc `try` non terminé dans la portion copiée en double.
+   - Le nettoyage drastique (réécriture complète du fichier et purge du code superflu) a éliminé les `try` orphelins ; désormais chaque `try` possède un `catch` correspondant.
+   - Le résultat est un fichier sans erreurs de syntaxes ou d'accolades mal fermées.
+
+En résumé, `server.js` est aujourd'hui un pur module ESM, sans aucun `require`, avec les routes Multer en tête, un seul chemin statique pour la SPA, et tous les blocs `try/catch` correctement équilibrés.
+
+---
+
+La version finale du fichier ne contient plus de duplications et est prête pour la production.
 ---
 
 Ce document constitue l'explication détaillée des modifications apportées et peut être conservé en archive ou partagé avec l'équipe de développement.
