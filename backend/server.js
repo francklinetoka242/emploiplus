@@ -83,8 +83,6 @@ app.use((req, res, next) => {
   next();
 });
 
-// sécurité : utiliser helmet pour définir divers en-têtes HTTP
-app.use(helmet());
 
 // cross-origin : configurer la politique CORS
 // sécurité : utiliser helmet pour définir divers en-têtes HTTP
