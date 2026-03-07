@@ -32,12 +32,20 @@ export async function registerServiceWorker() {
           // Nouvelle version disponible
           console.log('✨ New Service Worker version available');
           
-          // Option: afficher une notification à l'utilisateur
-          // Exemple:
-          // showUpdateNotification(() => window.location.reload());
+          // Force immediate activation
+          console.log('🔄 Forcing Service Worker activation...');
+          newWorker.postMessage({ type: 'SKIP_WAITING' });
+          
+          // Reload page to use new version
+          window.location.reload();
         }
       });
     });
+
+    // Vérifier les updates toutes les 30 secondes
+    setInterval(() => {
+      registration.update();
+    }, 30000);
 
     return registration;
   } catch (error) {

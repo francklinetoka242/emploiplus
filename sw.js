@@ -8,9 +8,9 @@
  * - HTML: Network-first
  */
 
-const CACHE_NAME = 'emploi-plus-v1';
-const ASSET_CACHE = 'emploi-plus-assets-v1';
-const API_CACHE = 'emploi-plus-api-v1';
+const CACHE_NAME = 'emploi-plus-v2';
+const ASSET_CACHE = 'emploi-plus-assets-v2';
+const API_CACHE = 'emploi-plus-api-v2';
 
 // Assets à pré-cacher au install
 const STATIC_ASSETS = [
@@ -179,14 +179,28 @@ self.addEventListener('message', (event) => {
   console.log('Message from client:', event.data);
 
   if (event.data.type === 'SKIP_WAITING') {
+    console.log('⚡ SKIP_WAITING activated - forcing update');
     self.skipWaiting();
   }
 
   if (event.data.type === 'CLEAR_CACHE') {
+    console.log('🗑️  Clearing all caches');
     caches.keys().then((cacheNames) => {
-      Promise.all(cacheNames.map((name) => caches.delete(name)));
+      Promise.all(cacheNames.map((name) => {
+        console.log('Deleting cache:', name);
+        return caches.delete(name);
+      }));
     });
   }
+});
+
+// Auto-activate new version immediately
+self.addEventListener('install', (event) => {
+  self.skipWaiting();
+});
+
+self.addEventListener('activate', (event) => {
+  self.clients.claim();
 });
 
 // Garder le Service Worker actif
