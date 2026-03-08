@@ -1,6 +1,6 @@
 import express from 'express';
 const router = express.Router();
-import { getJobs, getJobById, createJob, updateJob, deleteJob, publishJob } from '../controllers/job.controller.js';
+import { getJobs, getJobById, createJob, updateJob, deleteJob, publishJob, shareJobByEmail } from '../controllers/job.controller.js';
 import { requireAdmin, requireRoles } from '../middleware/auth.middleware.js';
 
 // GET /api/jobs - retrieve all jobs with optional filtering/pagination
@@ -28,6 +28,9 @@ router.patch('/:id', requireRoles('super_admin','admin_offres'), updateJob);
 
 // PATCH /api/jobs/:id/publish - change publication status
 router.patch('/:id/publish', requireRoles('super_admin','admin_offres'), publishJob);
+
+// POST /api/jobs/:id/share - share job by email
+router.post('/:id/share', shareJobByEmail);
 
 // DELETE /api/jobs/:id - delete a job posting (protected)
 // requires admin token (only admins with appropriate role)

@@ -106,6 +106,58 @@ async function publishJob(req, res) {
     res.status(status).json({ message: err.message || 'Internal server error' });
   }
 }
+
+// share job by email
+async function shareJobByEmail(req, res) {
+  try {
+    const { email } = req.body;
+    if (!email || !email.includes('@')) {
+      return res.status(400).json({ message: 'Email valide requis' });
+    }
+    
+    const job = await jobService.getJobById(req.params.id);
+    if (!job) {
+      return res.status(404).json({ message: 'Offre introuvable' });
+    }
+
+    // Send email
+    const nodemailer = await import('nodemailer');
+    const transporter = nodemailer.createTransporter({
+      host: process.env.SMTP_HOST || 'smtp.gmail.com',
+      port: 587,
+      secure: false,
+      auth: {
+        user: process.env.SMTP_USER,
+        pass: process.env.SMTP_PASS
+      }
+    });
+
+    const jobUrl = `${process.env.FRONTEND_URL || 'https://emploiplus-group.com'}/apply/${job.id}`;
+    const mailOptions = {
+      from: process.env.SMTP_USER,
+      to: email,
+      subject: `Offre d'emploi: ${job.title}`,
+      html: `
+        <h2>Découvrez cette offre d'emploi</h2>
+        <p><strong>${job.title}</strong></p>
+        <p><strong>Entreprise:</strong> ${job.company}</p>
+        <p><strong>Lieu:</strong> ${job.location}</p>
+        ${job.salary ? `<p><strong>Salaire:</strong> ${job.salary}</p>` : ''}
+        ${job.description ? `<p><strong>Description:</strong> ${job.description}</p>` : ''}
+        <p><a href="${jobUrl}">Voir l'offre complète et postuler</a></p>
+        <p>Cordialement,<br>Emploi Plus Group</p>
+      `
+    };
+
+    await transporter.sendMail(mailOptions);
+    
+    res.json({ message: 'Offre envoyée par email avec succès' });
+  } catch (err) {
+    console.error('shareJobByEmail error:', err);
+    res.status(500).json({ message: err.message || 'Erreur envoi email' });
+  }
+}
+
 export {
   getJobs,
   getJobById,
@@ -113,4 +165,5 @@ export {
   updateJob,
   deleteJob,
   publishJob,
+  shareJobByEmail,
 };

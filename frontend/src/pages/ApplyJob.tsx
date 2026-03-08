@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback, useRef } from "react";
+import { useState, useCallback, useRef } from "react";
 import { useParams, useNavigate, useLocation, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -24,7 +24,10 @@ import {
   Calendar,
   Sparkles,
   Edit3,
-  Plus
+  Plus,
+  Share2,
+  Mail,
+  MessageCircle
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { PWALayout } from '@/components/layout/PWALayout';
@@ -229,6 +232,11 @@ export default function ApplyJob() {
 
   // Validation errors
   const [errors, setErrors] = useState<{[key: string]: string}>({});
+
+  // Email sharing
+  const [showEmailModal, setShowEmailModal] = useState(false);
+  const [shareEmail, setShareEmail] = useState('');
+  const [sharing, setSharing] = useState(false);
 
   // Load data on mount
   useEffect(() => {
@@ -475,6 +483,34 @@ export default function ApplyJob() {
       });
     } catch (e) {
       console.error('Error saving to user docs:', e);
+    }
+  };
+
+  const handleShareByEmail = async () => {
+    if (!shareEmail || !shareEmail.includes('@')) {
+      toast.error('Veuillez entrer un email valide');
+      return;
+    }
+    
+    setSharing(true);
+    try {
+      const res = await fetch(`/api/jobs/${id}/share`, {
+        method: 'POST',
+        headers: authHeaders('application/json'),
+        body: JSON.stringify({ email: shareEmail })
+      });
+      
+      if (!res.ok) {
+        throw new Error('Erreur envoi email');
+      }
+      
+      toast.success('Offre envoyée par email !');
+      setShowEmailModal(false);
+      setShareEmail('');
+    } catch (err) {
+      toast.error('Erreur lors de l\'envoi');
+    } finally {
+      setSharing(false);
     }
   };
 
@@ -728,6 +764,43 @@ export default function ApplyJob() {
                     />
                   </div>
                 )}
+
+                {/* Share Options */}
+                <div className="mb-6">
+                  <h3 className="text-lg font-semibold mb-3">Partager cette offre</h3>
+                  <div className="flex gap-3">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        const jobUrl = window.location.href;
+                        const whatsappUrl = `whatsapp://send?text=${encodeURIComponent(`Découvrez cette offre d'emploi: ${job.title} chez ${job.company}\n\n${jobUrl}`)}`;
+                        window.open(whatsappUrl, '_blank');
+                      }}
+                      className="flex items-center gap-2"
+                    >
+                      <MessageCircle className="w-4 h-4" />
+                      WhatsApp
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        const jobUrl = window.location.href;
+                        const subject = encodeURIComponent(`Offre d'emploi: ${job.title}`);
+                        const body = encodeURIComponent(`Bonjour,\n\nJe vous recommande cette offre d'emploi:\n\nTitre: ${job.title}\nEntreprise: ${job.company}\nLieu: ${job.location}\n\nVoir l'offre complète: ${jobUrl}\n\nCordialement`);
+                        window.open(`mailto:?subject=${subject}&body=${body}`, '_blank');
+                      }}
+                      className="flex items-center gap-2"
+                    >
+                      <Mail className="w-4 h-4" />
+                      Email
+                    </Button>
+                  </div>
+                  <p className="text-xs text-gray-500 mt-2">
+                    Partagez cette offre avec vos contacts pour postuler plus tard.
+                  </p>
+                </div>
               </div>
             </motion.div>
 
