@@ -14,19 +14,21 @@ jobs:
         with:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USER }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          # Utilise SOIT password SOIT key selon ce que tu as mis dans tes secrets
+          password: ${{ secrets.SSH_PASSWORD }} 
+          # key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: ${{ secrets.SSH_PORT }}
           script: |
             cd ~/public_html
             
-            # 1. Mise à jour du code depuis GitHub
-            git pull origin main
+            # 1. Force la mise à jour (évite les erreurs de conflit)
+            git fetch origin
+            git reset --hard origin/main
             
-            # 2. Lancement de la magie Docker
-            # Cette commande fait tout : install, build et restart en arrière-plan
-            sudo docker compose --env-file .env.docker up -d --build
+            # 2. Lancement Docker (on utilise le .env du backend que nous avons déjà corrigé)
+            sudo docker compose --env-file backend/.env up -d --build
             
-            # 3. Nettoyage des anciennes images inutiles (pour gagner de la place)
+            # 3. Nettoyage
             sudo docker image prune -f
             
             echo "✅ Félicitations Francklin ! Emploi+ est à jour via Docker sur ton VPS."
