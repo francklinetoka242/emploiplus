@@ -7,9 +7,6 @@ La recommandation : Ajoute un petit bouton "M'envoyer cette offre par Email/Wh
 
 
 
-*yCCx+ai-CO291Ed
-
-_____________
 
 
 
@@ -137,3 +134,23 @@ pm2 restart backend-prod --update-env
 
 # Commande à taper sur ton terminal Mac
 cat backup_local.sql | docker exec -i emploi-db psql -U admin_emploi -d emploi_plus_db_cg
+
+
+
+
+
+
+*yCCx+ai-CO291Ed
+
+_____________
+
+
+
+
+rm /usr/local/var/postgresql@16/postmaster.pid
+brew services restart postgresql@16
+
+
+
+imposes le fichier .env à Docker sur le VPS
+sudo docker compose --env-file backend/.env up -d

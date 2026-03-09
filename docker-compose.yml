@@ -40,8 +40,9 @@ services:
       # ... (le reste reste identique)
     container_name: emploi_backend
     restart: unless-stopped
-    env_file:             # <--- AJOUTE CES DEUX LIGNES ICI
-      - ./backend/.env    # <--- OU ./backend/.env.docker si tu préfères celui-là
+    env_file:             # 
+      - ./backend/.env    # 
+      - ./backend/.env.docker # 
     depends_on:
       db:
         condition: service_healthy

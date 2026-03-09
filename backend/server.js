@@ -93,6 +93,11 @@ app.use(auditLoggingMiddleware);
 
 app.get('/', (req,res)=> res.json({success:true,message:'Backend server is running'}));
 
+// ----- HEALTH CHECK (no auth required) -----
+app.get('/api/health', (req,res)=> {
+  res.status(200).json({status:'ok', message:'Backend is healthy'});
+});
+
 // ----- API routes -----
 app.use('/api/auth', authRoutes);
 app.use('/api/jobs', jobRoutes);
@@ -158,9 +163,9 @@ async function startServer(){
     const connection = await pool.connect();
     console.log('✓ Database connection successful');
     connection.release();
-    app.listen(PORT, async()=>{
-      console.log(`✓ Server listening on port ${PORT}`);
-      console.log(`✓ API available at http://localhost:${PORT}/api`);
+    app.listen(PORT, '0.0.0.0', async()=>{
+      console.log(`✓ Server listening on 0.0.0.0:${PORT} (Docker accessible)`);
+      console.log(`✓ API available at http://0.0.0.0:${PORT}/api`);
       try{
         const baseUrl = process.env.BASE_URL||'https://emploiplus-group.com';
         console.log('[STARTUP] Génération initiale du sitemap...');
