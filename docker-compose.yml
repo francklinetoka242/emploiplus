@@ -37,12 +37,11 @@ services:
     build:
       context: .
       dockerfile: backend/Dockerfile
-      args:
-        BUILDKIT_INLINE_CACHE: 1
-      cache_from:
-        - emploi_backend:latest
+      # ... (le reste reste identique)
     container_name: emploi_backend
     restart: unless-stopped
+    env_file:             # <--- AJOUTE CES DEUX LIGNES ICI
+      - ./backend/.env    # <--- OU ./backend/.env.docker si tu préfères celui-là
     depends_on:
       db:
         condition: service_healthy
