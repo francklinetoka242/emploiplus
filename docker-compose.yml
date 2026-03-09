@@ -37,7 +37,6 @@ services:
     build:
       context: .
       dockerfile: backend/Dockerfile
-      # Optimisations de build pour accélérer
       args:
         BUILDKIT_INLINE_CACHE: 1
       cache_from:
@@ -60,13 +59,9 @@ services:
     ports:
       - "5000:5000"
     volumes:
-      # Code source (delegated = optimisation macOS/Docker Desktop)
       - ./backend:/app:delegated
-      # node_modules isolé (évite les conflits avec le host)
       - /app/node_modules
-      # Dossier uploads - Persistance des fichiers uploadés
       - uploads:/app/uploads
-      # Logs (optionnel)
       - ./logs/backend:/app/logs:delegated
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:5000/api/health"]
@@ -91,13 +86,16 @@ services:
     build:
       context: .
       dockerfile: frontend/Dockerfile
-      # Optimisations de build pour accélérer
       args:
         BUILDKIT_INLINE_CACHE: 1
       cache_from:
         - emploi_frontend:latest
     container_name: emploi_frontend
     restart: unless-stopped
+    # Attend que le backend soit 'Healthy' pour éviter le crash Nginx (host not found)
+    depends_on:
+      backend:
+        condition: service_healthy
     ports:
       - "80:80"
     volumes:
