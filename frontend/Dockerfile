@@ -18,7 +18,6 @@ RUN npm install --no-audit --no-fund --ignore-scripts
 COPY frontend/ .
 
 # Construire l'application avec Vite
-# Génère le dossier dist/ avec tous les assets optimisés
 RUN npm run build
 
 # ============================================================
@@ -32,19 +31,19 @@ COPY --from=builder /app/dist /usr/share/nginx/html
 # Copier la configuration Nginx customisée
 COPY nginx/default.conf /etc/nginx/conf.d/default.conf
 
-# (Optionnel) Remplacer la config principale si modifications avancées
-# COPY nginx/nginx.conf /etc/nginx/nginx.conf
-
-# Créer le répertoire PID et ajuster les permissions (non-root)
-RUN mkdir -p /var/run/nginx && \
-    touch /var/run/nginx/nginx.pid && \
+# Créer le répertoire PID et ajuster les permissions (indispensable pour le mode non-root)
+# Note : On ajoute /var/cache/nginx et /etc/nginx/conf.d pour éviter toute erreur de permission
+RUN mkdir -p /var/run/nginx /var/cache/nginx && \
     chown -R nginx:nginx \
       /var/run/nginx \
       /var/cache/nginx \
       /var/log/nginx \
-      /usr/share/nginx/html
+      /etc/nginx/conf.d \
+      /usr/share/nginx/html && \
+    touch /var/run/nginx/nginx.pid && \
+    chown nginx:nginx /var/run/nginx/nginx.pid
 
-# Basculer vers l'utilisateur nginx (non-root)
+# Basculer vers l'utilisateur nginx (non-root) pour la sécurité
 USER nginx
 
 # Exposer les ports HTTP/HTTPS
@@ -55,5 +54,4 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
   CMD wget --quiet --tries=1 --spider http://localhost/ || exit 1
 
 # Démarrer Nginx en foreground (important pour Docker)
-# daemon off; permet à Nginx de rester attaché au conteneur
 CMD ["nginx", "-g", "daemon off;"]
