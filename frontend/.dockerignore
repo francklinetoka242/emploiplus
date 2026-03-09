@@ -1,0 +1,60 @@
+# .dockerignore pour Frontend
+# Les fichiers listés ici ne seront PAS copiés dans l'image Docker
+
+# Environnement node (build stage seulement)
+node_modules/
+npm-debug.log
+npm-debug.log*
+.npm/
+
+# Contrôle de version
+.git/
+.gitignore
+
+# IDE & Editeurs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+.env.local
+.env.*.local
+
+# Source maps (à exclure en prod pour réduire la taille)
+# *.map
+
+# Tests & Coverage
+tests/
+__tests__/
+.coverage/
+.jest/
+
+# Build actuel
+dist/
+.next/
+
+# Logs
+*.log
+logs/
+
+# OS
+Thumbs.db
+
+# CI/CD
+.github/
+.gitlab-ci.yml
+
+# Fichiers temporaires
+.tmp/
+temp/
+
+# Documentation
+*.md
+README*
+DOCKER.md
+
+# Root config
+docker-compose.yml
+Dockerfile
+.editorconfig

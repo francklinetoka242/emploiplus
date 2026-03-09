@@ -103,3 +103,37 @@ cd ../backend
 git pull origin main
 npm install
 pm2 restart backend-prod --update-env
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# Commande à taper sur ton terminal Mac
+cat backup_local.sql | docker exec -i emploi-db psql -U admin_emploi -d emploi_plus_db_cg

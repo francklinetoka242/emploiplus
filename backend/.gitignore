@@ -4,6 +4,7 @@
 .env.*.local
 .env.production
 .env.development
+.env.docker
 
 #/uploads/
 uploads/

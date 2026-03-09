@@ -1,0 +1,49 @@
+# .dockerignore à la RACINE (MacBook & VPS)
+
+# Dossiers lourds à NE PAS copier (Docker va les recréer proprement)
+node_modules/
+frontend/node_modules/
+backend/node_modules/
+
+# Cache et fichiers temporaires
+.cache/
+.parcel-cache/
+.vite/
+dist/
+build/
+
+# Médias lourds (Si tu n'en as pas besoin pour le build)
+*.mov
+*.mp4
+*.avi
+*.mkv
+assets/
+
+# Fichiers de configuration locaux
+.git/
+.gitignore
+.vscode/
+.DS_Store
+Thumbs.db
+*.log
+*.tmp
+
+# Backups de base de données (Très important pour la sécurité !)
+*.sql
+backup*.sql
+
+# Documentation et fichiers non nécessaires au build
+*.md
+docs/
+documentation/
+
+# Fichiers de développement
+.env*
+!.env.docker
+!.env.docker.example
+
+# Tests et couverture
+coverage/
+.nyc_output/
+test-results/
+playwright-report/

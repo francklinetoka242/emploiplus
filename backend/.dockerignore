@@ -1,0 +1,64 @@
+# .dockerignore pour Backend
+# Les fichiers listés ici ne seront PAS copiés dans l'image Docker
+# Réduit la taille de l'image et améliore la performance du build
+
+# Environnement node
+node_modules/
+npm-debug.log
+npm-debug.log*
+.npm/
+
+# Contrôle de version
+.git/
+.gitignore
+.gitattributes
+
+# IDE & Editeurs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+.env.local
+.env.*.local
+
+# Tests & Linting
+__tests__/
+.jest/
+.coverage/
+.eslintcache
+
+# Build & Dist
+dist/
+build/
+*.tsbuildinfo
+
+# Logs & Temporary
+logs/
+*.log
+.tmp/
+temp/
+
+# OS
+Thumbs.db
+.DS_Store
+
+# CI/CD
+.github/
+.gitlab-ci.yml
+.travis.yml
+
+# Documentation & Config
+*.md
+README*
+DOCKER.md
+Dockerfile
+docker-compose.yml
+.editorconfig
+.prettierrc
+
+# Root files (keep only packagey)
+.env
+.env.production
+.htaccess
