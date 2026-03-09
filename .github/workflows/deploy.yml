@@ -1,9 +1,9 @@
-name: Deploy Emploi+ to VPS
+name: Deploy Emploi+ to VPS (Docker Mode)
 
 on:
   push:
     branches:
-      - main  # Le déploiement se lance quand tu push sur la branche main
+      - main
 
 jobs:
   deploy:
@@ -16,30 +16,17 @@ jobs:
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: ${{ secrets.SSH_PORT }}
-          # password: ${{ secrets.SSH_PASSWORD }} # Utilise ceci si la clé SSH échoue
           script: |
             cd ~/public_html
             
-            # 1. Mise à jour du code
+            # 1. Mise à jour du code depuis GitHub
             git pull origin main
             
-            # 2. Installation Backend
-            if [ -d "backend" ]; then
-              cd backend
-              npm install --production
-              cd ..
-            fi
+            # 2. Lancement de la magie Docker
+            # Cette commande fait tout : install, build et restart en arrière-plan
+            sudo docker compose --env-file .env.docker up -d --build
             
-            # 3. Installation et Build Frontend
-            if [ -d "frontend" ]; then
-              cd frontend
-              npm install
-              npm run build
-              cd ..
-            fi
+            # 3. Nettoyage des anciennes images inutiles (pour gagner de la place)
+            sudo docker image prune -f
             
-            # 4. Redémarrage du serveur (PM2)
-            # On essaie de restart, sinon on start le serveur
-            pm2 restart all || pm2 start backend/server.js --name "emploiplus-api"
-            
-            echo "✅ Félicitations ! Emploi+ est à jour sur ton VPS."
+            echo "✅ Félicitations Francklin ! Emploi+ est à jour via Docker sur ton VPS."
