@@ -1,25 +1,2 @@
-# Generated .htaccess - ensures correct MIME and gzip headers for .gz assets
-<IfModule mod_mime.c>
-  AddType application/javascript .js.gz
-  AddType text/css .css.gz
-</IfModule>
-
-<IfModule mod_headers.c>
-  <FilesMatch "\.js\.gz$">
-    Header set Content-Encoding gzip
-  </FilesMatch>
-  <FilesMatch "\.css\.gz$">
-    Header set Content-Encoding gzip
-  </FilesMatch>
-</IfModule>
-
-<IfModule mod_rewrite.c>
-  RewriteEngine On
-  RewriteBase /
-  # Serve existing files/directories directly
-  RewriteCond %{REQUEST_FILENAME} -f [OR]
-  RewriteCond %{REQUEST_FILENAME} -d
-  RewriteRule ^ - [L]
-  # Otherwise rewrite to index.html (SPA fallback)
-  RewriteRule ^ /index.html [L]
-</IfModule>
+REWRITERULE ^api/(.*)$ http://127.0.0.1:5000/api/$1 [P,L]
+REWRITERULE ^(.*)$ http://127.0.0.1:8081/$1 [P,L]
