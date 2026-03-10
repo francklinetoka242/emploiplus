@@ -56,10 +56,14 @@ services:
     ports:
       - "5000:5000"
     volumes:
-      - /home/emploiplus-group.com/public_html/backend:/app:delegated
+      - ./backend:/app
+      # On force l'utilisation du .env spécifiquement (priorité)
+      - ./backend/.env:/app/.env
+      # On protège les node_modules pour éviter qu'ils soient écrasés par le montage
       - /app/node_modules
+      # Tes uploads et logs
       - uploads:/app/uploads
-      - /home/emploiplus-group.com/public_html/logs/backend:/app/logs:delegated
+      - ./logs/backend:/app/logs
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:5000/api/health"]
       interval: 30s
