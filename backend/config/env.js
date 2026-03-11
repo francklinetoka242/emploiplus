@@ -1,10 +1,17 @@
 // env.js - chargement et validation des variables d'environnement
-// utilise dotenv pour lire le fichier .env au démarrage
+// utilise dotenv pour lire le fichier .env ou .env.local au démarrage
 
 import dotenv from 'dotenv';
+import path from 'path';
 
-// charge .env dans process.env (si présent)
-dotenv.config();
+// priorité à .env.local (usage dev, non commité). si absent on retombe sur .env
+const localPath = path.resolve(process.cwd(), '.env.local');
+const mainPath = path.resolve(process.cwd(), '.env');
+
+// charger en deux étapes pour permettre override par .env.local
+dotenv.config({ path: localPath, override: false });
+// second appel pour charger le fichier standard (ajoute seulement les variables manquantes)
+dotenv.config({ path: mainPath });
 
 // liste des variables critiques nécessaires au fonctionnement du serveur
 // DATABASE_URL contient toutes les infos de connexion PostgreSQL (host, user, password, db, port)

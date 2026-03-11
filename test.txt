@@ -139,6 +139,7 @@ cat backup_local.sql | docker exec -i emploi-db psql -U admin_emploi -d emploi_p
 
 
 
+ssh emplo1205@195.110.35.133 -p 7932       
 
 *yCCx+ai-CO291Ed
 

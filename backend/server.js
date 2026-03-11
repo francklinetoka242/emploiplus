@@ -1,6 +1,7 @@
 // Charger les variables d'environnement et config globales
-import dotenv from 'dotenv';
-dotenv.config();
+// le module config/env.js s'occupe maintenant de charger
+// .env.local puis .env et effectue les validations
+import './config/env.js';
 
 // gestion globale des erreurs non capturées
 process.on('uncaughtException', (err) => {
