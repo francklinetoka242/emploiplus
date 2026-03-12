@@ -41,7 +41,8 @@ services:
     restart: unless-stopped
     # Chemin absolu vers le répertoire emploiplus-group.com
     env_file:
-      - /home/emploiplus-group.com/public_html/backend/.env
+      #- /home/emploiplus-group.com/public_html/backend/.env
+      - ./backend/.env # Chemin relatif pour plus de portabilité
     depends_on:
       db:
         condition: service_healthy

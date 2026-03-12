@@ -3,7 +3,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { HashRouter, Routes, Route } from "react-router-dom";
+import { HashRouter, Routes, Route, Navigate } from "react-router-dom";
 
 import Layout from "./components/Layout";
 import { ProtectedRoute } from "./components/ProtectedRoute";
@@ -69,10 +69,6 @@ import CVGenerator from "./pages/CVGenerator";
 import CVTemplates from "./pages/CVTemplates";
 import LetterGenerator from "./pages/LetterGenerator";
 import MotivationLetters from "./pages/MotivationLetters";
-import DocumentService from "./pages/DocumentService";
-import ITService from "./pages/ITService";
-import SocialMediaService from "./pages/SocialMediaService";
-import GraphicDesignService from "./pages/GraphicDesignService";
 import RedactionDocuments from "./pages/RedactionDocuments";
 import ConceptionInformatique from "./pages/ConceptionInformatique";
 import GestionPlateformes from "./pages/GestionPlateformes";
@@ -195,10 +191,23 @@ const App = () => {
             <Route path="/cv-modeles" element={<CVTemplates />} />
             <Route path="/letter-generator" element={<LetterGenerator />} />
             <Route path="/letter-modeles" element={<MotivationLetters />} />
-            <Route path="/services/redaction" element={<DocumentService />} />
-            <Route path="/services/informatique" element={<ITService />} />
-            <Route path="/services/digital" element={<SocialMediaService />} />
-            <Route path="/services/design" element={<GraphicDesignService />} />
+            {/* legacy service pages removed – redirect back to main services hub */}
+            <Route
+              path="/services/redaction"
+              element={<Navigate to="/services" replace />}
+            />
+            <Route
+              path="/services/informatique"
+              element={<Navigate to="/services" replace />}
+            />
+            <Route
+              path="/services/digital"
+              element={<Navigate to="/services" replace />}
+            />
+            <Route
+              path="/services/design"
+              element={<Navigate to="/services" replace />}
+            />
             
             {/* Nouvelles pages de services */}
             <Route path="/services/redaction-documents" element={<RedactionDocuments />} />

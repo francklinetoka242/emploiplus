@@ -155,3 +155,7 @@ brew services restart postgresql@16
 
 imposes le fichier .env à Docker sur le VPS
 sudo docker compose --env-file backend/.env up -d
+
+
+cd /home/emploiplus-group.com/public_html
+docker compose --env-file /home/emploiplus-group.com/public_html/backend/.env up -d --build

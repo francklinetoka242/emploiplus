@@ -1,78 +1,35 @@
-import React, { useState } from "react";
-import { BottomNavigationBar } from "./BottomNavigationBar";
-import { BottomNavigationGuest } from "./BottomNavigationGuest";
-import { HeaderMobile } from "./HeaderMobile";
-import { HeaderMobileGuest } from "./HeaderMobileGuest";
-import { Drawer } from "./Drawer";
-import { useAuth } from "@/hooks/useAuth";
+// Exemple de logique à intégrer
+import { useLocation, useNavigate } from 'react-router-dom';
 
-interface PWALayoutProps {
-  children: React.ReactNode;
-  notificationCount?: number;
-  messageCount?: number;
-  hideNavigation?: boolean; // Hide header and bottom nav on mobile (for auth pages)
-  hideHeader?: boolean; // Hide only header on mobile (for pages with search bar)
-}
+const BottomNavigationBar = () => {
+  const location = useLocation();
+  const navigate = useNavigate();
+  const path = location.pathname;
 
-/**
- * PWALayout - Main layout component for PWA
- * Responsive layout:
- * - Mobile: Shows HeaderMobile/HeaderMobileGuest + BottomNavigationBar/BottomNavigationGuest
- * - Desktop: Only shows children
- * - hideNavigation: Set to true for auth pages (Login/Register) to show clean mobile UI
- * - hideHeader: Set to true for pages with search bars that replace the header
- */
-export const PWALayout: React.FC<PWALayoutProps> = ({
-  children,
-  notificationCount = 0,
-  messageCount = 0,
-  hideNavigation = false,
-  hideHeader = false,
-}) => {
-  const { user } = useAuth();
-  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
-  const isAuthenticated = !!user;
+  // 1. Définition des contextes
+  if (path.startsWith('/services/')) {
+    return (
+      <nav className="bottom-nav-contextual">
+        <button onClick={() => navigate('/services')}>← Tous les Services</button>
+        <button onClick={() => navigate('/services/design')}>Design</button>
+        <button onClick={() => navigate('/services/informatique')}>IT</button>
+      </nav>
+    );
+  }
 
+  if (path.includes('/postuler/') || path.includes('/inscription')) {
+    return (
+      <nav className="bottom-nav-action">
+        <button onClick={() => navigate(-1)}>Annuler</button>
+        <button className="btn-primary">Continuer l'action</button>
+      </nav>
+    );
+  }
+
+  // 2. Menu par défaut (Pages principales)
   return (
-    <>
-      {/* Mobile PWA Components - Hidden on desktop */}
-      {!hideNavigation && !hideHeader && (
-        <div className="md:hidden">
-          {/* Header - Different for authenticated vs guest users */}
-          {isAuthenticated ? (
-            <HeaderMobile
-              notificationCount={notificationCount}
-              onDrawerOpen={() => setIsDrawerOpen(true)}
-            />
-          ) : (
-            <HeaderMobileGuest />
-          )}
-        </div>
-      )}
-
-      {/* Main Content - Optimized for mobile app experience */}
-      <main className={`${!hideNavigation ? 'pb-20 md:pb-0' : 'pb-0'}`}>
-        {children}
-      </main>
-
-      {/* Bottom Navigation - Mobile only */}
-      {!hideNavigation && (
-        <div className="md:hidden">
-          {isAuthenticated ? (
-            <BottomNavigationBar
-              notificationCount={notificationCount}
-              messageCount={messageCount}
-            />
-          ) : (
-            <BottomNavigationGuest />
-          )}
-        </div>
-      )}
-
-      {/* Drawer - Mobile only, only for authenticated users */}
-      {isAuthenticated && (
-        <Drawer isOpen={isDrawerOpen} onClose={() => setIsDrawerOpen(false)} />
-      )}
-    </>
+    <nav className="bottom-nav-standard">
+       {/* Tes 5 boutons actuels : Accueil, Emplois, etc. */}
+    </nav>
   );
 };

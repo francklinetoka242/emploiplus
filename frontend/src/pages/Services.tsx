@@ -1,7 +1,7 @@
-import { Link } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useUserRole } from "@/hooks/useUserRole";
 import { useScrollDirection } from "@/hooks/useScrollDirection";
@@ -38,9 +38,36 @@ export default function Services() {
   const { user } = useAuth();
   const { role } = useUserRole();
   const isCompany = role === "company";
+  const location = useLocation();
+  const navigate = useNavigate();
+
   const [activeTab, setActiveTab] = useState<
     "optimization" | "tools" | "visual" | "digital"
   >("optimization");
+
+  // synchronize with `?tab=` query parameter so bottom nav can drive it
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const tab = params.get("tab");
+    if (
+      tab === "optimization" ||
+      tab === "tools" ||
+      tab === "visual" ||
+      tab === "digital"
+    ) {
+      setActiveTab(tab);
+    }
+  }, [location.search]);
+
+  // when activeTab changes update URL without pushing a new history entry
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    if (activeTab !== params.get("tab")) {
+      params.set("tab", activeTab);
+      navigate({ pathname: "/services", search: params.toString() }, { replace: true });
+    }
+  }, [activeTab, navigate, location.search]);
+
   const { isVisible } = useScrollDirection(100);
   const [searchQuery, setSearchQuery] = useState('');
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
