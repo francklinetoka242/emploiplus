@@ -46,8 +46,8 @@ const LoginUser = () => {
         if (data.token) {
           localStorage.setItem('token', data.token);
         }
-        if (data.admin) {
-          localStorage.setItem('user', JSON.stringify(data.admin));
+        if (data.data && data.data.user) {
+          localStorage.setItem('user', JSON.stringify(data.data.user));
         }
         
         const params = new URLSearchParams(location.search);

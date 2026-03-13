@@ -127,7 +127,7 @@ async function loginUser(email, password) {
     // SECURITY: Do NOT query admins table here
     // Note: users table uses 'user_type' column, NOT 'role'
     const { rows: userRows } = await pool.query(
-      `SELECT id, email, password, user_type, first_name, last_name, is_verified, is_blocked 
+      `SELECT id, email, password, user_type, full_name, is_verified, is_blocked 
        FROM users 
        WHERE email = $1`,
       [email]
@@ -161,6 +161,11 @@ async function loginUser(email, password) {
     };
     const token = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '7d' });
 
+    // Split full_name into first and last name for frontend compatibility
+    const nameParts = (user.full_name || '').split(' ');
+    const firstName = nameParts[0] || '';
+    const lastName = nameParts.slice(1).join(' ') || '';
+
     // Return token and user data (without password)
     return {
       token,
@@ -168,8 +173,8 @@ async function loginUser(email, password) {
         id: user.id,
         email: user.email,
         user_type: user.user_type,
-        firstName: user.first_name,
-        lastName: user.last_name,
+        firstName: firstName,
+        lastName: lastName,
         is_verified: user.is_verified
       }
     };
