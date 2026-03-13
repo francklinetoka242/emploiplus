@@ -139,13 +139,26 @@ cat backup_local.sql | docker exec -i emploi-db psql -U admin_emploi -d emploi_p
 
 
 
-ssh emplo1205@195.110.35.133 -p 7932       
+ssh emplo1205@195.110.35.133 -p 7932      
 
 *yCCx+ai-CO291Ed
 
 _____________
 
 
+Sur votre VPS, remplacez vos commandes par :
+# 1. Allez au bon répertoire
+cd /home/emploiplus-group.com/public_html
+
+# 2. Arrêtez tout proprement
+docker compose down
+
+# 3. Relancez avec --env-file (IMPORTANT!)
+docker compose --env-file backend/.env up -d --build
+
+# 4. Vérifiez que tout est connecté
+docker compose ps
+docker logs emploi_backend | grep -i database
 
 
 rm /usr/local/var/postgresql@16/postmaster.pid
@@ -153,9 +166,20 @@ brew services restart postgresql@16
 
 
 
-imposes le fichier .env à Docker sur le VPS
-sudo docker compose --env-file backend/.env up -d
+
+Travaillez depuis le bon répertoire ou utilisez un chemin absolu correct :
+cd /home/emploiplus-group.com/public_html
+
+# pour recréer proprement avec les variables à jour
+docker compose --env-file backend/.env down
+docker compose --env-file backend/.env up -d --build
+
+
+
+Vérifiez l’intérieur du conteneur si besoin :
+docker exec -it emploi_backend env | grep DB_
 
 
 cd /home/emploiplus-group.com/public_html
-docker compose --env-file /home/emploiplus-group.com/public_html/backend/.env up -d --build
+docker compose --env-file backend/.env down
+docker compose --env-file backend/.env up -d --build
