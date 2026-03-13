@@ -55,8 +55,8 @@ COPY --from=builder /app/package*.json ./
 COPY --from=builder /app/.env* ./
 
 # Créer les répertoires nécessaires pour l'application
-RUN mkdir -p uploads tmp logs && \
-    chmod -R 755 uploads tmp logs
+RUN mkdir -p uploads tmp logs public && \
+    chmod -R 755 uploads tmp logs public
 
 # Créer un utilisateur non-root pour la sécurité (uid 1001)
 RUN addgroup -g 1001 -S nodejs && \

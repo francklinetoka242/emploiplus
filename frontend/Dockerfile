@@ -43,8 +43,8 @@ RUN mkdir -p /var/run/nginx /var/cache/nginx && \
     touch /var/run/nginx/nginx.pid && \
     chown nginx:nginx /var/run/nginx/nginx.pid
 
-# Basculer vers l'utilisateur nginx (non-root) pour la sécurité
-USER nginx
+# Pour éviter les problèmes de permissions, on exécute nginx en tant que root
+# USER nginx
 
 # Exposer les ports HTTP/HTTPS
 EXPOSE 80 443
